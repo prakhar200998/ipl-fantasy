@@ -6,135 +6,516 @@
     <title>IPL 2026 Fantasy League</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        surface: { 900: '#0a0e17', 800: '#111827', 700: '#1a2236', 600: '#243049' },
+                        accent: { DEFAULT: '#f97316', light: '#fb923c', dark: '#ea580c' },
+                        ipl: { blue: '#1e40af', purple: '#7c3aed' },
+                    },
+                },
+            },
+        }
+    </script>
     <style>
         [x-cloak] { display: none !important; }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #f97316, #fb923c, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Glow effect */
+        .glow-orange { box-shadow: 0 0 20px rgba(249, 115, 22, 0.15); }
+        .glow-green { box-shadow: 0 0 12px rgba(34, 197, 94, 0.2); }
+
+        /* Animated live dot */
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+        }
+        .live-dot { animation: livePulse 1.5s ease-in-out infinite; }
+
+        /* Shimmer loading */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #1a2236 25%, #243049 50%, #1a2236 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        /* Smooth collapse */
+        .collapse-enter { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; }
+        .collapse-enter-active { max-height: 2000px; opacity: 1; }
+
+        /* Score split bar */
+        .split-bar { height: 4px; border-radius: 2px; overflow: hidden; }
+
+        /* Rank badges */
+        .rank-gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #78350f; }
+        .rank-silver { background: linear-gradient(135deg, #d1d5db, #9ca3af); color: #1f2937; }
+        .rank-bronze { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; }
+
+        /* Player row hover */
+        .player-row { transition: background-color 0.15s ease; }
+        .player-row:hover { background-color: rgba(249, 115, 22, 0.05); }
+
+        /* Tab indicator */
+        .tab-active { position: relative; }
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #f97316, #fbbf24);
+            border-radius: 1px;
+        }
+
+        /* Match score horizontal scroll on mobile */
+        .match-scroll { -webkit-overflow-scrolling: touch; }
+        .match-scroll::-webkit-scrollbar { height: 4px; }
+
+        /* Dimmed player */
+        .player-dimmed { opacity: 0.45; }
+
+        /* Card hover */
+        .team-card { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .team-card:hover { border-color: rgba(249, 115, 22, 0.3); }
+
+        /* Best performer glow */
+        .best-performer {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(251, 191, 36, 0.05));
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen" x-data="fantasyApp()" x-init="init()">
+<body class="bg-surface-900 text-gray-100 min-h-screen" x-data="fantasyApp()" x-init="init()">
 
     <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
-        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <h1 class="text-xl font-bold text-orange-400">IPL Fantasy League</h1>
-            <nav class="flex gap-1">
-                <button @click="tab = 'standings'" :class="tab === 'standings' ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'" class="px-4 py-1.5 rounded text-sm font-medium transition-colors">Standings</button>
-                <button @click="tab = 'live'; fetchLive()" :class="tab === 'live' ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'" class="px-4 py-1.5 rounded text-sm font-medium transition-colors">Live</button>
-            </nav>
+    <header class="bg-surface-800/80 backdrop-blur-lg border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center font-black text-sm text-white shadow-lg">F</div>
+                    <div>
+                        <h1 class="text-base font-bold tracking-tight gradient-text leading-tight">IPL Fantasy 2026</h1>
+                        <p class="text-[10px] text-gray-500 font-medium tracking-wide uppercase">Top 11 Scoring</p>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <nav class="flex bg-surface-700 rounded-lg p-0.5 gap-0.5">
+                    <button @click="tab = 'standings'"
+                            :class="tab === 'standings' ? 'bg-orange-500/90 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'"
+                            class="px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200">
+                        Standings
+                    </button>
+                    <button @click="tab = 'live'; fetchLive()"
+                            :class="tab === 'live' ? 'bg-orange-500/90 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'"
+                            class="px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 flex items-center gap-1.5">
+                        <span x-show="liveData.match?.status === 'in_progress'" class="w-1.5 h-1.5 rounded-full bg-green-400 live-dot"></span>
+                        Live
+                    </button>
+                </nav>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-6">
+    <main class="max-w-4xl mx-auto px-4 py-5">
 
-        <!-- Standings Tab -->
+        <!-- ============================================================ -->
+        <!-- STANDINGS TAB -->
+        <!-- ============================================================ -->
         <div x-show="tab === 'standings'" x-cloak>
+
+            <!-- Season summary bar -->
+            <div x-show="standings.length > 0" class="mb-5 flex items-center gap-3 overflow-x-auto pb-1 match-scroll">
+                <div class="flex-shrink-0 bg-surface-700/50 rounded-lg px-3 py-2 border border-gray-800">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Teams</div>
+                    <div class="text-lg font-bold text-white" x-text="standings.length"></div>
+                </div>
+                <div class="flex-shrink-0 bg-surface-700/50 rounded-lg px-3 py-2 border border-gray-800">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Leader</div>
+                    <div class="text-lg font-bold text-orange-400 truncate max-w-[140px]" x-text="standings[0]?.team_name || '-'"></div>
+                </div>
+                <div class="flex-shrink-0 bg-surface-700/50 rounded-lg px-3 py-2 border border-gray-800">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Top Score</div>
+                    <div class="text-lg font-bold text-green-400" x-text="standings[0]?.total_pts?.toLocaleString() || '0'"></div>
+                </div>
+                <div class="flex-shrink-0 bg-surface-700/50 rounded-lg px-3 py-2 border border-gray-800">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Avg Score</div>
+                    <div class="text-lg font-bold text-gray-300" x-text="standings.length ? Math.round(standings.reduce((s,t) => s + t.total_pts, 0) / standings.length).toLocaleString() : '0'"></div>
+                </div>
+            </div>
+
+            <!-- Team cards -->
             <div class="space-y-3">
                 <template x-for="(team, idx) in standings" :key="team.team_name">
-                    <div class="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
-                        <!-- Team row -->
-                        <button @click="expanded === team.team_name ? expanded = null : expanded = team.team_name"
-                                class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-750 transition-colors">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl font-bold w-8 text-center"
-                                      :class="idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-400' : idx === 2 ? 'text-orange-600' : 'text-gray-500'"
-                                      x-text="'#' + (idx + 1)"></span>
-                                <div class="text-left">
-                                    <div class="font-semibold text-lg" x-text="team.team_name"></div>
-                                    <div class="text-xs text-gray-400" x-text="team.players.length + ' players'"></div>
+                    <div class="team-card bg-surface-800 rounded-xl overflow-hidden border border-gray-800"
+                         :class="expanded === team.team_name ? 'glow-orange border-orange-500/20' : ''">
+
+                        <!-- Team header row -->
+                        <button @click="toggleTeam(team.team_name)"
+                                class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-surface-700/30 transition-colors active:bg-surface-700/50">
+
+                            <!-- Rank badge -->
+                            <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-sm"
+                                 :class="idx === 0 ? 'rank-gold' : idx === 1 ? 'rank-silver' : idx === 2 ? 'rank-bronze' : 'bg-surface-700 text-gray-400'">
+                                <span x-text="idx + 1"></span>
+                            </div>
+
+                            <!-- Team info -->
+                            <div class="flex-1 min-w-0 text-left">
+                                <div class="font-bold text-[15px] truncate" x-text="team.team_name"></div>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-xs text-gray-500" x-text="team.players.length + ' players'"></span>
+                                    <span class="text-gray-700">|</span>
+                                    <span class="text-xs text-gray-500">
+                                        Top performer:
+                                        <span class="text-orange-400/80 font-medium" x-text="team.players[0]?.display_name || '-'"></span>
+                                        <span class="text-gray-600" x-text="'(' + (team.players[0]?.total_pts || 0) + ')'"></span>
+                                    </span>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4">
+
+                            <!-- Points & chevron -->
+                            <div class="flex-shrink-0 flex items-center gap-3">
                                 <div class="text-right">
-                                    <div class="text-2xl font-bold text-orange-400" x-text="team.total_pts.toLocaleString()"></div>
-                                    <div class="text-xs text-gray-400">Top 11 pts</div>
+                                    <div class="text-xl font-extrabold tabular-nums"
+                                         :class="idx === 0 ? 'gradient-text' : 'text-white'"
+                                         x-text="team.total_pts.toLocaleString()"></div>
+                                    <div class="text-[10px] text-gray-500 font-medium tracking-wide">PTS</div>
                                 </div>
-                                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="expanded === team.team_name ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                <svg class="w-4 h-4 text-gray-500 transition-transform duration-200 flex-shrink-0"
+                                     :class="expanded === team.team_name ? 'rotate-180' : ''"
+                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
                             </div>
                         </button>
 
-                        <!-- Player detail -->
-                        <div x-show="expanded === team.team_name" x-collapse class="border-t border-gray-700">
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="text-gray-400 text-xs uppercase">
-                                        <th class="px-4 py-2 text-left">#</th>
-                                        <th class="px-4 py-2 text-left">Player</th>
-                                        <th class="px-4 py-2 text-right">M</th>
-                                        <th class="px-4 py-2 text-right">Pts</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <template x-for="(p, pidx) in team.players" :key="p.player_name">
-                                        <tr :class="pidx < 11 ? 'bg-gray-800' : 'bg-gray-850 text-gray-500'" class="border-t border-gray-700/50">
-                                            <td class="px-4 py-1.5">
-                                                <span x-text="pidx + 1" :class="pidx < 11 ? 'text-orange-400 font-medium' : ''"></span>
-                                            </td>
-                                            <td class="px-4 py-1.5" x-text="p.display_name"></td>
-                                            <td class="px-4 py-1.5 text-right text-gray-400" x-text="p.matches_played"></td>
-                                            <td class="px-4 py-1.5 text-right font-medium" :class="pidx < 11 ? 'text-green-400' : 'text-gray-500'" x-text="p.total_pts"></td>
+                        <!-- Expanded player detail -->
+                        <div x-show="expanded === team.team_name"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-2"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="border-t border-gray-800">
+
+                            <!-- Team KPIs row -->
+                            <div class="px-4 py-3 bg-surface-700/20 border-b border-gray-800/50">
+                                <div class="grid grid-cols-4 gap-2 text-center">
+                                    <div>
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Rank</div>
+                                        <div class="text-lg font-bold"
+                                             :class="idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-white'"
+                                             x-text="'#' + (idx + 1)"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Total</div>
+                                        <div class="text-lg font-bold text-white" x-text="team.total_pts.toLocaleString()"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Avg/Player</div>
+                                        <div class="text-lg font-bold text-gray-300"
+                                             x-text="team.players.length ? Math.round(team.players.slice(0, 11).reduce((s,p) => s + p.total_pts, 0) / Math.min(11, team.players.length)) : 0"></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Gap to #1</div>
+                                        <div class="text-lg font-bold"
+                                             :class="idx === 0 ? 'text-green-400' : 'text-red-400'"
+                                             x-text="idx === 0 ? '-' : '-' + (standings[0].total_pts - team.total_pts)"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Loading state for team detail -->
+                            <div x-show="teamDetailLoading === team.team_name" class="px-4 py-6">
+                                <div class="space-y-2">
+                                    <div class="shimmer h-8 rounded"></div>
+                                    <div class="shimmer h-6 rounded"></div>
+                                    <div class="shimmer h-6 rounded"></div>
+                                </div>
+                            </div>
+
+                            <!-- Player table -->
+                            <div x-show="teamDetailLoading !== team.team_name" class="overflow-x-auto match-scroll">
+                                <table class="w-full text-sm min-w-[500px]">
+                                    <thead>
+                                        <tr class="text-[10px] text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
+                                            <th class="px-4 py-2.5 text-left w-8">#</th>
+                                            <th class="px-2 py-2.5 text-left">Player</th>
+                                            <th class="px-2 py-2.5 text-right">Total</th>
+                                            <th class="px-2 py-2.5 text-right">
+                                                <span class="hidden sm:inline">Matches</span>
+                                                <span class="sm:hidden">M</span>
+                                            </th>
+                                            <th class="px-2 py-2.5 text-right">
+                                                <span class="hidden sm:inline">Avg/M</span>
+                                                <span class="sm:hidden">Avg</span>
+                                            </th>
+                                            <th class="px-2 py-2.5 text-center hidden sm:table-cell">Split</th>
+                                            <!-- Per-match columns: rendered from teamDetail data -->
+                                            <template x-for="ml in getMatchLabels(team.team_name)" :key="ml">
+                                                <th class="px-2 py-2.5 text-right text-orange-400/60 font-semibold" x-text="ml"></th>
+                                            </template>
                                         </tr>
-                                    </template>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="(p, pidx) in getTeamPlayers(team.team_name)" :key="p.player_name">
+                                            <tr class="player-row border-t border-gray-800/30"
+                                                :class="pidx >= 11 ? 'player-dimmed' : ''">
+
+                                                <!-- Rank -->
+                                                <td class="px-4 py-2">
+                                                    <span class="text-xs font-bold tabular-nums"
+                                                          :class="pidx < 11 ? 'text-orange-400' : 'text-gray-600'"
+                                                          x-text="pidx + 1"></span>
+                                                </td>
+
+                                                <!-- Player name + best performer badge -->
+                                                <td class="px-2 py-2">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="font-medium text-[13px] truncate max-w-[150px]"
+                                                              :class="pidx < 11 ? 'text-gray-100' : 'text-gray-500'"
+                                                              x-text="p.display_name"></span>
+                                                        <span x-show="pidx === 0"
+                                                              class="flex-shrink-0 text-[9px] font-bold uppercase tracking-wider bg-yellow-500/15 text-yellow-400 px-1.5 py-0.5 rounded">MVP</span>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Total points -->
+                                                <td class="px-2 py-2 text-right">
+                                                    <span class="font-bold tabular-nums text-[13px]"
+                                                          :class="pidx < 11 ? (p.total_pts > 0 ? 'text-green-400' : 'text-gray-400') : 'text-gray-600'"
+                                                          x-text="p.total_pts"></span>
+                                                </td>
+
+                                                <!-- Matches played -->
+                                                <td class="px-2 py-2 text-right">
+                                                    <span class="text-gray-500 tabular-nums text-xs" x-text="p.matches_played"></span>
+                                                </td>
+
+                                                <!-- Avg per match -->
+                                                <td class="px-2 py-2 text-right">
+                                                    <span class="text-gray-400 tabular-nums text-xs"
+                                                          x-text="p.matches_played > 0 ? (p.total_pts / p.matches_played).toFixed(1) : '-'"></span>
+                                                </td>
+
+                                                <!-- Bat / Bowl / Field split bar -->
+                                                <td class="px-2 py-2 hidden sm:table-cell">
+                                                    <div x-show="p.batting_pts !== undefined" class="flex items-center gap-1.5">
+                                                        <div class="split-bar flex-1 flex bg-gray-800" style="min-width: 60px;">
+                                                            <div class="h-full bg-blue-400" :style="'width:' + getSplitPct(p, 'batting_pts') + '%'" :title="'Bat: ' + (p.batting_pts || 0)"></div>
+                                                            <div class="h-full bg-purple-400" :style="'width:' + getSplitPct(p, 'bowling_pts') + '%'" :title="'Bowl: ' + (p.bowling_pts || 0)"></div>
+                                                            <div class="h-full bg-yellow-400" :style="'width:' + getSplitPct(p, 'fielding_pts') + '%'" :title="'Field: ' + (p.fielding_pts || 0)"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div x-show="p.batting_pts === undefined" class="text-gray-700 text-xs">-</div>
+                                                </td>
+
+                                                <!-- Per-match score columns -->
+                                                <template x-for="ml in getMatchLabels(team.team_name)" :key="ml">
+                                                    <td class="px-2 py-2 text-right">
+                                                        <span class="tabular-nums text-xs"
+                                                              :class="getMatchScore(p, ml) > 0 ? 'text-gray-300' : getMatchScore(p, ml) < 0 ? 'text-red-400' : 'text-gray-700'"
+                                                              x-text="getMatchScore(p, ml) !== null ? getMatchScore(p, ml) : '-'"></span>
+                                                    </td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Split legend -->
+                            <div x-show="teamDetailLoading !== team.team_name" class="px-4 py-2.5 border-t border-gray-800/30 flex items-center gap-4 text-[10px] text-gray-500">
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-400"></span> Batting</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-purple-400"></span> Bowling</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-yellow-400"></span> Fielding</span>
+                                <span class="ml-auto text-gray-600">Players 12-16 excluded from team total</span>
+                            </div>
                         </div>
                     </div>
                 </template>
             </div>
-            <p x-show="standings.length === 0" class="text-center text-gray-500 py-8">Loading standings...</p>
+
+            <!-- Loading state -->
+            <div x-show="standings.length === 0 && !loadError" class="space-y-3 mt-2">
+                <template x-for="i in 5" :key="i">
+                    <div class="shimmer h-16 rounded-xl"></div>
+                </template>
+            </div>
+
+            <!-- Error state -->
+            <div x-show="loadError" class="text-center py-12">
+                <div class="text-gray-500 text-sm" x-text="loadError"></div>
+                <button @click="fetchStandings()" class="mt-3 text-orange-400 text-sm font-medium hover:text-orange-300">Retry</button>
+            </div>
         </div>
 
-        <!-- Live Tab -->
+        <!-- ============================================================ -->
+        <!-- LIVE TAB -->
+        <!-- ============================================================ -->
         <div x-show="tab === 'live'" x-cloak>
-            <div x-show="!liveData.match" class="text-center text-gray-500 py-8">
-                No live match data available.
+
+            <!-- No match state -->
+            <div x-show="!liveData.match && !liveLoading" class="text-center py-16">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-surface-700/50 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <p class="text-gray-400 font-medium">No match data available</p>
+                <p class="text-gray-600 text-sm mt-1">Check back during match time</p>
             </div>
-            <div x-show="liveData.match">
+
+            <!-- Loading state -->
+            <div x-show="liveLoading" class="space-y-3">
+                <div class="shimmer h-24 rounded-xl"></div>
+                <div class="shimmer h-16 rounded-xl"></div>
+                <div class="shimmer h-16 rounded-xl"></div>
+            </div>
+
+            <!-- Match data -->
+            <div x-show="liveData.match && !liveLoading">
+
                 <!-- Match card -->
-                <div class="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <div class="text-sm text-gray-400" x-text="liveData.match?.date"></div>
-                            <div class="font-semibold" x-text="(liveData.match?.teams || []).join(' vs ')"></div>
-                            <div class="text-sm text-gray-400" x-text="liveData.match?.venue"></div>
-                        </div>
-                        <div>
-                            <span class="px-2 py-1 rounded text-xs font-medium"
-                                  :class="liveData.match?.status === 'in_progress' ? 'bg-green-500/20 text-green-400' : 'bg-gray-600/30 text-gray-400'"
-                                  x-text="liveData.match?.status === 'in_progress' ? 'LIVE' : liveData.match?.status?.toUpperCase()"></span>
+                <div class="bg-surface-800 rounded-xl p-4 mb-4 border border-gray-800 relative overflow-hidden">
+                    <!-- Subtle gradient background -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none"></div>
+                    <div class="relative">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <!-- Status badge -->
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                                          :class="liveData.match?.status === 'in_progress'
+                                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                            : 'bg-gray-600/20 text-gray-400 border border-gray-600/30'">
+                                        <span x-show="liveData.match?.status === 'in_progress'" class="w-1.5 h-1.5 rounded-full bg-green-400 live-dot"></span>
+                                        <span x-text="liveData.match?.status === 'in_progress' ? 'LIVE' : liveData.match?.status === 'completed' ? 'COMPLETED' : liveData.match?.status?.toUpperCase()"></span>
+                                    </span>
+                                    <span class="text-xs text-gray-500" x-text="formatMatchDate(liveData.match?.date)"></span>
+                                </div>
+                                <div class="text-lg font-bold text-white" x-text="(liveData.match?.teams || []).join(' vs ')"></div>
+                                <div class="text-xs text-gray-500 mt-0.5" x-text="liveData.match?.venue"></div>
+                            </div>
+                            <button @click="fetchLive()"
+                                    class="flex-shrink-0 p-2 rounded-lg hover:bg-surface-700 transition-colors text-gray-500 hover:text-gray-300"
+                                    title="Refresh">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Team impacts -->
-                <div class="space-y-3">
-                    <template x-for="impact in liveData.team_impacts" :key="impact.team_name">
-                        <div class="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                <!-- Fantasy impact header -->
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Fantasy Impact</h2>
+                    <span class="text-xs text-gray-600" x-text="liveData.team_impacts?.length + ' teams affected'"></span>
+                </div>
+
+                <!-- Team impact cards -->
+                <div class="space-y-2.5">
+                    <template x-for="(impact, iIdx) in liveData.team_impacts" :key="impact.team_name">
+                        <div class="bg-surface-800 rounded-xl overflow-hidden border border-gray-800 team-card"
+                             :class="liveExpanded === impact.team_name ? 'border-green-500/20' : ''">
+
+                            <!-- Impact header -->
                             <button @click="liveExpanded === impact.team_name ? liveExpanded = null : liveExpanded = impact.team_name"
-                                    class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-750">
-                                <span class="font-semibold" x-text="impact.team_name"></span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xl font-bold text-green-400" x-text="'+' + impact.match_pts"></span>
-                                    <span class="text-xs text-gray-400">pts this match</span>
+                                    class="w-full px-4 py-3 flex items-center gap-3 hover:bg-surface-700/30 transition-colors">
+
+                                <!-- Rank in this match -->
+                                <div class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold"
+                                     :class="iIdx === 0 ? 'bg-green-500/20 text-green-400' : 'bg-surface-700 text-gray-500'"
+                                     x-text="iIdx + 1"></div>
+
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-sm truncate" x-text="impact.team_name"></div>
+                                    <div class="text-[11px] text-gray-500" x-text="impact.players?.length + ' players scored'"></div>
+                                </div>
+
+                                <div class="flex items-center gap-2.5">
+                                    <div class="text-right">
+                                        <div class="text-lg font-extrabold tabular-nums"
+                                             :class="impact.match_pts > 0 ? 'text-green-400' : impact.match_pts < 0 ? 'text-red-400' : 'text-gray-400'"
+                                             x-text="(impact.match_pts > 0 ? '+' : '') + impact.match_pts"></div>
+                                        <div class="text-[10px] text-gray-600">this match</div>
+                                    </div>
+                                    <svg class="w-4 h-4 text-gray-600 transition-transform duration-200"
+                                         :class="liveExpanded === impact.team_name ? 'rotate-180' : ''"
+                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </div>
                             </button>
-                            <div x-show="liveExpanded === impact.team_name" x-collapse class="border-t border-gray-700">
+
+                            <!-- Player breakdown for this match -->
+                            <div x-show="liveExpanded === impact.team_name"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 class="border-t border-gray-800">
                                 <table class="w-full text-sm">
                                     <thead>
-                                        <tr class="text-gray-400 text-xs uppercase">
+                                        <tr class="text-[10px] text-gray-500 uppercase tracking-wider">
                                             <th class="px-4 py-2 text-left">Player</th>
-                                            <th class="px-4 py-2 text-right">Bat</th>
-                                            <th class="px-4 py-2 text-right">Bowl</th>
-                                            <th class="px-4 py-2 text-right">Field</th>
-                                            <th class="px-4 py-2 text-right">Total</th>
+                                            <th class="px-2 py-2 text-right">
+                                                <span class="text-blue-400/70">Bat</span>
+                                            </th>
+                                            <th class="px-2 py-2 text-right">
+                                                <span class="text-purple-400/70">Bowl</span>
+                                            </th>
+                                            <th class="px-2 py-2 text-right">
+                                                <span class="text-yellow-400/70">Field</span>
+                                            </th>
+                                            <th class="px-3 py-2 text-right">Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <template x-for="p in impact.players" :key="p.player_name">
-                                            <tr class="border-t border-gray-700/50">
-                                                <td class="px-4 py-1.5" x-text="p.display_name"></td>
-                                                <td class="px-4 py-1.5 text-right text-blue-400" x-text="p.batting_pts"></td>
-                                                <td class="px-4 py-1.5 text-right text-purple-400" x-text="p.bowling_pts"></td>
-                                                <td class="px-4 py-1.5 text-right text-yellow-400" x-text="p.fielding_pts"></td>
-                                                <td class="px-4 py-1.5 text-right font-bold text-green-400" x-text="p.total_pts"></td>
+                                        <template x-for="(p, pIdx) in impact.players" :key="p.player_name">
+                                            <tr class="player-row border-t border-gray-800/30"
+                                                :class="pIdx === 0 ? 'best-performer' : ''">
+                                                <td class="px-4 py-2">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="font-medium text-[13px]" x-text="p.display_name"></span>
+                                                        <span x-show="pIdx === 0 && impact.players.length > 1"
+                                                              class="text-[9px] font-bold bg-green-500/15 text-green-400 px-1 py-0.5 rounded">BEST</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-2 py-2 text-right tabular-nums"
+                                                    :class="p.batting_pts > 0 ? 'text-blue-400' : p.batting_pts < 0 ? 'text-red-400/70' : 'text-gray-700'"
+                                                    x-text="p.batting_pts || 0"></td>
+                                                <td class="px-2 py-2 text-right tabular-nums"
+                                                    :class="p.bowling_pts > 0 ? 'text-purple-400' : p.bowling_pts < 0 ? 'text-red-400/70' : 'text-gray-700'"
+                                                    x-text="p.bowling_pts || 0"></td>
+                                                <td class="px-2 py-2 text-right tabular-nums"
+                                                    :class="p.fielding_pts > 0 ? 'text-yellow-400' : 'text-gray-700'"
+                                                    x-text="p.fielding_pts || 0"></td>
+                                                <td class="px-3 py-2 text-right font-bold tabular-nums"
+                                                    :class="p.total_pts > 0 ? 'text-green-400' : p.total_pts < 0 ? 'text-red-400' : 'text-gray-500'"
+                                                    x-text="p.total_pts"></td>
                                             </tr>
                                         </template>
                                     </tbody>
@@ -143,14 +524,25 @@
                         </div>
                     </template>
                 </div>
-            </div>
-            <p class="text-center text-gray-600 text-xs mt-4">Auto-refreshes every 30 seconds during matches</p>
-        </div>
 
+                <!-- Auto-refresh notice -->
+                <div class="flex items-center justify-center gap-2 mt-5 text-xs text-gray-600">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span x-text="liveData.match?.status === 'in_progress' ? 'Auto-refreshes every 30s' : 'Pull to refresh'"></span>
+                    <span class="text-gray-700">|</span>
+                    <span x-text="'Updated ' + lastLiveRefresh"></span>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <footer class="text-center text-gray-600 text-xs py-4">
-        IPL 2026 Fantasy League &middot; Top 11 scoring
+    <!-- Footer -->
+    <footer class="text-center text-gray-700 text-[11px] py-6 border-t border-gray-800/50 mt-8">
+        <span>IPL 2026 Fantasy League</span>
+        <span class="mx-1.5">&middot;</span>
+        <span>Top 11 Scoring</span>
     </footer>
 
     <script>
@@ -162,6 +554,11 @@
                 expanded: null,
                 liveExpanded: null,
                 pollInterval: null,
+                loadError: null,
+                liveLoading: false,
+                teamDetailLoading: null,
+                teamDetails: {},      // cache: team_name -> detail from /api/team/
+                lastLiveRefresh: 'never',
 
                 async init() {
                     await this.fetchStandings();
@@ -172,20 +569,99 @@
                 },
 
                 async fetchStandings() {
+                    this.loadError = null;
                     try {
                         const resp = await fetch('/api/standings');
+                        if (!resp.ok) throw new Error('Failed to load');
                         this.standings = await resp.json();
                     } catch (e) {
                         console.error('Failed to fetch standings:', e);
+                        this.loadError = 'Failed to load standings. Check your connection.';
                     }
                 },
 
+                async fetchTeamDetail(teamName) {
+                    if (this.teamDetails[teamName]) return;
+                    this.teamDetailLoading = teamName;
+                    try {
+                        const resp = await fetch('/api/team/' + encodeURIComponent(teamName));
+                        if (!resp.ok) throw new Error('Failed');
+                        const data = await resp.json();
+                        this.teamDetails[teamName] = data;
+                    } catch (e) {
+                        console.error('Failed to fetch team detail:', e);
+                    }
+                    this.teamDetailLoading = null;
+                },
+
+                async toggleTeam(teamName) {
+                    if (this.expanded === teamName) {
+                        this.expanded = null;
+                    } else {
+                        this.expanded = teamName;
+                        await this.fetchTeamDetail(teamName);
+                    }
+                },
+
+                getTeamPlayers(teamName) {
+                    // Use detailed data if available, otherwise fall back to standings
+                    const detail = this.teamDetails[teamName];
+                    if (detail) return detail.players;
+                    const team = this.standings.find(t => t.team_name === teamName);
+                    return team ? team.players : [];
+                },
+
+                getMatchLabels(teamName) {
+                    // Per-match columns from team detail API
+                    // Currently the API doesn't return per-match data, so return empty
+                    // When the API adds match_scores to each player, this will work:
+                    const detail = this.teamDetails[teamName];
+                    if (detail && detail.matches) {
+                        return detail.matches.map(m => m.label);
+                    }
+                    return [];
+                },
+
+                getMatchScore(player, matchLabel) {
+                    // Look up a player's score for a specific match label
+                    if (player.match_scores) {
+                        const ms = player.match_scores.find(s => s.label === matchLabel);
+                        return ms ? ms.pts : null;
+                    }
+                    return null;
+                },
+
+                getSplitPct(player, field) {
+                    const bat = Math.max(0, player.batting_pts || 0);
+                    const bowl = Math.max(0, player.bowling_pts || 0);
+                    const fld = Math.max(0, player.fielding_pts || 0);
+                    const total = bat + bowl + fld;
+                    if (total === 0) return 0;
+                    const val = Math.max(0, player[field] || 0);
+                    return Math.round((val / total) * 100);
+                },
+
                 async fetchLive() {
+                    this.liveLoading = !this.liveData.match; // only show shimmer on first load
                     try {
                         const resp = await fetch('/api/live');
+                        if (!resp.ok) throw new Error('Failed');
                         this.liveData = await resp.json();
+                        const now = new Date();
+                        this.lastLiveRefresh = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     } catch (e) {
                         console.error('Failed to fetch live data:', e);
+                    }
+                    this.liveLoading = false;
+                },
+
+                formatMatchDate(dateStr) {
+                    if (!dateStr) return '';
+                    try {
+                        const d = new Date(dateStr + 'T00:00:00');
+                        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                    } catch {
+                        return dateStr;
                     }
                 },
             };

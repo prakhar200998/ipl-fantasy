@@ -1,159 +1,27 @@
-"""Display name → Cricsheet name mapping."""
+"""Player name mapping between CricketData.org API names and our display names.
 
-NAME_MAP = {
-    "Abhishek Sharma": "Abhishek Sharma",
-    "Shubman Gill": "Shubman Gill",
-    "Jitesh Sharma": "JM Sharma",
-    "Cameron Green": "Cameron Green",
-    "Ravindra Jadeja": "RA Jadeja",
-    "Matt Henry": "Matt Henry",
-    "Khaleel Ahmed": "KK Ahmed",
-    "Ben Duckett": "Ben Duckett",
-    "Quinton de Kock": "Q de Kock",
-    "Jacob Bethell": "JG Bethell",
-    "Zeeshan Ansari": "Zeeshan Ansari",
-    "Sandeep Sharma": "Sandeep Sharma",
-    "Nehal Wadhera": "N Wadhera",
-    "Nitish Rana": "N Rana",
-    "Kartik Tyagi": "Kartik Tyagi",
-    "Jofra Archer": "JC Archer",
-    "Marco Jansen": "M Jansen",
-    "Mitchell Starc": "MA Starc",
-    "Trent Boult": "TA Boult",
-    "Ayush Badoni": "A Badoni",
-    "Kuldeep Yadav": "Kuldeep Yadav",
-    "Riyan Parag": "R Parag",
-    "Prabhsimran Singh": "P Simran Singh",
-    "Mohammed Siraj": "Mohammed Siraj",
-    "Prasidh Krishna": "M Prasidh Krishna",
-    "Pathum Nissanka": "Pathum Nissanka",
-    "Corbin Bosch": "C Bosch",
-    "Mayank Yadav": "MP Yadav",
-    "Devdutt Padikkal": "D Padikkal",
-    "Washington Sundar": "Washington Sundar",
-    "Finn Allen": "Finn Allen",
-    "Vaibhav Arora": "VG Arora",
-    "Sunil Narine": "SP Narine",
-    "Travis Head": "TM Head",
-    "Shreyas Iyer": "SS Iyer",
-    "Sanju Samson": "SV Samson",
-    "KL Rahul": "KL Rahul",
-    "Jason Holder": "Jason Holder",
-    "Josh Hazlewood": "JR Hazlewood",
-    "Bhuvneshwar Kumar": "B Kumar",
-    "Matheesha Pathirana": "M Pathirana",
-    "M Shahrukh Khan": "M Shahrukh Khan",
-    "Prashant Veer": "Prashant Veer",
-    "Jasprit Bumrah": "JJ Bumrah",
-    "Mitchell Marsh": "MR Marsh",
-    "Jos Buttler": "JC Buttler",
-    "Pat Cummins": "PJ Cummins",
-    "Shashank Singh": "Shashank Singh",
-    "Krunal Pandya": "KH Pandya",
-    "Tristan Stubbs": "T Stubbs",
-    "Salil Arora": "Salil Arora",
-    "T Natarajan": "T Natarajan",
-    "Kamindu Mendis": "BKG Mendis",
-    "Tom Banton": "Tom Banton",
-    "Rinku Singh": "RK Singh",
-    "Ishant Sharma": "I Sharma",
-    "Karun Nair": "KK Nair",
-    "Glenn Phillips": "Glenn Phillips",
-    "Swapnil Singh": "Swapnil Singh",
-    "Phil Salt": "PD Salt",
-    "Aiden Markram": "AK Markram",
-    "Sai Sudharsan": "B Sai Sudharsan",
-    "Nicholas Pooran": "N Pooran",
-    "Heinrich Klaasen": "H Klaasen",
-    "Rashid Khan": "Rashid Khan",
-    "Mitchell Santner": "MJ Santner",
-    "Akeal Hosein": "Akeal Hosein",
-    "Rovman Powell": "R Powell",
-    "Mitchell Owen": "MJ Owen",
-    "Donovan Ferreira": "D Ferreira",
-    "Romario Shepherd": "R Shepherd",
-    "Avesh Khan": "Avesh Khan",
-    "Nandre Burger": "Nandre Burger",
-    "Jaydev Unadkat": "JD Unadkat",
-    "Shimron Hetmyer": "SO Hetmyer",
-    "Suryakumar Yadav": "SA Yadav",
-    "Dhruv Jurel": "Dhruv Jurel",
-    "Ajinkya Rahane": "AM Rahane",
-    "Tilak Varma": "Tilak Varma",
-    "Shivam Dube": "S Dube",
-    "Axar Patel": "AR Patel",
-    "Ishan Kishan": "Ishan Kishan",
-    "Ajay Mandal": "Ajay Mandal",
-    "Anrich Nortje": "A Nortje",
-    "Abdul Samad": "Abdul Samad",
-    "Manish Pandey": "MK Pandey",
-    "Rahul Tewatia": "R Tewatia",
-    "Shubham Dubey": "SB Dubey",
-    "Naman Dhir": "Naman Dhir",
-    "David Miller": "DA Miller",
-    "Ryan Rickelton": "RD Rickelton",
-    "Hardik Pandya": "HH Pandya",
-    "Arshdeep Singh": "Arshdeep Singh",
-    "Nitish Kumar Reddy": "Nithish Kumar Reddy",
-    "Rohit Sharma": "RG Sharma",
-    "Vaibhav Sooryavanshi": "V Suryavanshi",
-    "Marcus Stoinis": "MP Stoinis",
-    "Kwena Maphaka": "KT Maphaka",
-    "Ashutosh Sharma": "Ashutosh Sharma",
-    "Tushar Deshpande": "TU Deshpande",
-    "Dushmantha Chameera": "PVD Chameera",
-    "Shivam Mavi": "Shivam Mavi",
-    "Abishek Porel": "Abishek Porel",
-    "Mayank Markande": "Mayank Markande",
-    "Azmatullah Omarzai": "Azmatullah Omarzai",
-    "Virat Kohli": "V Kohli",
-    "Angkrish Raghuvanshi": "A Raghuvanshi",
-    "Dewald Brevis": "D Brevis",
-    "Sherfane Rutherford": "SE Rutherford",
-    "Rajat Patidar": "RM Patidar",
-    "Harshal Patel": "HV Patel",
-    "Will Jacks": "WG Jacks",
-    "Gurnoor Brar": "Gurnoor Brar",
-    "Noor Ahmad": "Noor Ahmad",
-    "Lungi Ngidi": "L Ngidi",
-    "Venkatesh Iyer": "VR Iyer",
-    "Mukesh Kumar": "Mukesh Kumar",
-    "Digvesh Rathi": "DS Rathi",
-    "Suyash Sharma": "Suyash Sharma",
-    "Mohammed Shami": "Mohammed Shami",
-    "Mukesh Choudhary": "Mukesh Choudhary",
-    "Yashasvi Jaiswal": "YBK Jaiswal",
-    "Priyansh Arya": "Priyansh Arya",
-    "Rishabh Pant": "RR Pant",
-    "Ruturaj Gaikwad": "RD Gaikwad",
-    "Varun Chakravarthy": "CV Varun",
-    "Arshad Khan": "Arshad Khan",
-    "Prithvi Shaw": "Prithvi Shaw",
-    "Tim David": "TH David",
-    "Adam Milne": "Adam Milne",
-    "Yuzvendra Chahal": "YS Chahal",
-    "Deepak Chahar": "DL Chahar",
-    "Ravi Bishnoi": "Ravi Bishnoi",
-    "Vipraj Nigam": "V Nigam",
-    "Sai Kishore": "R Sai Kishore",
-    "Mangesh Yadav": "Mangesh Yadav",
-    "Ayush Mhatre": "A Mhatre",
+CricketData.org uses full player names (e.g., "Virat Kohli"), which generally
+match our display names in teams.py. This mapping handles any edge cases where
+the API name differs from what we use internally.
+"""
+
+# API name -> display name (only needed when they differ)
+API_TO_DISPLAY = {
+    # Add entries here if the API returns a different name than teams.py uses
+    # e.g., "Nithish Kumar Reddy": "Nitish Kumar Reddy",
+    "Nithish Kumar Reddy": "Nitish Kumar Reddy",
+    "Vaibhav Suryavanshi": "Vaibhav Sooryavanshi",
 }
 
-
-def get_cricsheet_name(display_name: str) -> str:
-    """Get Cricsheet name for a display name, with fuzzy fallback."""
-    if display_name in NAME_MAP:
-        return NAME_MAP[display_name]
-    # Try reverse lookup (maybe they passed a cricsheet name)
-    if display_name in NAME_MAP.values():
-        return display_name
-    return display_name
+# Reverse: display name -> API name
+DISPLAY_TO_API = {v: k for k, v in API_TO_DISPLAY.items()}
 
 
-def get_display_name(cricsheet_name: str) -> str:
-    """Get display name from Cricsheet name."""
-    for display, cs in NAME_MAP.items():
-        if cs == cricsheet_name:
-            return display
-    return cricsheet_name
+def get_display_name(api_name: str) -> str:
+    """Convert API player name to our display name."""
+    return API_TO_DISPLAY.get(api_name, api_name)
+
+
+def get_api_name(display_name: str) -> str:
+    """Convert our display name to the API player name."""
+    return DISPLAY_TO_API.get(display_name, display_name)

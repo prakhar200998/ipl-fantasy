@@ -1,9 +1,10 @@
-"""Adapter for CricketData.org API (live match data)."""
+"""Adapter for CricketData.org API (live + historical match data)."""
 import httpx
 import logging
 from adapters.base import DataSourceAdapter
 from models import MatchScorecard, BattingEntry, BowlingEntry, FieldingEntry
-from config import CRICKETDATA_API_KEY
+from config import CRICKETDATA_API_KEY, IPL_2026_SERIES_ID
+from name_mapping import get_display_name
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,32 @@ class CricketDataAdapter(DataSourceAdapter):
             return None
 
     def get_match_list(self, season: str) -> list[dict]:
-        """Get current/recent IPL matches."""
+        """Get IPL 2026 matches from the series info endpoint."""
+        data = self._get("series_info", {"id": IPL_2026_SERIES_ID})
+        if not data or "data" not in data:
+            return []
+
+        match_list = data["data"].get("matchList", [])
+        matches = []
+        for m in match_list:
+            if m.get("matchEnded"):
+                status = "complete"
+            elif m.get("matchStarted"):
+                status = "in_progress"
+            else:
+                status = "upcoming"
+            matches.append({
+                "match_id": m["id"],
+                "date": m.get("date", ""),
+                "teams": m.get("teams", []),
+                "venue": m.get("venue", ""),
+                "status": status,
+                "name": m.get("name", ""),
+            })
+        return matches
+
+    def get_current_matches(self) -> list[dict]:
+        """Get currently live matches from currentMatches endpoint."""
         data = self._get("currentMatches", {"offset": 0})
         if not data:
             return []
@@ -38,24 +64,41 @@ class CricketDataAdapter(DataSourceAdapter):
         for m in data.get("data", []):
             if "Indian Premier League" not in m.get("name", ""):
                 continue
+            if m.get("matchEnded"):
+                status = "complete"
+            elif m.get("matchStarted"):
+                status = "in_progress"
+            else:
+                status = "upcoming"
             matches.append({
                 "match_id": m["id"],
                 "date": m.get("date", ""),
                 "teams": m.get("teams", []),
                 "venue": m.get("venue", ""),
-                "status": "in_progress" if m.get("matchStarted") and not m.get("matchEnded") else
-                         "complete" if m.get("matchEnded") else "upcoming",
+                "status": status,
+                "name": m.get("name", ""),
             })
         return matches
 
     def get_scorecard(self, match_id: str) -> MatchScorecard | None:
-        """Fetch scorecard from API and parse into MatchScorecard."""
+        """Fetch scorecard from API and parse into MatchScorecard.
+
+        API response structure:
+          data.scorecard[] — one entry per innings
+            batting[]: batsman.name, r, b, 4s, 6s, sr, dismissal, dismissal-text, bowler.name, catcher.name
+            bowling[]: bowler.name, o, m, r, w, nb, wd, eco
+            catching[]: catcher.name, catch, stumped, runout, cb, lbw, bowled
+          data.matchStarted, data.matchEnded, data.teams[], data.venue, data.date
+        """
         data = self._get("match_scorecard", {"id": match_id})
         if not data or "data" not in data:
             return None
 
         match_data = data["data"]
         scorecard = match_data.get("scorecard", [])
+        if not scorecard:
+            logger.info("No scorecard data for match %s", match_id)
+            return None
 
         playing_xi = set()
         batting = {}
@@ -64,54 +107,139 @@ class CricketDataAdapter(DataSourceAdapter):
         batters_who_batted = set()
 
         for innings_data in scorecard:
-            # Parse batting
+            # --- Parse batting ---
             for b in innings_data.get("batting", []):
-                name = b["batsman"]["name"]
+                name = b.get("batsman", {}).get("name", "")
+                if not name:
+                    continue
                 playing_xi.add(name)
+
+                # "dismissal" key is ABSENT for not-out batsmen
+                dismissal_type = b.get("dismissal", "")
+                is_dismissed = dismissal_type != "" and dismissal_type != "not out"
+
+                runs = b.get("r", 0)
+                balls = b.get("b", 0)
+                fours = b.get("4s", 0)
+                sixes = b.get("6s", 0)
+
                 entry = BattingEntry(
                     player=name,
-                    runs=b.get("r", 0),
-                    balls=b.get("b", 0),
-                    fours=b.get("4s", 0),
-                    sixes=b.get("6s", 0),
-                    dismissed=b.get("dismissal", "") != "not out",
+                    runs=runs,
+                    balls=balls,
+                    fours=fours,
+                    sixes=sixes,
+                    dismissed=is_dismissed,
                 )
-                batting[name] = entry
-                if entry.balls > 0 or entry.runs > 0 or entry.dismissed:
+
+                # Accumulate if player batted in both innings (shouldn't happen in T20, but safe)
+                if name in batting:
+                    existing = batting[name]
+                    existing.runs += runs
+                    existing.balls += balls
+                    existing.fours += fours
+                    existing.sixes += sixes
+                    existing.dismissed = existing.dismissed or is_dismissed
+                else:
+                    batting[name] = entry
+
+                if balls > 0 or runs > 0 or is_dismissed:
                     batters_who_batted.add(name)
 
-            # Parse bowling
+            # --- Parse bowling ---
             for bw in innings_data.get("bowling", []):
-                name = bw["bowler"]["name"]
+                name = bw.get("bowler", {}).get("name", "")
+                if not name:
+                    continue
                 playing_xi.add(name)
+
                 overs_float = bw.get("o", 0)
                 full_overs = int(overs_float)
                 extra_balls = round((overs_float - full_overs) * 10)
                 total_balls = full_overs * 6 + extra_balls
 
-                entry = BowlingEntry(
-                    player=name,
-                    balls=total_balls,
-                    runs=bw.get("r", 0),
-                    wickets=bw.get("w", 0),
-                    dots=0,  # API may not provide dot balls
-                    lbw_bowled=0,  # Need to parse from dismissal strings
-                    overs_detail={},  # Not available from scorecard API
-                )
-                bowling[name] = entry
+                maidens = bw.get("m", 0)
+                runs = bw.get("r", 0)
+                wickets = bw.get("w", 0)
 
-            # Parse fielding from dismissal strings
-            for b in innings_data.get("batting", []):
-                dismissal = b.get("dismissal-text", "") or b.get("dismissal", "")
-                if not dismissal or dismissal == "not out":
+                # Build overs_detail for maiden detection
+                # The API gives us total maidens directly via "m" field
+                # We'll store a synthetic overs_detail so scoring.py can count maidens
+                overs_detail = {}
+                for mi in range(maidens):
+                    overs_detail[f"maiden_{name}_{mi}"] = {"balls": 6, "runs": 0}
+
+                if name in bowling:
+                    existing = bowling[name]
+                    existing.balls += total_balls
+                    existing.runs += runs
+                    existing.wickets += wickets
+                    existing.overs_detail.update(overs_detail)
+                else:
+                    bowling[name] = BowlingEntry(
+                        player=name,
+                        balls=total_balls,
+                        runs=runs,
+                        wickets=wickets,
+                        dots=0,  # API doesn't provide dot balls
+                        lbw_bowled=0,  # Will be populated from catching array
+                        overs_detail=overs_detail,
+                    )
+
+            # --- Parse catching/fielding ---
+            # The catching array includes ALL fielding contributions:
+            # catches, stumpings, runouts, AND bowler's lbw/bowled credits
+            for c in innings_data.get("catching", []):
+                name = c.get("catcher", {}).get("name", "")
+                if not name:
                     continue
-                bowler_name = None
-                # Parse "c Fielder b Bowler" style strings
-                self._parse_dismissal(dismissal, batting, bowling, fielding)
+                playing_xi.add(name)
+
+                catches = c.get("catch", 0)
+                stumpings = c.get("stumped", 0)
+                runouts = c.get("runout", 0)
+                cb = c.get("cb", 0)  # caught and bowled
+                lbw_count = c.get("lbw", 0)
+                bowled_count = c.get("bowled", 0)
+
+                # Caught-and-bowled counts as a catch for the bowler
+                total_catches = catches + cb
+
+                # Add fielding credit for catches, stumpings, runouts
+                if total_catches > 0 or stumpings > 0 or runouts > 0:
+                    if name in fielding:
+                        fielding[name].catches += total_catches
+                        fielding[name].stumpings += stumpings
+                        fielding[name].runouts += runouts
+                    else:
+                        fielding[name] = FieldingEntry(
+                            player=name,
+                            catches=total_catches,
+                            stumpings=stumpings,
+                            runouts=runouts,
+                        )
+
+                # Add lbw/bowled bonus for bowlers
+                lbw_bowled_total = lbw_count + bowled_count + cb
+                if lbw_bowled_total > 0 and name in bowling:
+                    bowling[name].lbw_bowled += lbw_bowled_total
+
+        # Determine match status
+        if match_data.get("matchEnded"):
+            status = "complete"
+        elif match_data.get("matchStarted"):
+            status = "in_progress"
+        else:
+            status = "upcoming"
 
         teams = match_data.get("teams", [])
-        status = "in_progress" if match_data.get("matchStarted") and not match_data.get("matchEnded") else \
-                 "complete" if match_data.get("matchEnded") else "upcoming"
+
+        # Normalize all player names to display names (so they match roster)
+        playing_xi = {get_display_name(n) for n in playing_xi}
+        batting = {get_display_name(k): v for k, v in batting.items()}
+        bowling = {get_display_name(k): v for k, v in bowling.items()}
+        fielding = {get_display_name(k): v for k, v in fielding.items()}
+        batters_who_batted = {get_display_name(n) for n in batters_who_batted}
 
         return MatchScorecard(
             match_id=match_id,
@@ -125,53 +253,3 @@ class CricketDataAdapter(DataSourceAdapter):
             fielding=fielding,
             batters_who_batted=batters_who_batted,
         )
-
-    def _parse_dismissal(self, text: str, batting, bowling, fielding):
-        """Parse dismissal string like 'c Dhoni b Bumrah' into fielding credits."""
-        import re
-        text = text.strip()
-
-        # "c FielderName b BowlerName"
-        caught_match = re.match(r"c (.+?) b (.+)", text)
-        if caught_match:
-            fielder = caught_match.group(1).strip()
-            if fielder not in fielding:
-                fielding[fielder] = FieldingEntry(player=fielder)
-            fielding[fielder].catches += 1
-            # Count lbw/bowled for bowler
-            return
-
-        # "b BowlerName"
-        if text.startswith("b "):
-            bowler = text[2:].strip()
-            if bowler in bowling:
-                bowling[bowler].lbw_bowled += 1
-            return
-
-        # "lbw b BowlerName"
-        if text.startswith("lbw b "):
-            bowler = text[6:].strip()
-            if bowler in bowling:
-                bowling[bowler].lbw_bowled += 1
-            return
-
-        # "st FielderName b BowlerName"
-        st_match = re.match(r"st (.+?) b (.+)", text)
-        if st_match:
-            fielder = st_match.group(1).strip()
-            if fielder not in fielding:
-                fielding[fielder] = FieldingEntry(player=fielder)
-            fielding[fielder].stumpings += 1
-            return
-
-        # "run out (FielderName)"
-        ro_match = re.match(r"run out \((.+?)\)", text)
-        if ro_match:
-            fielder = ro_match.group(1).strip()
-            # Could have multiple fielders separated by /
-            for f in fielder.split("/"):
-                f = f.strip()
-                if f:
-                    if f not in fielding:
-                        fielding[f] = FieldingEntry(player=f)
-                    fielding[f].runouts += 1

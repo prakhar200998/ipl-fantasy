@@ -1,5 +1,4 @@
 """FastAPI app — routes, startup, background poller."""
-import json
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone, timedelta
@@ -10,12 +9,11 @@ from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import database as db
-from adapters.cricsheet import CricsheetAdapter
 from adapters.cricketdata import CricketDataAdapter
 from scoring import calculate_fantasy_points
-from name_mapping import get_cricsheet_name, get_display_name
+from name_mapping import get_display_name
 from config import (
-    CRICSHEET_DATA_DIR, CRICKETDATA_API_KEY, SEASON,
+    CRICKETDATA_API_KEY, SEASON,
     LIVE_POLL_INTERVAL, IDLE_POLL_INTERVAL, ADMIN_SECRET,
     MATCH_START_HOUR_IST, MATCH_END_HOUR_IST,
 )
@@ -32,15 +30,69 @@ def is_match_hours() -> bool:
     return MATCH_START_HOUR_IST <= now_ist.hour < MATCH_END_HOUR_IST
 
 
+def fetch_and_store_completed_matches():
+    """Fetch completed IPL 2026 matches from API and store points. Skips already-stored matches."""
+    if not CRICKETDATA_API_KEY:
+        return
+    adapter = CricketDataAdapter()
+    matches = adapter.get_match_list(SEASON)
+    completed = [m for m in matches if m["status"] == "complete"]
+    logger.info("Found %d completed IPL 2026 matches from API", len(completed))
+
+    # Skip matches already stored as complete
+    conn = db.get_db()
+    stored_complete = {row["match_id"] for row in
+                       conn.execute("SELECT match_id FROM matches WHERE status = 'complete'").fetchall()}
+    conn.close()
+
+    new_matches = [m for m in completed if m["match_id"] not in stored_complete]
+    if not new_matches:
+        logger.info("All completed matches already stored")
+        return
+
+    for match in new_matches:
+        scorecard = adapter.get_scorecard(match["match_id"])
+        if not scorecard:
+            logger.warning("No scorecard for match %s", match.get("name", match["match_id"]))
+            continue
+        points = calculate_fantasy_points(scorecard)
+        db.upsert_match(
+            match["match_id"], match["date"], match["teams"],
+            match["venue"], "complete"
+        )
+        db.bulk_upsert_player_points(match["match_id"], points)
+        logger.info("Stored match: %s", match.get("name", match["match_id"]))
+
+
 def poll_live_matches():
-    """Background job: fetch live match data and update points."""
+    """Background job: fetch live/in-progress match data and update points."""
     if not CRICKETDATA_API_KEY:
         return
     try:
         adapter = CricketDataAdapter()
-        matches = adapter.get_match_list(SEASON)
-        for match in matches:
-            if match["status"] != "in_progress":
+
+        # Check currentMatches for live IPL games
+        live_matches = adapter.get_current_matches()
+
+        # Also check the full series list for newly completed or in-progress matches
+        all_matches = adapter.get_match_list(SEASON)
+        active = [m for m in all_matches if m["status"] in ("in_progress", "complete")]
+
+        # Merge: use live_matches + any active match not already in live_matches
+        seen_ids = {m["match_id"] for m in live_matches}
+        for m in active:
+            if m["match_id"] not in seen_ids:
+                live_matches.append(m)
+
+        # Only process matches that are live OR newly completed (not already stored as complete)
+        conn = db.get_db()
+        stored = {row["match_id"]: row["status"] for row in
+                  conn.execute("SELECT match_id, status FROM matches").fetchall()}
+        conn.close()
+
+        for match in live_matches:
+            # Skip if already stored as complete
+            if stored.get(match["match_id"]) == "complete" and match["status"] == "complete":
                 continue
             scorecard = adapter.get_scorecard(match["match_id"])
             if not scorecard:
@@ -48,10 +100,10 @@ def poll_live_matches():
             points = calculate_fantasy_points(scorecard)
             db.upsert_match(
                 match["match_id"], match["date"], match["teams"],
-                match["venue"], "in_progress"
+                match["venue"], match["status"]
             )
             db.bulk_upsert_player_points(match["match_id"], points)
-            logger.info("Updated live match %s", match["match_id"])
+            logger.info("Updated match %s (status=%s)", match["match_id"], match["status"])
     except Exception as e:
         logger.error("Poll error: %s", e)
 
@@ -59,15 +111,25 @@ def poll_live_matches():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db.init_db()
-    # Seed if empty (only works if Cricsheet data dir exists locally)
-    if db.get_match_count() == 0:
-        import os
-        if os.path.isdir(CRICSHEET_DATA_DIR):
-            logger.info("Empty DB — seeding from Cricsheet files...")
-            from scripts.seed_db import main as seed_main
-            seed_main()
-        else:
-            logger.info("Empty DB and no Cricsheet data dir — skipping seed")
+
+    # Check if teams are seeded
+    conn = db.get_db()
+    team_count = conn.execute("SELECT COUNT(*) as cnt FROM teams").fetchone()["cnt"]
+    conn.close()
+
+    if team_count == 0:
+        logger.info("No teams in DB — seeding teams...")
+        from teams import TEAMS
+        db.seed_teams(TEAMS)
+
+    # Fetch any completed matches we don't have yet
+    if CRICKETDATA_API_KEY:
+        try:
+            fetch_and_store_completed_matches()
+        except Exception as e:
+            logger.error("Startup fetch error (will retry via poller): %s", e)
+
+    logger.info("DB has %d matches", db.get_match_count())
 
     if CRICKETDATA_API_KEY:
         interval = LIVE_POLL_INTERVAL if is_match_hours() else IDLE_POLL_INTERVAL
@@ -177,18 +239,18 @@ async def update_roster(request: Request):
 
     # Remove player
     if body.get("remove_player"):
-        cs_name = get_cricsheet_name(body["remove_player"])
+        player_name = body["remove_player"]
         conn.execute(
             "UPDATE roster SET removed_date = ? WHERE team_id = ? AND player_name = ? AND removed_date IS NULL",
-            (today, team["team_id"], cs_name)
+            (today, team["team_id"], player_name)
         )
 
     # Add player
     if body.get("add_player"):
-        cs_name = get_cricsheet_name(body["add_player"])
+        player_name = body["add_player"]
         conn.execute(
             "INSERT INTO roster (team_id, player_name, added_date) VALUES (?, ?, ?)",
-            (team["team_id"], cs_name, today)
+            (team["team_id"], player_name, today)
         )
 
     conn.commit()
@@ -203,3 +265,46 @@ async def force_refresh(request: Request):
         raise HTTPException(403, "Invalid secret")
     poll_live_matches()
     return {"status": "refreshed"}
+
+
+@app.post("/api/admin/reseed")
+async def reseed(request: Request):
+    """Wipe all match data and re-fetch from API."""
+    body = await request.json()
+    if body.get("secret") != ADMIN_SECRET:
+        raise HTTPException(403, "Invalid secret")
+    db.wipe_match_data()
+    fetch_and_store_completed_matches()
+    return {"status": "reseeded", "matches": db.get_match_count()}
+
+
+@app.get("/api/status")
+async def status():
+    """Health check — shows DB state and API connectivity."""
+    conn = db.get_db()
+    team_count = conn.execute("SELECT COUNT(*) as cnt FROM teams").fetchone()["cnt"]
+    match_count = conn.execute("SELECT COUNT(*) as cnt FROM matches").fetchone()["cnt"]
+    player_pts_count = conn.execute("SELECT COUNT(DISTINCT player_name) as cnt FROM player_match_points").fetchone()["cnt"]
+    matches = conn.execute("SELECT match_id, date, teams_json, status FROM matches ORDER BY date DESC").fetchall()
+    conn.close()
+
+    api_ok = False
+    api_msg = "not tested"
+    if CRICKETDATA_API_KEY:
+        try:
+            adapter = CricketDataAdapter()
+            result = adapter._get("series_info", {"id": "87c62aac-bc3c-4738-ab93-19da0690488f"})
+            api_ok = result is not None
+            api_msg = "ok" if api_ok else "blocked/error"
+        except Exception as e:
+            api_msg = str(e)
+
+    return {
+        "teams": team_count,
+        "matches_stored": match_count,
+        "players_with_points": player_pts_count,
+        "match_list": [{"match_id": m["match_id"], "date": m["date"], "teams": m["teams_json"], "status": m["status"]} for m in matches],
+        "api_key_set": bool(CRICKETDATA_API_KEY),
+        "api_status": api_msg,
+        "poller_running": scheduler.running,
+    }

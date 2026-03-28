@@ -45,7 +45,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS roster (
             team_id INTEGER,
             player_name TEXT,
-            added_date TEXT DEFAULT '2025-01-01',
+            added_date TEXT DEFAULT '2026-01-01',
             removed_date TEXT,
             FOREIGN KEY (team_id) REFERENCES teams(team_id)
         );
@@ -132,6 +132,26 @@ def bulk_upsert_player_points(match_id: str, all_points: dict[str, dict]):
     conn.close()
 
 
+def wipe_match_data():
+    """Delete all match and player_match_points data (keeps teams/roster)."""
+    conn = get_db()
+    conn.execute("DELETE FROM player_match_points")
+    conn.execute("DELETE FROM matches")
+    conn.commit()
+    conn.close()
+
+
+def wipe_all():
+    """Delete ALL data from all tables — full reset."""
+    conn = get_db()
+    conn.execute("DELETE FROM player_match_points")
+    conn.execute("DELETE FROM matches")
+    conn.execute("DELETE FROM roster")
+    conn.execute("DELETE FROM teams")
+    conn.commit()
+    conn.close()
+
+
 def get_standings() -> list[dict]:
     """Get team standings with top-11 scoring."""
     conn = get_db()
@@ -179,6 +199,7 @@ def get_team_detail(team_name: str) -> dict | None:
         conn.close()
         return None
 
+    # Get aggregated player stats
     players = conn.execute("""
         SELECT r.player_name,
                COALESCE(SUM(p.total_pts), 0) as total_pts,
@@ -193,7 +214,50 @@ def get_team_detail(team_name: str) -> dict | None:
         ORDER BY total_pts DESC
     """, (team["team_id"],)).fetchall()
 
-    player_list = [dict(p) for p in players]
+    # Get all matches in chronological order
+    matches = conn.execute("""
+        SELECT match_id, date, teams_json, status
+        FROM matches
+        ORDER BY date ASC, match_id ASC
+    """).fetchall()
+
+    match_list = []
+    for i, m in enumerate(matches):
+        match_list.append({
+            "match_id": m["match_id"],
+            "label": f"M{i + 1}",
+            "date": m["date"],
+            "teams": json.loads(m["teams_json"]),
+        })
+
+    # Get per-match scores for roster players
+    roster_names = [p["player_name"] for p in players]
+    per_match = {}
+    if roster_names:
+        placeholders = ",".join("?" * len(roster_names))
+        rows = conn.execute(f"""
+            SELECT player_name, match_id, total_pts
+            FROM player_match_points
+            WHERE player_name IN ({placeholders})
+        """, roster_names).fetchall()
+        for r in rows:
+            per_match.setdefault(r["player_name"], {})[r["match_id"]] = r["total_pts"]
+
+    # Build match_id -> label map
+    mid_to_label = {m["match_id"]: f"M{i+1}" for i, m in enumerate(matches)}
+
+    player_list = []
+    for p in players:
+        pd = dict(p)
+        # Add per-match scores
+        scores = per_match.get(p["player_name"], {})
+        pd["match_scores"] = [
+            {"label": mid_to_label[mid], "pts": pts}
+            for mid, pts in scores.items()
+            if mid in mid_to_label
+        ]
+        player_list.append(pd)
+
     top11 = player_list[:11]
     top11_total = sum(p["total_pts"] for p in top11)
 
@@ -202,6 +266,7 @@ def get_team_detail(team_name: str) -> dict | None:
         "team_name": team["team_name"],
         "total_pts": top11_total,
         "players": player_list,
+        "matches": match_list,
     }
 
 

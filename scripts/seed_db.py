@@ -1,44 +1,62 @@
 #!/usr/bin/env python3
-"""Seed the database with teams, rosters, and historical match data."""
+"""Seed the database with teams, rosters, and IPL 2026 match data from CricketData.org API."""
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database import init_db, seed_teams, upsert_match, bulk_upsert_player_points
+from database import init_db, seed_teams, wipe_all, upsert_match, bulk_upsert_player_points
 from teams import TEAMS
-from name_mapping import get_cricsheet_name
-from adapters.cricsheet import CricsheetAdapter
+from adapters.cricketdata import CricketDataAdapter
 from scoring import calculate_fantasy_points
-from config import CRICSHEET_DATA_DIR, SEASON
+from config import SEASON
 
 
 def main():
     print("Initializing database...")
     init_db()
 
-    # Seed teams with cricsheet names in roster
+    print("Wiping old data...")
+    wipe_all()
+
+    # Seed teams — use display names directly (CricketData.org uses full names)
     print(f"Seeding {len(TEAMS)} teams...")
-    teams_with_cs_names = {}
-    for team_name, players in TEAMS.items():
-        teams_with_cs_names[team_name] = [get_cricsheet_name(p) for p in players]
-    seed_teams(teams_with_cs_names)
+    seed_teams(TEAMS)
 
-    # Process historical matches
-    adapter = CricsheetAdapter(CRICSHEET_DATA_DIR)
+    # Fetch IPL 2026 matches from CricketData.org API
+    adapter = CricketDataAdapter()
     matches = adapter.get_match_list(SEASON)
-    print(f"Found {len(matches)} matches for season {SEASON}")
+    completed = [m for m in matches if m["status"] == "complete"]
+    in_progress = [m for m in matches if m["status"] == "in_progress"]
 
-    for i, match in enumerate(matches):
+    print(f"Found {len(matches)} total IPL 2026 matches")
+    print(f"  {len(completed)} completed, {len(in_progress)} in progress, {len(matches) - len(completed) - len(in_progress)} upcoming")
+
+    # Process completed matches
+    processed = 0
+    for match in completed:
         scorecard = adapter.get_scorecard(match["match_id"])
         if not scorecard:
+            print(f"  SKIP (no scorecard): {match.get('name', match['match_id'])}")
             continue
         points = calculate_fantasy_points(scorecard)
         upsert_match(match["match_id"], match["date"], match["teams"], match["venue"], "complete")
         bulk_upsert_player_points(match["match_id"], points)
-        if (i + 1) % 10 == 0:
-            print(f"  Processed {i + 1}/{len(matches)} matches...")
+        processed += 1
+        print(f"  OK: {match.get('name', match['match_id'])}")
 
-    print(f"Done! Seeded {len(matches)} matches.")
+    # Process in-progress matches
+    for match in in_progress:
+        scorecard = adapter.get_scorecard(match["match_id"])
+        if not scorecard:
+            print(f"  SKIP (no scorecard): {match.get('name', match['match_id'])}")
+            continue
+        points = calculate_fantasy_points(scorecard)
+        upsert_match(match["match_id"], match["date"], match["teams"], match["venue"], "in_progress")
+        bulk_upsert_player_points(match["match_id"], points)
+        processed += 1
+        print(f"  OK (live): {match.get('name', match['match_id'])}")
+
+    print(f"\nDone! Processed {processed} matches with scorecards.")
 
 
 if __name__ == "__main__":

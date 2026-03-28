@@ -2,7 +2,10 @@
 import os
 
 # CricketData.org API
-CRICKETDATA_API_KEY = os.environ.get("CRICKETDATA_API_KEY", "")
+CRICKETDATA_API_KEY = os.environ.get("CRICKETDATA_API_KEY", "67ece779-66b8-43ef-84a7-a6ae6a0afff3")
+
+# IPL 2026 series ID on CricketData.org
+IPL_2026_SERIES_ID = "87c62aac-bc3c-4738-ab93-19da0690488f"
 
 # Polling intervals (seconds)
 LIVE_POLL_INTERVAL = 60        # During match hours
@@ -15,11 +18,8 @@ MATCH_END_HOUR_IST = 24
 # Database
 DB_PATH = os.environ.get("DB_PATH", "data/fantasy.db")
 
-# Cricsheet data directory (for historical/testing)
-CRICSHEET_DATA_DIR = os.environ.get("CRICSHEET_DATA_DIR", "/Users/prakharbhandari/Desktop/ipl_json")
-
 # Admin secret for roster updates
 ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "changeme")
 
 # Season filter
-SEASON = os.environ.get("SEASON", "2025")
+SEASON = os.environ.get("SEASON", "2026")
