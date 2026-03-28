@@ -975,10 +975,9 @@
                             <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 500;">Leader</span>
                             <span class="gradient-text" style="font-weight: 800; font-size: 0.9rem;" x-text="standings[0]?.team_name"></span>
                         </div>
-                        <div class="tooltip-trigger card-flat" style="padding: 10px 16px; display: flex; align-items: center; gap: 8px;">
+                        <div class="card-flat" style="padding: 10px 16px; display: flex; align-items: center; gap: 8px;" title="Only the best 11 players' points count toward the team total">
                             <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 500;">Top Score</span>
                             <span style="font-weight: 800; font-size: 0.9rem; color: var(--gold);" x-text="standings[0]?.total_pts + ' pts'"></span>
-                            <span class="tooltip-text">Only the best 11 players' points count toward the team total</span>
                         </div>
                     </div>
 
@@ -1321,10 +1320,9 @@
                                     <div>
                                         <!-- Summary stats row -->
                                         <div style="padding: 0 20px 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-                                            <div class="tooltip-trigger" style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;">
+                                            <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;" title="Sum of the 11 highest-scoring players on the roster">
                                                 <span style="color: var(--text-muted);">Top 11 Scoring</span>
                                                 <span style="font-weight: 700; margin-left: 6px;" x-text="team.total_pts + ' pts'"></span>
-                                                <span class="tooltip-text">Sum of the 11 highest-scoring players on the roster</span>
                                             </div>
                                             <template x-if="teamDetail.matches?.length">
                                                 <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;">
@@ -1332,11 +1330,10 @@
                                                     <span style="font-weight: 700; margin-left: 6px;" x-text="teamDetail.matches.length"></span>
                                                 </div>
                                             </template>
-                                            <div class="tooltip-trigger" style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;">
+                                            <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;" title="Average team points per match (top 11 total / matches played)">
                                                 <span style="color: var(--text-muted);">Avg Score</span>
                                                 <span style="font-weight: 700; margin-left: 6px;"
                                                       x-text="teamDetail.matches?.length ? Math.round(team.total_pts / teamDetail.matches.length) + ' pts/match' : 'N/A'"></span>
-                                                <span class="tooltip-text">Average team points per match (top 11 total / matches played)</span>
                                             </div>
                                         </div>
 
@@ -1377,16 +1374,10 @@
                                                                         <div style="display: flex; align-items: center; gap: 0; flex-wrap: nowrap;">
                                                                             <span style="font-weight: 600; font-size: 0.8rem;" x-text="player.display_name || player.player_name"></span>
                                                                             <template x-if="getPlayerDesignation(team.team_name, player.player_name) === 'C'">
-                                                                                <span class="tooltip-trigger">
-                                                                                    <span class="badge-c">C</span>
-                                                                                    <span class="tooltip-text">Captain: 2x points</span>
-                                                                                </span>
+                                                                                <span class="badge-c" title="Captain: 2x points">C</span>
                                                                             </template>
                                                                             <template x-if="getPlayerDesignation(team.team_name, player.player_name) === 'VC'">
-                                                                                <span class="tooltip-trigger">
-                                                                                    <span class="badge-vc">VC</span>
-                                                                                    <span class="tooltip-text">Vice Captain: 1.5x points</span>
-                                                                                </span>
+                                                                                <span class="badge-vc" title="Vice Captain: 1.5x points">VC</span>
                                                                             </template>
                                                                         </div>
                                                                         <div style="font-size: 0.6rem; color: var(--text-dimmed); margin-top: 1px;"
@@ -1416,13 +1407,12 @@
                                                             <!-- Split bar -->
                                                             <td class="hide-mobile">
                                                                 <template x-if="player.total_pts > 0">
-                                                                    <div class="tooltip-trigger">
+                                                                    <div :title="'Bat: ' + (player.batting_pts || 0) + ' | Bowl: ' + (player.bowling_pts || 0) + ' | Field: ' + (player.fielding_pts || 0)">
                                                                         <div class="split-bar">
                                                                             <div class="split-bat" :style="'width: ' + getSplitPct(player, 'batting_pts') + '%'"></div>
                                                                             <div class="split-bowl" :style="'width: ' + getSplitPct(player, 'bowling_pts') + '%'"></div>
                                                                             <div class="split-field" :style="'width: ' + getSplitPct(player, 'fielding_pts') + '%'"></div>
                                                                         </div>
-                                                                        <span class="tooltip-text" x-text="'Bat: ' + (player.batting_pts || 0) + ' | Bowl: ' + (player.bowling_pts || 0) + ' | Field: ' + (player.fielding_pts || 0)"></span>
                                                                     </div>
                                                                 </template>
                                                                 <template x-if="player.total_pts <= 0">
