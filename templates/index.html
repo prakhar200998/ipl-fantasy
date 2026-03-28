@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPL 2026 Fantasy League</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen" x-data="fantasyApp()" x-init="init()">
+
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-orange-400">IPL Fantasy League</h1>
+            <nav class="flex gap-1">
+                <button @click="tab = 'standings'" :class="tab === 'standings' ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'" class="px-4 py-1.5 rounded text-sm font-medium transition-colors">Standings</button>
+                <button @click="tab = 'live'; fetchLive()" :class="tab === 'live' ? 'bg-orange-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'" class="px-4 py-1.5 rounded text-sm font-medium transition-colors">Live</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6">
+
+        <!-- Standings Tab -->
+        <div x-show="tab === 'standings'" x-cloak>
+            <div class="space-y-3">
+                <template x-for="(team, idx) in standings" :key="team.team_name">
+                    <div class="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                        <!-- Team row -->
+                        <button @click="expanded === team.team_name ? expanded = null : expanded = team.team_name"
+                                class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-750 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl font-bold w-8 text-center"
+                                      :class="idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-400' : idx === 2 ? 'text-orange-600' : 'text-gray-500'"
+                                      x-text="'#' + (idx + 1)"></span>
+                                <div class="text-left">
+                                    <div class="font-semibold text-lg" x-text="team.team_name"></div>
+                                    <div class="text-xs text-gray-400" x-text="team.players.length + ' players'"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-orange-400" x-text="team.total_pts.toLocaleString()"></div>
+                                    <div class="text-xs text-gray-400">Top 11 pts</div>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="expanded === team.team_name ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </button>
+
+                        <!-- Player detail -->
+                        <div x-show="expanded === team.team_name" x-collapse class="border-t border-gray-700">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-gray-400 text-xs uppercase">
+                                        <th class="px-4 py-2 text-left">#</th>
+                                        <th class="px-4 py-2 text-left">Player</th>
+                                        <th class="px-4 py-2 text-right">M</th>
+                                        <th class="px-4 py-2 text-right">Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(p, pidx) in team.players" :key="p.player_name">
+                                        <tr :class="pidx < 11 ? 'bg-gray-800' : 'bg-gray-850 text-gray-500'" class="border-t border-gray-700/50">
+                                            <td class="px-4 py-1.5">
+                                                <span x-text="pidx + 1" :class="pidx < 11 ? 'text-orange-400 font-medium' : ''"></span>
+                                            </td>
+                                            <td class="px-4 py-1.5" x-text="p.display_name"></td>
+                                            <td class="px-4 py-1.5 text-right text-gray-400" x-text="p.matches_played"></td>
+                                            <td class="px-4 py-1.5 text-right font-medium" :class="pidx < 11 ? 'text-green-400' : 'text-gray-500'" x-text="p.total_pts"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <p x-show="standings.length === 0" class="text-center text-gray-500 py-8">Loading standings...</p>
+        </div>
+
+        <!-- Live Tab -->
+        <div x-show="tab === 'live'" x-cloak>
+            <div x-show="!liveData.match" class="text-center text-gray-500 py-8">
+                No live match data available.
+            </div>
+            <div x-show="liveData.match">
+                <!-- Match card -->
+                <div class="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="text-sm text-gray-400" x-text="liveData.match?.date"></div>
+                            <div class="font-semibold" x-text="(liveData.match?.teams || []).join(' vs ')"></div>
+                            <div class="text-sm text-gray-400" x-text="liveData.match?.venue"></div>
+                        </div>
+                        <div>
+                            <span class="px-2 py-1 rounded text-xs font-medium"
+                                  :class="liveData.match?.status === 'in_progress' ? 'bg-green-500/20 text-green-400' : 'bg-gray-600/30 text-gray-400'"
+                                  x-text="liveData.match?.status === 'in_progress' ? 'LIVE' : liveData.match?.status?.toUpperCase()"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team impacts -->
+                <div class="space-y-3">
+                    <template x-for="impact in liveData.team_impacts" :key="impact.team_name">
+                        <div class="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                            <button @click="liveExpanded === impact.team_name ? liveExpanded = null : liveExpanded = impact.team_name"
+                                    class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-750">
+                                <span class="font-semibold" x-text="impact.team_name"></span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl font-bold text-green-400" x-text="'+' + impact.match_pts"></span>
+                                    <span class="text-xs text-gray-400">pts this match</span>
+                                </div>
+                            </button>
+                            <div x-show="liveExpanded === impact.team_name" x-collapse class="border-t border-gray-700">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="text-gray-400 text-xs uppercase">
+                                            <th class="px-4 py-2 text-left">Player</th>
+                                            <th class="px-4 py-2 text-right">Bat</th>
+                                            <th class="px-4 py-2 text-right">Bowl</th>
+                                            <th class="px-4 py-2 text-right">Field</th>
+                                            <th class="px-4 py-2 text-right">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="p in impact.players" :key="p.player_name">
+                                            <tr class="border-t border-gray-700/50">
+                                                <td class="px-4 py-1.5" x-text="p.display_name"></td>
+                                                <td class="px-4 py-1.5 text-right text-blue-400" x-text="p.batting_pts"></td>
+                                                <td class="px-4 py-1.5 text-right text-purple-400" x-text="p.bowling_pts"></td>
+                                                <td class="px-4 py-1.5 text-right text-yellow-400" x-text="p.fielding_pts"></td>
+                                                <td class="px-4 py-1.5 text-right font-bold text-green-400" x-text="p.total_pts"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <p class="text-center text-gray-600 text-xs mt-4">Auto-refreshes every 30 seconds during matches</p>
+        </div>
+
+    </main>
+
+    <footer class="text-center text-gray-600 text-xs py-4">
+        IPL 2026 Fantasy League &middot; Top 11 scoring
+    </footer>
+
+    <script>
+        function fantasyApp() {
+            return {
+                tab: 'standings',
+                standings: [],
+                liveData: { match: null, team_impacts: [] },
+                expanded: null,
+                liveExpanded: null,
+                pollInterval: null,
+
+                async init() {
+                    await this.fetchStandings();
+                    // Auto-poll live data every 30s
+                    this.pollInterval = setInterval(() => {
+                        if (this.tab === 'live') this.fetchLive();
+                    }, 30000);
+                },
+
+                async fetchStandings() {
+                    try {
+                        const resp = await fetch('/api/standings');
+                        this.standings = await resp.json();
+                    } catch (e) {
+                        console.error('Failed to fetch standings:', e);
+                    }
+                },
+
+                async fetchLive() {
+                    try {
+                        const resp = await fetch('/api/live');
+                        this.liveData = await resp.json();
+                    } catch (e) {
+                        console.error('Failed to fetch live data:', e);
+                    }
+                },
+            };
+        }
+    </script>
+</body>
+</html>
