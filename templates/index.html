@@ -13,25 +13,92 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-                    colors: {
-                        surface: { 900: '#0a0e17', 800: '#111827', 700: '#1a2236', 600: '#243049' },
-                        accent: { DEFAULT: '#f97316', light: '#fb923c', dark: '#ea580c' },
-                        ipl: { blue: '#1e40af', purple: '#7c3aed' },
-                    },
                 },
             },
         }
     </script>
     <style>
+        /* ================================================================
+           CSS CUSTOM PROPERTIES — THEME
+           ================================================================ */
+        :root {
+            --bg-base: #0a0e17;
+            --bg-card: #0f1523;
+            --bg-card-hover: #131a2b;
+            --bg-elevated: #162033;
+            --bg-surface: #1a2640;
+            --bg-input: #111827;
+
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-medium: rgba(255,255,255,0.1);
+            --border-accent: rgba(249,115,22,0.3);
+            --border-glow: rgba(249,115,22,0.5);
+
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-dimmed: #475569;
+
+            --accent: #f97316;
+            --accent-light: #fb923c;
+            --accent-dark: #ea580c;
+            --gold: #fbbf24;
+            --gold-dark: #d97706;
+            --silver: #9ca3af;
+            --bronze: #cd7f32;
+
+            --role-bat: #3b82f6;
+            --role-bowl: #8b5cf6;
+            --role-ar: #22c55e;
+            --role-wk: #f59e0b;
+
+            --glass-bg: rgba(15, 21, 35, 0.7);
+            --glass-border: rgba(255,255,255,0.08);
+
+            --anim-fast: 150ms;
+            --anim-med: 300ms;
+            --anim-slow: 500ms;
+        }
+
+        /* ================================================================
+           RESET & BASE
+           ================================================================ */
         [x-cloak] { display: none !important; }
-        body { font-family: 'Inter', system-ui, sans-serif; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            margin: 0;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #111827; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        /* ================================================================
+           SCROLLBAR
+           ================================================================ */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 
-        /* Gradient text */
+        /* ================================================================
+           BACKGROUND PATTERN
+           ================================================================ */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse 800px 600px at 20% 10%, rgba(249,115,22,0.04), transparent),
+                radial-gradient(ellipse 600px 400px at 80% 80%, rgba(59,130,246,0.03), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ================================================================
+           TYPOGRAPHY
+           ================================================================ */
         .gradient-text {
             background: linear-gradient(135deg, #f97316, #fb923c, #fbbf24);
             -webkit-background-clip: text;
@@ -39,633 +106,2120 @@
             background-clip: text;
         }
 
-        /* Glow effect */
-        .glow-orange { box-shadow: 0 0 20px rgba(249, 115, 22, 0.15); }
-        .glow-green { box-shadow: 0 0 12px rgba(34, 197, 94, 0.2); }
-
-        /* Animated live dot */
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.5); }
-        }
-        .live-dot { animation: livePulse 1.5s ease-in-out infinite; }
-
-        /* Shimmer loading */
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        .shimmer {
-            background: linear-gradient(90deg, #1a2236 25%, #243049 50%, #1a2236 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
+        .heading-xl {
+            font-size: clamp(1.5rem, 4vw, 2.25rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
         }
 
-        /* Smooth collapse */
-        .collapse-enter { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease; }
-        .collapse-enter-active { max-height: 2000px; opacity: 1; }
+        .heading-lg {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
 
-        /* Score split bar */
-        .split-bar { height: 4px; border-radius: 2px; overflow: hidden; }
+        .heading-md {
+            font-size: clamp(0.95rem, 2vw, 1.125rem);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
 
-        /* Rank badges */
-        .rank-gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #78350f; }
-        .rank-silver { background: linear-gradient(135deg, #d1d5db, #9ca3af); color: #1f2937; }
-        .rank-bronze { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; }
+        .text-xs-tight {
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
 
-        /* Player row hover */
-        .player-row { transition: background-color 0.15s ease; }
-        .player-row:hover { background-color: rgba(249, 115, 22, 0.05); }
+        /* ================================================================
+           GLASS EFFECTS
+           ================================================================ */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
 
-        /* Tab indicator */
-        .tab-active { position: relative; }
-        .tab-active::after {
+        .glass-strong {
+            background: rgba(15, 21, 35, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* ================================================================
+           CARDS
+           ================================================================ */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            transition: all var(--anim-med) cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(135deg, transparent, transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            transition: background var(--anim-med);
+            pointer-events: none;
+        }
+
+        .card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-medium);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(249,115,22,0.1);
+        }
+
+        .card:hover::before {
+            background: linear-gradient(135deg, rgba(249,115,22,0.3), rgba(251,191,36,0.1), transparent);
+        }
+
+        .card-flat {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+        }
+
+        /* ================================================================
+           RANK BADGES
+           ================================================================ */
+        .rank-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #451a03;
+            box-shadow: 0 0 20px rgba(251,191,36,0.3);
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #d1d5db, #9ca3af);
+            color: #1f2937;
+            box-shadow: 0 0 16px rgba(156,163,175,0.2);
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: #fff;
+            box-shadow: 0 0 16px rgba(217,119,6,0.2);
+        }
+
+        .rank-default {
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* ================================================================
+           ROLE PILLS
+           ================================================================ */
+        .role-pill {
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1.6;
+            display: inline-block;
+        }
+
+        .role-bat { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .role-bowl { background: rgba(139,92,246,0.15); color: #a78bfa; }
+        .role-ar { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .role-wk { background: rgba(245,158,11,0.15); color: #fbbf24; }
+
+        /* ================================================================
+           C / VC BADGES
+           ================================================================ */
+        .badge-c {
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #451a03;
+            letter-spacing: 0.02em;
+            line-height: 1.5;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+
+        .badge-vc {
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #d1d5db, #9ca3af);
+            color: #1f2937;
+            letter-spacing: 0.02em;
+            line-height: 1.5;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+
+        /* ================================================================
+           MULTIPLIER BADGE
+           ================================================================ */
+        .multiplier-badge {
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 0px 4px;
+            border-radius: 3px;
+            background: rgba(249,115,22,0.15);
+            color: var(--accent);
+            margin-left: 4px;
+        }
+
+        /* ================================================================
+           SPLIT BAR
+           ================================================================ */
+        .split-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-surface);
+            overflow: hidden;
+            display: flex;
+            min-width: 80px;
+        }
+
+        .split-bat { background: var(--role-bat); border-radius: 3px 0 0 3px; }
+        .split-bowl { background: var(--role-bowl); }
+        .split-field { background: var(--role-wk); border-radius: 0 3px 3px 0; }
+
+        /* ================================================================
+           TABS
+           ================================================================ */
+        .tab-btn {
+            position: relative;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            border-radius: 10px;
+            transition: all var(--anim-fast);
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+            background: rgba(249,115,22,0.1);
+            box-shadow: 0 0 0 1px rgba(249,115,22,0.2);
+        }
+
+        .tab-btn.active::after {
             content: '';
             position: absolute;
             bottom: -1px;
-            left: 0;
-            right: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
             height: 2px;
-            background: linear-gradient(90deg, #f97316, #fbbf24);
+            background: var(--accent);
             border-radius: 1px;
         }
 
-        /* Match score horizontal scroll on mobile */
-        .match-scroll { -webkit-overflow-scrolling: touch; }
-        .match-scroll::-webkit-scrollbar { height: 4px; }
+        /* ================================================================
+           ACCORDION
+           ================================================================ */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-        /* Dimmed player */
-        .player-dimmed { opacity: 0.45; }
+        .accordion-content.open {
+            max-height: 3000px;
+        }
 
-        /* Card hover */
-        .team-card { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-        .team-card:hover { border-color: rgba(249, 115, 22, 0.3); }
+        .accordion-chevron {
+            transition: transform var(--anim-med) cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-        /* Best performer glow */
-        .best-performer {
-            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(251, 191, 36, 0.05));
+        .accordion-chevron.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* ================================================================
+           SHIMMER / LOADING
+           ================================================================ */
+        @keyframes shimmer {
+            0% { background-position: -400px 0; }
+            100% { background-position: 400px 0; }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg,
+                var(--bg-card) 25%,
+                var(--bg-elevated) 50%,
+                var(--bg-card) 75%
+            );
+            background-size: 800px 100%;
+            animation: shimmer 1.5s infinite ease-in-out;
+            border-radius: 8px;
+        }
+
+        /* ================================================================
+           PULSE LIVE
+           ================================================================ */
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: livePulse 1.5s infinite;
+            display: inline-block;
+        }
+
+        .live-ring {
+            position: relative;
+        }
+
+        .live-ring::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(239,68,68,0.4);
+            animation: livePulse 1.5s infinite;
+        }
+
+        /* ================================================================
+           FIRE / ON FIRE BADGE
+           ================================================================ */
+        @keyframes fireGlow {
+            0%, 100% { box-shadow: 0 0 8px rgba(249,115,22,0.4); }
+            50% { box-shadow: 0 0 20px rgba(249,115,22,0.7); }
+        }
+
+        .on-fire {
+            animation: fireGlow 2s infinite;
+            background: linear-gradient(135deg, rgba(249,115,22,0.2), rgba(239,68,68,0.15));
+            border: 1px solid rgba(249,115,22,0.3);
+        }
+
+        .fire-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        /* ================================================================
+           AWARD CARDS
+           ================================================================ */
+        .award-card {
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--anim-med);
+        }
+
+        .award-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .award-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 100px; height: 100px;
+            border-radius: 0 0 0 100px;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        .award-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        /* ================================================================
+           TOOLTIP
+           ================================================================ */
+        .tooltip-trigger {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip-trigger .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            z-index: 50;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: var(--text-primary);
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-medium);
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            transition: opacity var(--anim-fast), visibility var(--anim-fast);
+            pointer-events: none;
+        }
+
+        .tooltip-trigger .tooltip-text::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1e293b;
+        }
+
+        .tooltip-trigger:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* ================================================================
+           PLAYER TABLE
+           ================================================================ */
+        .player-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .player-table thead th {
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            z-index: 5;
+            white-space: nowrap;
+        }
+
+        .player-table thead th:first-child { padding-left: 16px; }
+
+        .player-table tbody tr {
+            transition: background var(--anim-fast);
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+
+        .player-table tbody tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .player-table tbody td {
+            padding: 8px 10px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .player-table tbody td:first-child { padding-left: 16px; }
+
+        .player-dimmed {
+            opacity: 0.35;
+        }
+
+        .player-dimmed:hover {
+            opacity: 0.6;
+        }
+
+        /* Match score cells */
+        .match-cell {
+            font-size: 0.7rem;
+            font-weight: 600;
+            min-width: 36px;
+            text-align: center;
+            padding: 4px 6px !important;
+        }
+
+        .match-cell.positive { color: #4ade80; }
+        .match-cell.negative { color: #f87171; }
+        .match-cell.neutral { color: var(--text-muted); }
+
+        /* ================================================================
+           STATUS BADGE
+           ================================================================ */
+        .status-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #f87171;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-completed {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.25);
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #4ade80;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* ================================================================
+           NUMBER ANIMATION
+           ================================================================ */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: countUp 0.4s ease-out forwards;
+        }
+
+        /* ================================================================
+           BEST XI GLOW
+           ================================================================ */
+        .xi-gold-glow {
+            box-shadow: 0 0 20px rgba(251,191,36,0.15);
+            border-color: rgba(251,191,36,0.3) !important;
+        }
+
+        /* ================================================================
+           RESPONSIVE TABLE CONTAINER
+           ================================================================ */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Hide split bar and avg on mobile */
+        @media (max-width: 768px) {
+            .hide-mobile { display: none !important; }
+            .tab-btn { padding: 8px 14px; font-size: 0.8rem; }
+            .rank-badge { width: 30px; height: 30px; font-size: 0.75rem; }
+            .player-table { font-size: 0.75rem; }
+            .player-table thead th, .player-table tbody td { padding: 6px 6px; }
+            .card { border-radius: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .heading-xl { font-size: 1.3rem; }
+            .match-cell { min-width: 28px; font-size: 0.6rem; padding: 3px 3px !important; }
+        }
+
+        /* ================================================================
+           COMPLETED BADGE (Green)
+           ================================================================ */
+        .badge-completed {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: rgba(34,197,94,0.12);
+            border: 1px solid rgba(34,197,94,0.25);
+            color: #4ade80;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ================================================================
+           POINTS HIGHLIGHT
+           ================================================================ */
+        .pts-highlight {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+        }
+
+        /* ================================================================
+           FADE IN STAGGER
+           ================================================================ */
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stagger-in {
+            opacity: 0;
+            animation: fadeSlideIn 0.4s ease-out forwards;
+        }
+
+        /* ================================================================
+           ERROR STATE
+           ================================================================ */
+        .error-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .retry-btn {
+            padding: 10px 24px;
+            border-radius: 10px;
+            background: var(--accent);
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all var(--anim-fast);
+        }
+
+        .retry-btn:hover {
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+        }
+
+        /* ================================================================
+           HEADER BAR
+           ================================================================ */
+        .header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: rgba(10, 14, 23, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        /* ================================================================
+           FOOTER
+           ================================================================ */
+        .footer-text {
+            color: var(--text-dimmed);
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 24px 0 32px;
+        }
+
+        /* Subtle link style */
+        .subtle-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color var(--anim-fast);
+        }
+        .subtle-link:hover { color: var(--accent-light); }
+
+        /* ================================================================
+           BEST XI NUMBER
+           ================================================================ */
+        .xi-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        /* ================================================================
+           SCORE CELL COLORS
+           ================================================================ */
+        .score-excellent { color: #4ade80; font-weight: 700; }
+        .score-good { color: #86efac; }
+        .score-ok { color: var(--text-secondary); }
+        .score-bad { color: #fca5a5; }
+        .score-terrible { color: #f87171; font-weight: 700; }
+
+        /* ================================================================
+           POINT CHANGE FLASH ANIMATIONS (Live polling)
+           ================================================================ */
+        @keyframes flashUp {
+            0% { background: rgba(74,222,128,0.3); }
+            100% { background: transparent; }
+        }
+        @keyframes flashDown {
+            0% { background: rgba(248,113,113,0.3); }
+            100% { background: transparent; }
+        }
+        .pts-flash-up { animation: flashUp 1.5s ease-out; }
+        .pts-flash-down { animation: flashDown 1.5s ease-out; }
+
+        /* ================================================================
+           H2H FORM ELEMENTS
+           ================================================================ */
+        .h2h-select {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-weight: 500;
+            outline: none;
+            transition: border-color var(--anim-fast), box-shadow var(--anim-fast);
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            min-width: 140px;
+        }
+        .h2h-select:focus {
+            border-color: var(--border-accent);
+            box-shadow: 0 0 0 2px rgba(249,115,22,0.15);
+        }
+        .h2h-compare-btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            background: var(--accent);
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            transition: all var(--anim-fast);
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .h2h-compare-btn:hover:not(:disabled) {
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+        }
+        .h2h-compare-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
     </style>
 </head>
-<body class="bg-surface-900 text-gray-100 min-h-screen" x-data="fantasyApp()" x-init="init()">
+<body x-data="fantasyApp()" x-init="init()" x-cloak>
 
-    <!-- Header -->
-    <header class="bg-surface-800/80 backdrop-blur-lg border-b border-gray-800 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 py-3">
-            <div class="flex items-center justify-between">
-                <!-- Logo -->
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center font-black text-sm text-white shadow-lg">F</div>
-                    <div>
-                        <h1 class="text-base font-bold tracking-tight gradient-text leading-tight">IPL Fantasy 2026</h1>
-                        <p class="text-[10px] text-gray-500 font-medium tracking-wide uppercase">Top 11 Scoring</p>
-                    </div>
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
+    <header class="header-bar">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #f97316, #fbbf24); display: flex; align-items: center; justify-content: center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#451a03" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
                 </div>
-
-                <!-- Tabs -->
-                <nav class="flex bg-surface-700 rounded-lg p-0.5 gap-0.5">
-                    <button @click="tab = 'standings'"
-                            :class="tab === 'standings' ? 'bg-orange-500/90 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'"
-                            class="px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200">
-                        Standings
-                    </button>
-                    <button @click="tab = 'live'; fetchLive()"
-                            :class="tab === 'live' ? 'bg-orange-500/90 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'"
-                            class="px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 flex items-center gap-1.5">
-                        <span x-show="liveData.match?.status === 'in_progress'" class="w-1.5 h-1.5 rounded-full bg-green-400 live-dot"></span>
-                        Live
-                    </button>
-                </nav>
+                <div>
+                    <div class="gradient-text" style="font-weight: 900; font-size: clamp(0.9rem, 2.5vw, 1.1rem); letter-spacing: -0.02em; line-height: 1.1;">IPL 2026</div>
+                    <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;">Fantasy League</div>
+                </div>
             </div>
+
+            <!-- Tabs -->
+            <nav style="display: flex; gap: 4px; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 3px;">
+                <button class="tab-btn" :class="{ active: tab === 'standings' }" @click="tab = 'standings'">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 4 6-10"/></svg>
+                        Standings
+                    </span>
+                </button>
+                <button class="tab-btn" :class="{ active: tab === 'awards' }" @click="tab = 'awards'; loadAwards()">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                        Awards
+                    </span>
+                </button>
+                <button class="tab-btn" :class="{ active: tab === 'live' }" @click="tab = 'live'; loadLive()">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <template x-if="liveData?.match?.status === 'in_progress'">
+                            <span class="live-dot" style="width: 6px; height: 6px;"></span>
+                        </template>
+                        <svg x-show="!liveData?.match?.status || liveData?.match?.status !== 'in_progress'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                        Live
+                    </span>
+                </button>
+            </nav>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-5">
+    <!-- ============================================================
+         MAIN CONTENT
+         ============================================================ -->
+    <main style="max-width: 1200px; margin: 0 auto; padding: 20px 16px; position: relative; z-index: 1;">
 
-        <!-- ============================================================ -->
-        <!-- STANDINGS TAB -->
-        <!-- ============================================================ -->
-        <div x-show="tab === 'standings'" x-cloak>
+        <!-- ========================================================
+             STANDINGS TAB
+             ======================================================== -->
+        <div x-show="tab === 'standings'" x-transition:enter="stagger-in" style="animation-delay: 0.05s;">
 
-            <!-- Season summary bar -->
-            <div x-show="standings.length > 0" class="mb-5 flex items-center gap-3 overflow-x-auto pb-1 match-scroll">
-                <div class="flex-shrink-0 bg-surface-700/50 rounded-lg px-3 py-2 border border-gray-800">
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Teams</div>
-                    <div class="text-lg font-bold text-white" x-text="standings.length"></div>
-                </div>
-                <div class="flex-shrink-0 bg-surface-700/50 rounded-lg px-3 py-2 border border-gray-800">
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Leader</div>
-                    <div class="text-lg font-bold text-orange-400 truncate max-w-[140px]" x-text="standings[0]?.team_name || '-'"></div>
-                </div>
-                <div class="flex-shrink-0 bg-surface-700/50 rounded-lg px-3 py-2 border border-gray-800">
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Top Score</div>
-                    <div class="text-lg font-bold text-green-400" x-text="standings[0]?.total_pts?.toLocaleString() || '0'"></div>
-                </div>
-                <div class="flex-shrink-0 bg-surface-700/50 rounded-lg px-3 py-2 border border-gray-800">
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Avg Score</div>
-                    <div class="text-lg font-bold text-gray-300" x-text="standings.length ? Math.round(standings.reduce((s,t) => s + t.total_pts, 0) / standings.length).toLocaleString() : '0'"></div>
-                </div>
-            </div>
-
-            <!-- Team cards -->
-            <div class="space-y-3">
-                <template x-for="(team, idx) in standings" :key="team.team_name">
-                    <div class="team-card bg-surface-800 rounded-xl overflow-hidden border border-gray-800"
-                         :class="expanded === team.team_name ? 'glow-orange border-orange-500/20' : ''">
-
-                        <!-- Team header row -->
-                        <button @click="toggleTeam(team.team_name)"
-                                class="w-full px-4 py-3.5 flex items-center gap-3 hover:bg-surface-700/30 transition-colors active:bg-surface-700/50">
-
-                            <!-- Rank badge -->
-                            <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-sm"
-                                 :class="idx === 0 ? 'rank-gold' : idx === 1 ? 'rank-silver' : idx === 2 ? 'rank-bronze' : 'bg-surface-700 text-gray-400'">
-                                <span x-text="idx + 1"></span>
-                            </div>
-
-                            <!-- Team info -->
-                            <div class="flex-1 min-w-0 text-left">
-                                <div class="font-bold text-[15px] truncate" x-text="team.team_name"></div>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-xs text-gray-500" x-text="team.players.length + ' players'"></span>
-                                    <span class="text-gray-700">|</span>
-                                    <span class="text-xs text-gray-500">
-                                        Top performer:
-                                        <span class="text-orange-400/80 font-medium" x-text="team.players[0]?.display_name || '-'"></span>
-                                        <span class="text-gray-600" x-text="'(' + (team.players[0]?.total_pts || 0) + ')'"></span>
-                                    </span>
+            <!-- Loading State -->
+            <template x-if="loading && !standings.length">
+                <div>
+                    <template x-for="i in 5" :key="i">
+                        <div class="card" style="padding: 20px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="shimmer" style="width: 36px; height: 36px; border-radius: 10px;"></div>
+                                <div>
+                                    <div class="shimmer" style="width: 140px; height: 16px; margin-bottom: 6px;"></div>
+                                    <div class="shimmer" style="width: 80px; height: 12px;"></div>
                                 </div>
-                            </div>
-
-                            <!-- Points & chevron -->
-                            <div class="flex-shrink-0 flex items-center gap-3">
-                                <div class="text-right">
-                                    <div class="text-xl font-extrabold tabular-nums"
-                                         :class="idx === 0 ? 'gradient-text' : 'text-white'"
-                                         x-text="team.total_pts.toLocaleString()"></div>
-                                    <div class="text-[10px] text-gray-500 font-medium tracking-wide">PTS</div>
+                                <div style="margin-left: auto;">
+                                    <div class="shimmer" style="width: 60px; height: 24px;"></div>
                                 </div>
-                                <svg class="w-4 h-4 text-gray-500 transition-transform duration-200 flex-shrink-0"
-                                     :class="expanded === team.team_name ? 'rotate-180' : ''"
-                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </button>
-
-                        <!-- Expanded player detail -->
-                        <div x-show="expanded === team.team_name"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 -translate-y-2"
-                             x-transition:enter-end="opacity-100 translate-y-0"
-                             class="border-t border-gray-800">
-
-                            <!-- Team KPIs row -->
-                            <div class="px-4 py-3 bg-surface-700/20 border-b border-gray-800/50">
-                                <div class="grid grid-cols-4 gap-2 text-center">
-                                    <div>
-                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Rank</div>
-                                        <div class="text-lg font-bold"
-                                             :class="idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-white'"
-                                             x-text="'#' + (idx + 1)"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Total</div>
-                                        <div class="text-lg font-bold text-white" x-text="team.total_pts.toLocaleString()"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Avg/Player</div>
-                                        <div class="text-lg font-bold text-gray-300"
-                                             x-text="team.players.length ? Math.round(team.players.slice(0, 11).reduce((s,p) => s + p.total_pts, 0) / Math.min(11, team.players.length)) : 0"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Gap to #1</div>
-                                        <div class="text-lg font-bold"
-                                             :class="idx === 0 ? 'text-green-400' : 'text-red-400'"
-                                             x-text="idx === 0 ? '-' : '-' + (standings[0].total_pts - team.total_pts)"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Loading state for team detail -->
-                            <div x-show="teamDetailLoading === team.team_name" class="px-4 py-6">
-                                <div class="space-y-2">
-                                    <div class="shimmer h-8 rounded"></div>
-                                    <div class="shimmer h-6 rounded"></div>
-                                    <div class="shimmer h-6 rounded"></div>
-                                </div>
-                            </div>
-
-                            <!-- Player table -->
-                            <div x-show="teamDetailLoading !== team.team_name" class="overflow-x-auto match-scroll">
-                                <table class="w-full text-sm min-w-[500px]">
-                                    <thead>
-                                        <tr class="text-[10px] text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
-                                            <th class="px-4 py-2.5 text-left w-8">#</th>
-                                            <th class="px-2 py-2.5 text-left">Player</th>
-                                            <th class="px-2 py-2.5 text-right">Total</th>
-                                            <th class="px-2 py-2.5 text-right">
-                                                <span class="hidden sm:inline">Matches</span>
-                                                <span class="sm:hidden">M</span>
-                                            </th>
-                                            <th class="px-2 py-2.5 text-right">
-                                                <span class="hidden sm:inline">Avg/M</span>
-                                                <span class="sm:hidden">Avg</span>
-                                            </th>
-                                            <th class="px-2 py-2.5 text-center hidden sm:table-cell">Split</th>
-                                            <!-- Per-match columns: rendered from teamDetail data -->
-                                            <template x-for="ml in getMatchLabels(team.team_name)" :key="ml">
-                                                <th class="px-2 py-2.5 text-right text-orange-400/60 font-semibold" x-text="ml"></th>
-                                            </template>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <template x-for="(p, pidx) in getTeamPlayers(team.team_name)" :key="p.player_name">
-                                            <tr class="player-row border-t border-gray-800/30"
-                                                :class="pidx >= 11 ? 'player-dimmed' : ''">
-
-                                                <!-- Rank -->
-                                                <td class="px-4 py-2">
-                                                    <span class="text-xs font-bold tabular-nums"
-                                                          :class="pidx < 11 ? 'text-orange-400' : 'text-gray-600'"
-                                                          x-text="pidx + 1"></span>
-                                                </td>
-
-                                                <!-- Player name + best performer badge -->
-                                                <td class="px-2 py-2">
-                                                    <div class="flex items-center gap-1.5">
-                                                        <span class="font-medium text-[13px] truncate max-w-[150px]"
-                                                              :class="pidx < 11 ? 'text-gray-100' : 'text-gray-500'"
-                                                              x-text="p.display_name"></span>
-                                                        <span x-show="pidx === 0"
-                                                              class="flex-shrink-0 text-[9px] font-bold uppercase tracking-wider bg-yellow-500/15 text-yellow-400 px-1.5 py-0.5 rounded">MVP</span>
-                                                    </div>
-                                                </td>
-
-                                                <!-- Total points -->
-                                                <td class="px-2 py-2 text-right">
-                                                    <span class="font-bold tabular-nums text-[13px]"
-                                                          :class="pidx < 11 ? (p.total_pts > 0 ? 'text-green-400' : 'text-gray-400') : 'text-gray-600'"
-                                                          x-text="p.total_pts"></span>
-                                                </td>
-
-                                                <!-- Matches played -->
-                                                <td class="px-2 py-2 text-right">
-                                                    <span class="text-gray-500 tabular-nums text-xs" x-text="p.matches_played"></span>
-                                                </td>
-
-                                                <!-- Avg per match -->
-                                                <td class="px-2 py-2 text-right">
-                                                    <span class="text-gray-400 tabular-nums text-xs"
-                                                          x-text="p.matches_played > 0 ? (p.total_pts / p.matches_played).toFixed(1) : '-'"></span>
-                                                </td>
-
-                                                <!-- Bat / Bowl / Field split bar -->
-                                                <td class="px-2 py-2 hidden sm:table-cell">
-                                                    <div x-show="p.batting_pts !== undefined" class="flex items-center gap-1.5">
-                                                        <div class="split-bar flex-1 flex bg-gray-800" style="min-width: 60px;">
-                                                            <div class="h-full bg-blue-400" :style="'width:' + getSplitPct(p, 'batting_pts') + '%'" :title="'Bat: ' + (p.batting_pts || 0)"></div>
-                                                            <div class="h-full bg-purple-400" :style="'width:' + getSplitPct(p, 'bowling_pts') + '%'" :title="'Bowl: ' + (p.bowling_pts || 0)"></div>
-                                                            <div class="h-full bg-yellow-400" :style="'width:' + getSplitPct(p, 'fielding_pts') + '%'" :title="'Field: ' + (p.fielding_pts || 0)"></div>
-                                                        </div>
-                                                    </div>
-                                                    <div x-show="p.batting_pts === undefined" class="text-gray-700 text-xs">-</div>
-                                                </td>
-
-                                                <!-- Per-match score columns -->
-                                                <template x-for="ml in getMatchLabels(team.team_name)" :key="ml">
-                                                    <td class="px-2 py-2 text-right">
-                                                        <span class="tabular-nums text-xs"
-                                                              :class="getMatchScore(p, ml) > 0 ? 'text-gray-300' : getMatchScore(p, ml) < 0 ? 'text-red-400' : 'text-gray-700'"
-                                                              x-text="getMatchScore(p, ml) !== null ? getMatchScore(p, ml) : '-'"></span>
-                                                    </td>
-                                                </template>
-                                            </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Split legend -->
-                            <div x-show="teamDetailLoading !== team.team_name" class="px-4 py-2.5 border-t border-gray-800/30 flex items-center gap-4 text-[10px] text-gray-500">
-                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-400"></span> Batting</span>
-                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-purple-400"></span> Bowling</span>
-                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-yellow-400"></span> Fielding</span>
-                                <span class="ml-auto text-gray-600">Players 12-16 excluded from team total</span>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-
-            <!-- Loading state -->
-            <div x-show="standings.length === 0 && !loadError" class="space-y-3 mt-2">
-                <template x-for="i in 5" :key="i">
-                    <div class="shimmer h-16 rounded-xl"></div>
-                </template>
-            </div>
-
-            <!-- Error state -->
-            <div x-show="loadError" class="text-center py-12">
-                <div class="text-gray-500 text-sm" x-text="loadError"></div>
-                <button @click="fetchStandings()" class="mt-3 text-orange-400 text-sm font-medium hover:text-orange-300">Retry</button>
-            </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- LIVE TAB -->
-        <!-- ============================================================ -->
-        <div x-show="tab === 'live'" x-cloak>
-
-            <!-- No match state -->
-            <div x-show="!liveData.match && !liveLoading" class="text-center py-16">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-surface-700/50 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <p class="text-gray-400 font-medium">No match data available</p>
-                <p class="text-gray-600 text-sm mt-1">Check back during match time</p>
-            </div>
-
-            <!-- Loading state -->
-            <div x-show="liveLoading" class="space-y-3">
-                <div class="shimmer h-24 rounded-xl"></div>
-                <div class="shimmer h-16 rounded-xl"></div>
-                <div class="shimmer h-16 rounded-xl"></div>
-            </div>
-
-            <!-- Match data -->
-            <div x-show="liveData.match && !liveLoading">
-
-                <!-- Match card -->
-                <div class="bg-surface-800 rounded-xl p-4 mb-4 border border-gray-800 relative overflow-hidden">
-                    <!-- Subtle gradient background -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none"></div>
-                    <div class="relative">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-2 mb-1.5">
-                                    <!-- Status badge -->
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                                          :class="liveData.match?.status === 'in_progress'
-                                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                            : 'bg-gray-600/20 text-gray-400 border border-gray-600/30'">
-                                        <span x-show="liveData.match?.status === 'in_progress'" class="w-1.5 h-1.5 rounded-full bg-green-400 live-dot"></span>
-                                        <span x-text="liveData.match?.status === 'in_progress' ? 'LIVE' : liveData.match?.status === 'completed' ? 'COMPLETED' : liveData.match?.status?.toUpperCase()"></span>
-                                    </span>
-                                    <span class="text-xs text-gray-500" x-text="formatMatchDate(liveData.match?.date)"></span>
-                                </div>
-                                <div class="text-lg font-bold text-white" x-text="(liveData.match?.teams || []).join(' vs ')"></div>
-                                <div class="text-xs text-gray-500 mt-0.5" x-text="liveData.match?.venue"></div>
-                            </div>
-                            <button @click="fetchLive()"
-                                    class="flex-shrink-0 p-2 rounded-lg hover:bg-surface-700 transition-colors text-gray-500 hover:text-gray-300"
-                                    title="Refresh">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fantasy impact header -->
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Fantasy Impact</h2>
-                    <span class="text-xs text-gray-600" x-text="liveData.team_impacts?.length + ' teams affected'"></span>
-                </div>
-
-                <!-- Team impact cards -->
-                <div class="space-y-2.5">
-                    <template x-for="(impact, iIdx) in liveData.team_impacts" :key="impact.team_name">
-                        <div class="bg-surface-800 rounded-xl overflow-hidden border border-gray-800 team-card"
-                             :class="liveExpanded === impact.team_name ? 'border-green-500/20' : ''">
-
-                            <!-- Impact header -->
-                            <button @click="liveExpanded === impact.team_name ? liveExpanded = null : liveExpanded = impact.team_name"
-                                    class="w-full px-4 py-3 flex items-center gap-3 hover:bg-surface-700/30 transition-colors">
-
-                                <!-- Rank in this match -->
-                                <div class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold"
-                                     :class="iIdx === 0 ? 'bg-green-500/20 text-green-400' : 'bg-surface-700 text-gray-500'"
-                                     x-text="iIdx + 1"></div>
-
-                                <div class="flex-1 min-w-0">
-                                    <div class="font-semibold text-sm truncate" x-text="impact.team_name"></div>
-                                    <div class="text-[11px] text-gray-500" x-text="impact.players?.length + ' players scored'"></div>
-                                </div>
-
-                                <div class="flex items-center gap-2.5">
-                                    <div class="text-right">
-                                        <div class="text-lg font-extrabold tabular-nums"
-                                             :class="impact.match_pts > 0 ? 'text-green-400' : impact.match_pts < 0 ? 'text-red-400' : 'text-gray-400'"
-                                             x-text="(impact.match_pts > 0 ? '+' : '') + impact.match_pts"></div>
-                                        <div class="text-[10px] text-gray-600">this match</div>
-                                    </div>
-                                    <svg class="w-4 h-4 text-gray-600 transition-transform duration-200"
-                                         :class="liveExpanded === impact.team_name ? 'rotate-180' : ''"
-                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                            </button>
-
-                            <!-- Player breakdown for this match -->
-                            <div x-show="liveExpanded === impact.team_name"
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="opacity-0"
-                                 x-transition:enter-end="opacity-100"
-                                 class="border-t border-gray-800">
-                                <table class="w-full text-sm">
-                                    <thead>
-                                        <tr class="text-[10px] text-gray-500 uppercase tracking-wider">
-                                            <th class="px-4 py-2 text-left">Player</th>
-                                            <th class="px-2 py-2 text-right">
-                                                <span class="text-blue-400/70">Bat</span>
-                                            </th>
-                                            <th class="px-2 py-2 text-right">
-                                                <span class="text-purple-400/70">Bowl</span>
-                                            </th>
-                                            <th class="px-2 py-2 text-right">
-                                                <span class="text-yellow-400/70">Field</span>
-                                            </th>
-                                            <th class="px-3 py-2 text-right">Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <template x-for="(p, pIdx) in impact.players" :key="p.player_name">
-                                            <tr class="player-row border-t border-gray-800/30"
-                                                :class="pIdx === 0 ? 'best-performer' : ''">
-                                                <td class="px-4 py-2">
-                                                    <div class="flex items-center gap-1.5">
-                                                        <span class="font-medium text-[13px]" x-text="p.display_name"></span>
-                                                        <span x-show="pIdx === 0 && impact.players.length > 1"
-                                                              class="text-[9px] font-bold bg-green-500/15 text-green-400 px-1 py-0.5 rounded">BEST</span>
-                                                    </div>
-                                                </td>
-                                                <td class="px-2 py-2 text-right tabular-nums"
-                                                    :class="p.batting_pts > 0 ? 'text-blue-400' : p.batting_pts < 0 ? 'text-red-400/70' : 'text-gray-700'"
-                                                    x-text="p.batting_pts || 0"></td>
-                                                <td class="px-2 py-2 text-right tabular-nums"
-                                                    :class="p.bowling_pts > 0 ? 'text-purple-400' : p.bowling_pts < 0 ? 'text-red-400/70' : 'text-gray-700'"
-                                                    x-text="p.bowling_pts || 0"></td>
-                                                <td class="px-2 py-2 text-right tabular-nums"
-                                                    :class="p.fielding_pts > 0 ? 'text-yellow-400' : 'text-gray-700'"
-                                                    x-text="p.fielding_pts || 0"></td>
-                                                <td class="px-3 py-2 text-right font-bold tabular-nums"
-                                                    :class="p.total_pts > 0 ? 'text-green-400' : p.total_pts < 0 ? 'text-red-400' : 'text-gray-500'"
-                                                    x-text="p.total_pts"></td>
-                                            </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </template>
                 </div>
+            </template>
 
-                <!-- Auto-refresh notice -->
-                <div class="flex items-center justify-center gap-2 mt-5 text-xs text-gray-600">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <!-- Error State -->
+            <template x-if="error && !standings.length">
+                <div class="error-container">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin: 0 auto 16px;">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
                     </svg>
-                    <span x-text="liveData.match?.status === 'in_progress' ? 'Auto-refreshes every 30s' : 'Pull to refresh'"></span>
-                    <span class="text-gray-700">|</span>
-                    <span x-text="'Updated ' + lastLiveRefresh"></span>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">Failed to load standings</p>
+                    <button class="retry-btn" @click="loadStandings()">Retry</button>
                 </div>
-            </div>
+            </template>
+
+            <!-- Standings Cards -->
+            <template x-if="standings.length">
+                <div>
+                    <!-- Quick Stats Bar -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <div class="card-flat" style="padding: 10px 16px; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 500;">Teams</span>
+                            <span style="font-weight: 800; font-size: 0.9rem;" x-text="standings.length"></span>
+                        </div>
+                        <div class="card-flat" style="padding: 10px 16px; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 500;">Leader</span>
+                            <span class="gradient-text" style="font-weight: 800; font-size: 0.9rem;" x-text="standings[0]?.team_name"></span>
+                        </div>
+                        <div class="tooltip-trigger card-flat" style="padding: 10px 16px; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 500;">Top Score</span>
+                            <span style="font-weight: 800; font-size: 0.9rem; color: var(--gold);" x-text="standings[0]?.total_pts + ' pts'"></span>
+                            <span class="tooltip-text">Only the best 11 players' points count toward the team total</span>
+                        </div>
+                    </div>
+
+                    <!-- Head-to-Head Comparison -->
+                    <div class="card" style="margin-bottom: 16px; overflow: visible;">
+                        <!-- H2H Toggle Header -->
+                        <div @click="h2hOpen = !h2hOpen"
+                             style="padding: 14px 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; user-select: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M21 3l-7 7"/><path d="M3 3l7 7"/><path d="M16 21h5v-5"/><path d="M8 21H3v-5"/><path d="M21 21l-7-7"/><path d="M3 21l7-7"/>
+                            </svg>
+                            <span class="heading-md" style="flex: 1;">Head-to-Head</span>
+                            <svg class="accordion-chevron" :class="{ rotated: h2hOpen }"
+                                 width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                 stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+
+                        <!-- H2H Content -->
+                        <div class="accordion-content" :class="{ open: h2hOpen }">
+                            <div style="padding: 0 20px 20px;">
+                                <!-- Selects + Button -->
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+                                    <div style="position: relative;">
+                                        <select class="h2h-select" x-model="h2hTeam1"
+                                                style="padding-right: 28px;">
+                                            <option value="" disabled>Team 1</option>
+                                            <template x-for="team in standings" :key="'h2h1-' + team.team_name">
+                                                <option :value="team.team_name" x-text="team.team_name"></option>
+                                            </template>
+                                        </select>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"
+                                             style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                                            <polyline points="6 9 12 15 18 9"/>
+                                        </svg>
+                                    </div>
+
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">vs</span>
+
+                                    <div style="position: relative;">
+                                        <select class="h2h-select" x-model="h2hTeam2"
+                                                style="padding-right: 28px;">
+                                            <option value="" disabled>Team 2</option>
+                                            <template x-for="team in standings" :key="'h2h2-' + team.team_name">
+                                                <option :value="team.team_name" x-text="team.team_name"></option>
+                                            </template>
+                                        </select>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"
+                                             style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                                            <polyline points="6 9 12 15 18 9"/>
+                                        </svg>
+                                    </div>
+
+                                    <button class="h2h-compare-btn"
+                                            :disabled="!h2hTeam1 || !h2hTeam2 || h2hTeam1 === h2hTeam2 || h2hLoading"
+                                            @click="loadH2H()">
+                                        <span x-show="!h2hLoading">Compare</span>
+                                        <span x-show="h2hLoading">Loading...</span>
+                                    </button>
+                                </div>
+
+                                <!-- H2H Validation message -->
+                                <template x-if="h2hTeam1 && h2hTeam2 && h2hTeam1 === h2hTeam2">
+                                    <div style="font-size: 0.75rem; color: #f87171; margin-bottom: 12px;">Please select two different teams.</div>
+                                </template>
+
+                                <!-- H2H Results -->
+                                <template x-if="h2hData">
+                                    <div>
+                                        <!-- Two-column comparison -->
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                            <!-- Team 1 Column -->
+                                            <div class="card-flat" style="padding: 16px; position: relative;"
+                                                 :style="h2hData.team1.total_pts > h2hData.team2.total_pts ? 'border-color: rgba(74,222,128,0.3); box-shadow: 0 0 16px rgba(74,222,128,0.05);' : ''">
+                                                <template x-if="h2hData.team1.total_pts > h2hData.team2.total_pts">
+                                                    <div style="position: absolute; top: 8px; right: 10px;">
+                                                        <span style="font-size: 0.6rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: rgba(74,222,128,0.12); color: #4ade80; text-transform: uppercase; letter-spacing: 0.04em;">Leading</span>
+                                                    </div>
+                                                </template>
+                                                <div class="heading-md" style="margin-bottom: 4px;" x-text="h2hData.team1.team_name"></div>
+                                                <div style="font-size: 1.25rem; font-weight: 800; margin-bottom: 12px;"
+                                                     :style="h2hData.team1.total_pts >= h2hData.team2.total_pts ? 'color: var(--gold);' : 'color: var(--text-secondary);'">
+                                                    <span x-text="h2hData.team1.total_pts"></span>
+                                                    <span style="font-size: 0.65rem; font-weight: 500; color: var(--text-muted); margin-left: 2px;">pts</span>
+                                                </div>
+                                                <!-- Player list -->
+                                                <div style="display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto;">
+                                                    <template x-for="(p, pi) in h2hData.team1.players" :key="'h2h1p-' + p.player_name">
+                                                        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03);"
+                                                             :style="pi === h2hData.team1.players.length - 1 ? 'border-bottom: none;' : ''">
+                                                            <span style="font-size: 0.65rem; font-weight: 700; color: var(--text-dimmed); width: 16px; text-align: right;" x-text="pi + 1"></span>
+                                                            <div style="flex: 1; min-width: 0;">
+                                                                <div style="font-weight: 600; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" x-text="p.player_name"></div>
+                                                                <div style="font-size: 0.6rem; color: var(--text-dimmed); display: flex; gap: 6px;" class="hide-mobile">
+                                                                    <span x-show="p.batting_pts" style="color: #60a5fa;" x-text="'B:' + p.batting_pts"></span>
+                                                                    <span x-show="p.bowling_pts" style="color: #a78bfa;" x-text="'Bw:' + p.bowling_pts"></span>
+                                                                    <span x-show="p.fielding_pts" style="color: #fbbf24;" x-text="'F:' + p.fielding_pts"></span>
+                                                                </div>
+                                                            </div>
+                                                            <span class="pts-highlight" style="font-size: 0.8rem; flex-shrink: 0;" x-text="p.total_pts"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <!-- Team 2 Column -->
+                                            <div class="card-flat" style="padding: 16px; position: relative;"
+                                                 :style="h2hData.team2.total_pts > h2hData.team1.total_pts ? 'border-color: rgba(74,222,128,0.3); box-shadow: 0 0 16px rgba(74,222,128,0.05);' : ''">
+                                                <template x-if="h2hData.team2.total_pts > h2hData.team1.total_pts">
+                                                    <div style="position: absolute; top: 8px; right: 10px;">
+                                                        <span style="font-size: 0.6rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: rgba(74,222,128,0.12); color: #4ade80; text-transform: uppercase; letter-spacing: 0.04em;">Leading</span>
+                                                    </div>
+                                                </template>
+                                                <div class="heading-md" style="margin-bottom: 4px;" x-text="h2hData.team2.team_name"></div>
+                                                <div style="font-size: 1.25rem; font-weight: 800; margin-bottom: 12px;"
+                                                     :style="h2hData.team2.total_pts >= h2hData.team1.total_pts ? 'color: var(--gold);' : 'color: var(--text-secondary);'">
+                                                    <span x-text="h2hData.team2.total_pts"></span>
+                                                    <span style="font-size: 0.65rem; font-weight: 500; color: var(--text-muted); margin-left: 2px;">pts</span>
+                                                </div>
+                                                <!-- Player list -->
+                                                <div style="display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto;">
+                                                    <template x-for="(p, pi) in h2hData.team2.players" :key="'h2h2p-' + p.player_name">
+                                                        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03);"
+                                                             :style="pi === h2hData.team2.players.length - 1 ? 'border-bottom: none;' : ''">
+                                                            <span style="font-size: 0.65rem; font-weight: 700; color: var(--text-dimmed); width: 16px; text-align: right;" x-text="pi + 1"></span>
+                                                            <div style="flex: 1; min-width: 0;">
+                                                                <div style="font-weight: 600; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" x-text="p.player_name"></div>
+                                                                <div style="font-size: 0.6rem; color: var(--text-dimmed); display: flex; gap: 6px;" class="hide-mobile">
+                                                                    <span x-show="p.batting_pts" style="color: #60a5fa;" x-text="'B:' + p.batting_pts"></span>
+                                                                    <span x-show="p.bowling_pts" style="color: #a78bfa;" x-text="'Bw:' + p.bowling_pts"></span>
+                                                                    <span x-show="p.fielding_pts" style="color: #fbbf24;" x-text="'F:' + p.fielding_pts"></span>
+                                                                </div>
+                                                            </div>
+                                                            <span class="pts-highlight" style="font-size: 0.8rem; flex-shrink: 0;" x-text="p.total_pts"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Points diff summary -->
+                                        <div style="text-align: center; margin-top: 12px; font-size: 0.75rem; color: var(--text-muted);">
+                                            Difference: <span style="font-weight: 700; color: var(--text-primary);" x-text="Math.abs(h2hData.team1.total_pts - h2hData.team2.total_pts) + ' pts'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team Cards -->
+                    <template x-for="(team, idx) in standings" :key="team.team_name">
+                        <div class="card stagger-in" :style="'margin-bottom: 12px; animation-delay: ' + (idx * 0.06) + 's;'">
+                            <!-- Team Header Row -->
+                            <div @click="toggleTeam(team.team_name)"
+                                 style="padding: 16px 20px; cursor: pointer; display: flex; align-items: center; gap: 14px; user-select: none;"
+                                 :style="expandedTeam === team.team_name ? 'padding-bottom: 12px;' : ''">
+
+                                <!-- Rank Badge -->
+                                <div class="rank-badge"
+                                     :class="{
+                                         'rank-1': idx === 0,
+                                         'rank-2': idx === 1,
+                                         'rank-3': idx === 2,
+                                         'rank-default': idx > 2
+                                     }">
+                                    <span x-text="idx + 1"></span>
+                                </div>
+
+                                <!-- Team Info -->
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <span class="heading-md" x-text="team.team_name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+                                        <template x-if="team.rank_change && team.rank_change > 0">
+                                            <span style="color: #4ade80; font-size: 0.7rem; font-weight: 700;">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="display: inline; vertical-align: middle;"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+                                                <span x-text="team.rank_change"></span>
+                                            </span>
+                                        </template>
+                                        <template x-if="team.rank_change && team.rank_change < 0">
+                                            <span style="color: #f87171; font-size: 0.7rem; font-weight: 700;">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="display: inline; vertical-align: middle;"><path d="M12 20l8-8h-5V4H9v8H4z"/></svg>
+                                                <span x-text="Math.abs(team.rank_change)"></span>
+                                            </span>
+                                        </template>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 3px; flex-wrap: wrap;">
+                                        <span style="font-size: 0.7rem; color: var(--text-muted);">
+                                            <span x-text="team.players?.length || 0"></span> players
+                                        </span>
+                                        <!-- Captain/VC names -->
+                                        <template x-if="getTeamCaptain(team.team_name)">
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">
+                                                <span class="badge-c">C</span>
+                                                <span x-text="getTeamCaptain(team.team_name)" style="margin-left: 2px;"></span>
+                                            </span>
+                                        </template>
+                                        <template x-if="getTeamVC(team.team_name)">
+                                            <span style="font-size: 0.65rem; color: var(--text-muted);">
+                                                <span class="badge-vc">VC</span>
+                                                <span x-text="getTeamVC(team.team_name)" style="margin-left: 2px;"></span>
+                                            </span>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Sparkline (pts_history) -->
+                                <template x-if="team.pts_history && team.pts_history.length >= 2">
+                                    <div class="hide-mobile" style="flex-shrink: 0;">
+                                        <svg width="80" height="24" viewBox="0 0 80 24" style="overflow: visible; display: block;">
+                                            <defs>
+                                                <linearGradient :id="'spark-fill-' + idx" x1="0" x2="0" y1="0" y2="1">
+                                                    <stop offset="0%" stop-color="#f97316" stop-opacity="0.25"/>
+                                                    <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
+                                                </linearGradient>
+                                            </defs>
+                                            <polygon :points="computeSparkline(team.pts_history, 80, 24) + ' 80,24 0,24'"
+                                                     :fill="'url(#spark-fill-' + idx + ')'" stroke="none"/>
+                                            <polyline :points="computeSparkline(team.pts_history, 80, 24)"
+                                                      fill="none" stroke="#f97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
+                                </template>
+
+                                <!-- Points & Gap -->
+                                <div style="text-align: right; flex-shrink: 0;">
+                                    <div class="pts-highlight" style="font-size: 1.25rem; letter-spacing: -0.02em;"
+                                         :style="idx === 0 ? 'color: var(--gold);' : ''">
+                                        <span x-text="team.total_pts"></span>
+                                        <span style="font-size: 0.65rem; font-weight: 500; color: var(--text-muted); margin-left: 2px;">pts</span>
+                                    </div>
+                                    <template x-if="idx > 0">
+                                        <div class="tooltip-trigger" style="font-size: 0.65rem; color: var(--text-dimmed); margin-top: 1px;">
+                                            <span x-text="(team.total_pts - standings[0].total_pts) + ' from #1'"></span>
+                                            <span class="tooltip-text">Points behind the leader</span>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Chevron -->
+                                <div>
+                                    <svg class="accordion-chevron"
+                                         :class="{ rotated: expandedTeam === team.team_name }"
+                                         width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                         stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Expanded Player Table -->
+                            <div class="accordion-content"
+                                 :class="{ open: expandedTeam === team.team_name }">
+
+                                <!-- Loading detail -->
+                                <template x-if="expandedTeam === team.team_name && loadingDetail">
+                                    <div style="padding: 20px; display: flex; flex-direction: column; gap: 8px;">
+                                        <template x-for="i in 8" :key="i">
+                                            <div class="shimmer" style="height: 32px; width: 100%;"></div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- Team Detail -->
+                                <template x-if="expandedTeam === team.team_name && teamDetail && !loadingDetail">
+                                    <div>
+                                        <!-- Summary stats row -->
+                                        <div style="padding: 0 20px 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                                            <div class="tooltip-trigger" style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;">
+                                                <span style="color: var(--text-muted);">Top 11 Scoring</span>
+                                                <span style="font-weight: 700; margin-left: 6px;" x-text="team.total_pts + ' pts'"></span>
+                                                <span class="tooltip-text">Sum of the 11 highest-scoring players on the roster</span>
+                                            </div>
+                                            <template x-if="teamDetail.matches?.length">
+                                                <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;">
+                                                    <span style="color: var(--text-muted);">Matches</span>
+                                                    <span style="font-weight: 700; margin-left: 6px;" x-text="teamDetail.matches.length"></span>
+                                                </div>
+                                            </template>
+                                            <div class="tooltip-trigger" style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;">
+                                                <span style="color: var(--text-muted);">Avg Score</span>
+                                                <span style="font-weight: 700; margin-left: 6px;"
+                                                      x-text="teamDetail.matches?.length ? Math.round(team.total_pts / teamDetail.matches.length) + ' pts/match' : 'N/A'"></span>
+                                                <span class="tooltip-text">Average team points per match (top 11 total / matches played)</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Player Table -->
+                                        <div class="table-scroll">
+                                            <table class="player-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 32px;">#</th>
+                                                        <th>Player</th>
+                                                        <th style="text-align: right;">Total</th>
+                                                        <th style="text-align: center;">M</th>
+                                                        <th class="hide-mobile" style="text-align: right;">Avg</th>
+                                                        <th class="hide-mobile" style="min-width: 90px;">Split</th>
+                                                        <template x-if="teamDetail.matches">
+                                                            <template x-for="match in teamDetail.matches" :key="match.match_id">
+                                                                <th class="match-cell" :title="match.teams?.join(' vs ')" x-text="match.label"></th>
+                                                            </template>
+                                                        </template>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template x-for="(player, pIdx) in teamDetail.players" :key="player.player_name">
+                                                        <tr :class="{ 'player-dimmed': pIdx >= 11 }">
+                                                            <!-- # -->
+                                                            <td>
+                                                                <span style="font-weight: 700; font-size: 0.7rem; color: var(--text-muted);" x-text="pIdx + 1"></span>
+                                                            </td>
+                                                            <!-- Player Name + badges -->
+                                                            <td>
+                                                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;">
+                                                                    <!-- Role pill -->
+                                                                    <span class="role-pill"
+                                                                          :class="getRolePillClass(player.player_name)"
+                                                                          x-text="getPlayerRole(player.player_name)"
+                                                                          x-show="getPlayerRole(player.player_name)"></span>
+                                                                    <div>
+                                                                        <div style="display: flex; align-items: center; gap: 0; flex-wrap: nowrap;">
+                                                                            <span style="font-weight: 600; font-size: 0.8rem;" x-text="player.display_name || player.player_name"></span>
+                                                                            <template x-if="getPlayerDesignation(team.team_name, player.player_name) === 'C'">
+                                                                                <span class="tooltip-trigger">
+                                                                                    <span class="badge-c">C</span>
+                                                                                    <span class="tooltip-text">Captain: 2x points</span>
+                                                                                </span>
+                                                                            </template>
+                                                                            <template x-if="getPlayerDesignation(team.team_name, player.player_name) === 'VC'">
+                                                                                <span class="tooltip-trigger">
+                                                                                    <span class="badge-vc">VC</span>
+                                                                                    <span class="tooltip-text">Vice Captain: 1.5x points</span>
+                                                                                </span>
+                                                                            </template>
+                                                                        </div>
+                                                                        <div style="font-size: 0.6rem; color: var(--text-dimmed); margin-top: 1px;"
+                                                                             x-text="getPlayerIPLTeam(player.player_name)"
+                                                                             x-show="getPlayerIPLTeam(player.player_name)"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <!-- Total -->
+                                                            <td style="text-align: right;">
+                                                                <span class="pts-highlight" x-text="getEffectivePoints(team.team_name, player)"></span>
+                                                                <template x-if="getPlayerDesignation(team.team_name, player.player_name) === 'C'">
+                                                                    <span class="multiplier-badge">2x</span>
+                                                                </template>
+                                                                <template x-if="getPlayerDesignation(team.team_name, player.player_name) === 'VC'">
+                                                                    <span class="multiplier-badge">1.5x</span>
+                                                                </template>
+                                                            </td>
+                                                            <!-- Matches -->
+                                                            <td style="text-align: center; color: var(--text-secondary);">
+                                                                <span x-text="player.matches_played"></span>
+                                                            </td>
+                                                            <!-- Average -->
+                                                            <td class="hide-mobile" style="text-align: right; color: var(--text-secondary);">
+                                                                <span x-text="player.matches_played > 0 ? (player.total_pts / player.matches_played).toFixed(1) : '-'"></span>
+                                                            </td>
+                                                            <!-- Split bar -->
+                                                            <td class="hide-mobile">
+                                                                <template x-if="player.total_pts > 0">
+                                                                    <div class="tooltip-trigger">
+                                                                        <div class="split-bar">
+                                                                            <div class="split-bat" :style="'width: ' + getSplitPct(player, 'batting_pts') + '%'"></div>
+                                                                            <div class="split-bowl" :style="'width: ' + getSplitPct(player, 'bowling_pts') + '%'"></div>
+                                                                            <div class="split-field" :style="'width: ' + getSplitPct(player, 'fielding_pts') + '%'"></div>
+                                                                        </div>
+                                                                        <span class="tooltip-text" x-text="'Bat: ' + (player.batting_pts || 0) + ' | Bowl: ' + (player.bowling_pts || 0) + ' | Field: ' + (player.fielding_pts || 0)"></span>
+                                                                    </div>
+                                                                </template>
+                                                                <template x-if="player.total_pts <= 0">
+                                                                    <span style="color: var(--text-dimmed); font-size: 0.65rem;">--</span>
+                                                                </template>
+                                                            </td>
+                                                            <!-- Per-match scores -->
+                                                            <template x-if="teamDetail.matches">
+                                                                <template x-for="match in teamDetail.matches" :key="match.match_id">
+                                                                    <td class="match-cell"
+                                                                        :class="getScoreClass(getMatchScore(player, match.label))"
+                                                                        x-text="getMatchScore(player, match.label) !== null ? getMatchScore(player, match.label) : '-'">
+                                                                    </td>
+                                                                </template>
+                                                            </template>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Bench divider note -->
+                                        <template x-if="teamDetail.players?.length > 11">
+                                            <div style="padding: 8px 20px 16px; font-size: 0.65rem; color: var(--text-dimmed); display: flex; align-items: center; gap: 8px;">
+                                                <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
+                                                <span>Players 12+ are on the bench (not counted in team total)</span>
+                                                <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
         </div>
+
+
+        <!-- ========================================================
+             AWARDS TAB
+             ======================================================== -->
+        <div x-show="tab === 'awards'" x-transition:enter="stagger-in" style="animation-delay: 0.05s;">
+
+            <!-- Loading -->
+            <template x-if="loadingAwards && !awards">
+                <div>
+                    <div class="shimmer" style="height: 40px; width: 200px; margin-bottom: 20px;"></div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+                        <template x-for="i in 6" :key="i">
+                            <div class="shimmer" style="height: 140px; border-radius: 16px;"></div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Error -->
+            <template x-if="awardsError && !awards">
+                <div class="error-container">
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">Failed to load awards</p>
+                    <button class="retry-btn" @click="loadAwards()">Retry</button>
+                </div>
+            </template>
+
+            <template x-if="awards">
+                <div>
+                    <!-- ===== BEST XI THIS MATCH ===== -->
+                    <template x-if="awards.best_xi_week && awards.best_xi_week.length > 0">
+                        <div style="margin-bottom: 32px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(249,115,22,0.1)); display: flex; align-items: center; justify-content: center;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round">
+                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 class="heading-lg" style="margin: 0;">Best XI This Match</h2>
+                                    <p style="font-size: 0.7rem; color: var(--text-muted); margin: 2px 0 0;">Top 11 individual performances in the latest match</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <template x-for="(player, xiIdx) in awards.best_xi_week" :key="player.player_name">
+                                    <div class="card-flat stagger-in"
+                                         :class="{ 'xi-gold-glow': xiIdx === 0 }"
+                                         :style="'padding: 10px 16px; display: flex; align-items: center; gap: 12px; animation-delay: ' + (xiIdx * 0.04) + 's;'">
+
+                                        <!-- Number -->
+                                        <div class="xi-number"
+                                             :style="xiIdx === 0
+                                                 ? 'background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #451a03;'
+                                                 : xiIdx === 1
+                                                     ? 'background: rgba(156,163,175,0.15); color: #9ca3af; border: 1px solid rgba(156,163,175,0.2);'
+                                                     : xiIdx === 2
+                                                         ? 'background: rgba(217,119,6,0.15); color: #d97706; border: 1px solid rgba(217,119,6,0.2);'
+                                                         : 'background: var(--bg-surface); color: var(--text-muted);'">
+                                            <span x-text="xiIdx + 1"></span>
+                                        </div>
+
+                                        <!-- Player info -->
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: 700; font-size: 0.85rem;" x-text="player.display_name || player.player_name"></div>
+                                            <div style="font-size: 0.65rem; color: var(--text-muted);" x-text="player.team_name || ''"></div>
+                                        </div>
+
+                                        <!-- Points -->
+                                        <div style="font-weight: 800; font-size: 1rem;"
+                                             :style="xiIdx === 0 ? 'color: var(--gold);' : ''"
+                                             x-text="player.total_pts + ' pts'"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- ===== SEASON AWARDS ===== -->
+                    <div style="margin-bottom: 32px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(59,130,246,0.1)); display: flex; align-items: center; justify-content: center;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="heading-lg" style="margin: 0;">Season Awards</h2>
+                                <p style="font-size: 0.7rem; color: var(--text-muted); margin: 2px 0 0;">Cumulative leaders across the entire season</p>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+
+                            <!-- Top Batter Season -->
+                            <template x-if="awards.top_batter_season">
+                                <div class="award-card" style="background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.02)); border: 1px solid rgba(59,130,246,0.15);">
+                                    <div class="award-icon" style="background: rgba(59,130,246,0.15);">
+                                        <span style="font-size: 1.2rem;">&#127951;</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Top Batter</div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 2px;" x-text="awards.top_batter_season.display_name || awards.top_batter_season.player_name"></div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.top_batter_season.team_name"></div>
+                                    <div style="margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: #60a5fa;" x-text="awards.top_batter_season.batting_pts + ' batting pts'"></div>
+                                </div>
+                            </template>
+
+                            <!-- Top Bowler Season -->
+                            <template x-if="awards.top_bowler_season">
+                                <div class="award-card" style="background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(139,92,246,0.02)); border: 1px solid rgba(139,92,246,0.15);">
+                                    <div class="award-icon" style="background: rgba(139,92,246,0.15);">
+                                        <span style="font-size: 1.2rem;">&#127936;</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Top Bowler</div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 2px;" x-text="awards.top_bowler_season.display_name || awards.top_bowler_season.player_name"></div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.top_bowler_season.team_name"></div>
+                                    <div style="margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: #a78bfa;" x-text="awards.top_bowler_season.bowling_pts + ' bowling pts'"></div>
+                                </div>
+                            </template>
+
+                            <!-- Top Fielder Season -->
+                            <template x-if="awards.top_fielder_season">
+                                <div class="award-card" style="background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02)); border: 1px solid rgba(245,158,11,0.15);">
+                                    <div class="award-icon" style="background: rgba(245,158,11,0.15);">
+                                        <span style="font-size: 1.2rem;">&#129345;</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Top Fielder</div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 2px;" x-text="awards.top_fielder_season.display_name || awards.top_fielder_season.player_name"></div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.top_fielder_season.team_name"></div>
+                                    <div style="margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: #fbbf24;" x-text="awards.top_fielder_season.fielding_pts + ' fielding pts'"></div>
+                                </div>
+                            </template>
+
+                            <!-- Best Match Performance -->
+                            <template x-if="awards.best_match_performance">
+                                <div class="award-card" style="background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(239,68,68,0.05)); border: 1px solid rgba(249,115,22,0.2);">
+                                    <div class="award-icon" style="background: rgba(249,115,22,0.15);">
+                                        <span style="font-size: 1.2rem;">&#128293;</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Best Performance</div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 2px;" x-text="awards.best_match_performance.display_name || awards.best_match_performance.player_name"></div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted);" x-text="awards.best_match_performance.match_teams ? awards.best_match_performance.match_teams.join(' vs ') : ''"></div>
+                                    <div style="margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: var(--accent-light);" x-text="awards.best_match_performance.total_pts + ' pts in a single match'"></div>
+                                </div>
+                            </template>
+
+                            <!-- Most Consistent -->
+                            <template x-if="awards.most_consistent">
+                                <div class="award-card" style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02)); border: 1px solid rgba(16,185,129,0.15);">
+                                    <div class="award-icon" style="background: rgba(16,185,129,0.15);">
+                                        <span style="font-size: 1.2rem;">&#128175;</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #34d399; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Most Consistent</div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 2px;" x-text="awards.most_consistent.display_name || awards.most_consistent.player_name"></div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.most_consistent.team_name"></div>
+                                    <div style="margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: #34d399;" x-text="awards.most_consistent.avg_pts + ' avg pts (' + awards.most_consistent.matches_played + ' matches)'"></div>
+                                </div>
+                            </template>
+
+                            <!-- Carry Award -->
+                            <template x-if="awards.carry_award">
+                                <div class="award-card" style="background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(6,182,212,0.02)); border: 1px solid rgba(6,182,212,0.15);">
+                                    <div class="award-icon" style="background: rgba(6,182,212,0.15);">
+                                        <span style="font-size: 1.2rem;">&#128170;</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #22d3ee; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Carry Award</div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 2px;" x-text="awards.carry_award.display_name || awards.carry_award.player_name"></div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.carry_award.team_name"></div>
+                                    <div style="margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: #22d3ee;" x-text="awards.carry_award.percentage + '% of team total (' + awards.carry_award.total_pts + ' pts)'"></div>
+                                </div>
+                            </template>
+
+                            <!-- Bench Burden -->
+                            <template x-if="awards.bench_burden">
+                                <div class="award-card" style="background: linear-gradient(135deg, rgba(100,116,139,0.08), rgba(100,116,139,0.02)); border: 1px solid rgba(100,116,139,0.15);">
+                                    <div class="award-icon" style="background: rgba(100,116,139,0.12);">
+                                        <span style="font-size: 1.2rem;">&#128186;</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Bench Burden</div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 2px;" x-text="awards.bench_burden.display_name || awards.bench_burden.player_name"></div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.bench_burden.team_name"></div>
+                                    <div style="margin-top: 8px; font-size: 0.8rem; font-weight: 600; color: #94a3b8;" x-text="awards.bench_burden.total_pts + ' pts — best bench player not in any top 11'"></div>
+                                </div>
+                            </template>
+
+                            <!-- Biggest Dud -->
+                            <template x-if="awards.biggest_dud">
+                                <div class="award-card" style="background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02)); border: 1px solid rgba(239,68,68,0.15);">
+                                    <div class="award-icon" style="background: rgba(239,68,68,0.12);">
+                                        <span style="font-size: 1.2rem;">&#128169;</span>
+                                    </div>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #f87171; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Biggest Dud</div>
+                                    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 2px;" x-text="awards.biggest_dud.display_name || awards.biggest_dud.player_name"></div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted);" x-text="awards.biggest_dud.match_teams ? awards.biggest_dud.match_teams.join(' vs ') : ''"></div>
+                                    <div style="margin-top: 8px; font-size: 0.8rem; font-weight: 700; color: #f87171;" x-text="awards.biggest_dud.total_pts + ' pts — worst single-match performance'"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- ===== THIS MATCH AWARDS ===== -->
+                    <template x-if="awards.top_batter_week || awards.top_bowler_week || awards.top_fielder_week">
+                        <div style="margin-bottom: 32px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, rgba(249,115,22,0.2), rgba(251,191,36,0.1)); display: flex; align-items: center; justify-content: center;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round">
+                                        <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 class="heading-lg" style="margin: 0;">This Match Awards</h2>
+                                    <p style="font-size: 0.7rem; color: var(--text-muted); margin: 2px 0 0;">Category leaders from the most recent match</p>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+                                <!-- Match Top Batter -->
+                                <template x-if="awards.top_batter_week">
+                                    <div class="award-card" style="background: linear-gradient(135deg, rgba(59,130,246,0.06), transparent); border: 1px solid rgba(59,130,246,0.12);">
+                                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                            <div class="award-icon" style="background: rgba(59,130,246,0.12); width: 36px; height: 36px; border-radius: 10px; margin-bottom: 0;">
+                                                <span style="font-size: 1rem;">&#127951;</span>
+                                            </div>
+                                            <div style="font-size: 0.65rem; font-weight: 600; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.06em;">Match Top Batter</div>
+                                        </div>
+                                        <div style="font-weight: 800; font-size: 1rem;" x-text="awards.top_batter_week.display_name || awards.top_batter_week.player_name"></div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.top_batter_week.team_name"></div>
+                                        <div style="margin-top: 6px; font-size: 0.8rem; font-weight: 700; color: #60a5fa;" x-text="awards.top_batter_week.batting_pts + ' batting pts'"></div>
+                                    </div>
+                                </template>
+
+                                <!-- Match Top Bowler -->
+                                <template x-if="awards.top_bowler_week">
+                                    <div class="award-card" style="background: linear-gradient(135deg, rgba(139,92,246,0.06), transparent); border: 1px solid rgba(139,92,246,0.12);">
+                                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                            <div class="award-icon" style="background: rgba(139,92,246,0.12); width: 36px; height: 36px; border-radius: 10px; margin-bottom: 0;">
+                                                <span style="font-size: 1rem;">&#127936;</span>
+                                            </div>
+                                            <div style="font-size: 0.65rem; font-weight: 600; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.06em;">Match Top Bowler</div>
+                                        </div>
+                                        <div style="font-weight: 800; font-size: 1rem;" x-text="awards.top_bowler_week.display_name || awards.top_bowler_week.player_name"></div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.top_bowler_week.team_name"></div>
+                                        <div style="margin-top: 6px; font-size: 0.8rem; font-weight: 700; color: #a78bfa;" x-text="awards.top_bowler_week.bowling_pts + ' bowling pts'"></div>
+                                    </div>
+                                </template>
+
+                                <!-- Match Top Fielder -->
+                                <template x-if="awards.top_fielder_week">
+                                    <div class="award-card" style="background: linear-gradient(135deg, rgba(245,158,11,0.06), transparent); border: 1px solid rgba(245,158,11,0.12);">
+                                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                            <div class="award-icon" style="background: rgba(245,158,11,0.12); width: 36px; height: 36px; border-radius: 10px; margin-bottom: 0;">
+                                                <span style="font-size: 1rem;">&#129345;</span>
+                                            </div>
+                                            <div style="font-size: 0.65rem; font-weight: 600; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.06em;">Match Top Fielder</div>
+                                        </div>
+                                        <div style="font-weight: 800; font-size: 1rem;" x-text="awards.top_fielder_week.display_name || awards.top_fielder_week.player_name"></div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted);" x-text="awards.top_fielder_week.team_name"></div>
+                                        <div style="margin-top: 6px; font-size: 0.8rem; font-weight: 700; color: #fbbf24;" x-text="awards.top_fielder_week.fielding_pts + ' fielding pts'"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- No data state -->
+                    <template x-if="!awards.best_xi_week?.length && !awards.top_batter_season && !awards.best_match_performance">
+                        <div class="error-container">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin: 0 auto 16px;">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                            </svg>
+                            <p style="color: var(--text-secondary);">No match data yet. Awards will appear once matches are played.</p>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+
+        <!-- ========================================================
+             LIVE TAB
+             ======================================================== -->
+        <div x-show="tab === 'live'" x-transition:enter="stagger-in" style="animation-delay: 0.05s;">
+
+            <!-- Loading -->
+            <template x-if="loadingLive && !liveData">
+                <div>
+                    <div class="shimmer" style="height: 120px; border-radius: 16px; margin-bottom: 16px;"></div>
+                    <template x-for="i in 3" :key="i">
+                        <div class="shimmer" style="height: 80px; border-radius: 12px; margin-bottom: 10px;"></div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Error -->
+            <template x-if="liveError && !liveData">
+                <div class="error-container">
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">Failed to load live data</p>
+                    <button class="retry-btn" @click="loadLive()">Retry</button>
+                </div>
+            </template>
+
+            <template x-if="liveData">
+                <div>
+                    <!-- No match -->
+                    <template x-if="!liveData.match">
+                        <div class="error-container">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin: 0 auto 16px;">
+                                <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+                            </svg>
+                            <p style="color: var(--text-secondary);">No match data available yet.</p>
+                        </div>
+                    </template>
+
+                    <!-- Match Card -->
+                    <template x-if="liveData.match">
+                        <div>
+                            <!-- Match Header Card -->
+                            <div class="card" style="padding: 24px; margin-bottom: 20px;"
+                                 :style="liveData.match.status === 'in_progress' ? 'border-color: rgba(239,68,68,0.2); box-shadow: 0 0 30px rgba(239,68,68,0.05);' : ''">
+
+                                <div style="display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                                    <div>
+                                        <div style="margin-bottom: 8px;">
+                                            <template x-if="liveData.match.status === 'in_progress'">
+                                                <span class="status-live">
+                                                    <span class="live-dot"></span>
+                                                    LIVE
+                                                </span>
+                                            </template>
+                                            <template x-if="liveData.match.status === 'complete'">
+                                                <span class="status-completed">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                    COMPLETED
+                                                </span>
+                                            </template>
+                                            <template x-if="liveData.match.status !== 'in_progress' && liveData.match.status !== 'complete'">
+                                                <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;" x-text="liveData.match.status"></span>
+                                            </template>
+                                        </div>
+                                        <h2 class="heading-lg" style="margin: 0;" x-text="liveData.match.teams ? liveData.match.teams.join(' vs ') : 'Match'"></h2>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+                                            <span x-text="liveData.match.venue || ''"></span>
+                                            <span x-show="liveData.match.date" style="margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--border-subtle);" x-text="formatDate(liveData.match.date)"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Last updated -->
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 0.65rem; color: var(--text-dimmed);">
+                                            Last updated: <span x-text="liveLastUpdated || 'just now'"></span>
+                                        </div>
+                                        <template x-if="liveData.match.status === 'in_progress'">
+                                            <div style="font-size: 0.6rem; color: var(--text-dimmed); margin-top: 2px;">Auto-refreshes every 30s</div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Per-Team Fantasy Impact -->
+                            <template x-if="liveData.team_impacts && liveData.team_impacts.length > 0">
+                                <div>
+                                    <h3 class="heading-md" style="margin: 0 0 12px; color: var(--text-secondary);">Fantasy Impact by Team</h3>
+
+                                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                                        <template x-for="(impact, impIdx) in liveData.team_impacts" :key="impact.team_name">
+                                            <div class="card stagger-in" :style="'animation-delay: ' + (impIdx * 0.06) + 's;'">
+                                                <!-- Team Impact Header -->
+                                                <div @click="toggleLiveTeam(impact.team_name)"
+                                                     style="padding: 16px 20px; cursor: pointer; display: flex; align-items: center; gap: 14px; user-select: none;">
+
+                                                    <div class="rank-badge"
+                                                         :class="{
+                                                             'rank-1': impIdx === 0,
+                                                             'rank-2': impIdx === 1,
+                                                             'rank-3': impIdx === 2,
+                                                             'rank-default': impIdx > 2
+                                                         }">
+                                                        <span x-text="impIdx + 1"></span>
+                                                    </div>
+
+                                                    <div style="flex: 1; min-width: 0;">
+                                                        <div class="heading-md" x-text="impact.team_name"></div>
+                                                        <div style="font-size: 0.65rem; color: var(--text-muted);">
+                                                            <span x-text="impact.players.length"></span> players contributed
+                                                        </div>
+                                                    </div>
+
+                                                    <div style="text-align: right; flex-shrink: 0;">
+                                                        <div class="pts-highlight" style="font-size: 1.1rem;"
+                                                             :style="impIdx === 0 ? 'color: var(--gold);' : ''">
+                                                            <span x-text="impact.match_pts >= 0 ? '+' : ''"></span><span x-text="impact.match_pts"></span>
+                                                            <span style="font-size: 0.6rem; font-weight: 500; color: var(--text-muted); margin-left: 2px;">pts</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <svg class="accordion-chevron"
+                                                         :class="{ rotated: expandedLiveTeam === impact.team_name }"
+                                                         width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                         stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
+                                                        <polyline points="6 9 12 15 18 9"/>
+                                                    </svg>
+                                                </div>
+
+                                                <!-- Player Breakdown -->
+                                                <div class="accordion-content"
+                                                     :class="{ open: expandedLiveTeam === impact.team_name }">
+                                                    <div style="padding: 0 20px 16px;">
+                                                        <template x-for="player in impact.players" :key="player.player_name">
+                                                            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.02);"
+                                                                 :class="{ 'on-fire': player.total_pts >= 50 }"
+                                                                 :style="player.total_pts >= 50 ? 'padding: 8px 10px; border-radius: 8px; margin: 2px -10px;' : ''">
+
+                                                                <!-- Role pill -->
+                                                                <span class="role-pill"
+                                                                      :class="getRolePillClass(player.player_name)"
+                                                                      x-text="getPlayerRole(player.player_name)"
+                                                                      x-show="getPlayerRole(player.player_name)"></span>
+
+                                                                <div style="flex: 1; min-width: 0;">
+                                                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                                                        <span style="font-weight: 600; font-size: 0.8rem;" x-text="player.display_name || player.player_name"></span>
+                                                                        <template x-if="player.total_pts >= 50">
+                                                                            <span class="fire-badge">ON FIRE</span>
+                                                                        </template>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Breakdown -->
+                                                                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.7rem; color: var(--text-muted);" class="hide-mobile">
+                                                                    <span x-show="player.batting_pts" style="color: #60a5fa;" x-text="'Bat ' + player.batting_pts"></span>
+                                                                    <span x-show="player.bowling_pts" style="color: #a78bfa;" x-text="'Bowl ' + player.bowling_pts"></span>
+                                                                    <span x-show="player.fielding_pts" style="color: #fbbf24;" x-text="'Field ' + player.fielding_pts"></span>
+                                                                </div>
+
+                                                                <!-- Total -->
+                                                                <div class="pts-highlight" style="font-size: 0.9rem; flex-shrink: 0; padding: 2px 6px; border-radius: 6px;"
+                                                                     :class="{
+                                                                         'score-excellent': player.total_pts >= 50,
+                                                                         'score-good': player.total_pts >= 20 && player.total_pts < 50,
+                                                                         'score-bad': player.total_pts < 0,
+                                                                         'pts-flash-up': prevLivePoints[player.player_name] !== undefined && player.total_pts > prevLivePoints[player.player_name],
+                                                                         'pts-flash-down': prevLivePoints[player.player_name] !== undefined && player.total_pts < prevLivePoints[player.player_name],
+                                                                     }"
+                                                                     x-text="player.total_pts + ' pts'">
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Projected Standings -->
+                                    <template x-if="standings.length > 0 && liveData.match?.status === 'in_progress'">
+                                        <div style="margin-top: 24px;">
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                                <h3 class="heading-md" style="margin: 0; color: var(--text-secondary);">Projected Standings</h3>
+                                                <span style="font-size: 0.6rem; padding: 2px 8px; border-radius: 6px; background: rgba(249,115,22,0.1); color: var(--accent); font-weight: 600; border: 1px solid rgba(249,115,22,0.2);">LIVE</span>
+                                            </div>
+
+                                            <div class="card-flat" style="overflow: hidden;">
+                                                <template x-for="(proj, projIdx) in projectedStandings" :key="proj.team_name">
+                                                    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);"
+                                                         :style="projIdx === projectedStandings.length - 1 ? 'border-bottom: none;' : ''">
+                                                        <div class="rank-badge" style="width: 28px; height: 28px; font-size: 0.7rem;"
+                                                             :class="{
+                                                                 'rank-1': projIdx === 0,
+                                                                 'rank-2': projIdx === 1,
+                                                                 'rank-3': projIdx === 2,
+                                                                 'rank-default': projIdx > 2
+                                                             }">
+                                                            <span x-text="projIdx + 1"></span>
+                                                        </div>
+                                                        <div style="flex: 1; font-weight: 600; font-size: 0.85rem;" x-text="proj.team_name"></div>
+                                                        <div style="text-align: right;">
+                                                            <span class="pts-highlight" style="font-size: 0.9rem;" x-text="proj.projected_pts"></span>
+                                                            <span style="font-size: 0.6rem; color: var(--text-muted); margin-left: 4px;"
+                                                                  :style="proj.live_delta > 0 ? 'color: #4ade80;' : proj.live_delta < 0 ? 'color: #f87171;' : ''"
+                                                                  x-text="proj.live_delta > 0 ? '+' + proj.live_delta : proj.live_delta < 0 ? proj.live_delta : ''"></span>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <!-- No impacts -->
+                            <template x-if="!liveData.team_impacts || liveData.team_impacts.length === 0">
+                                <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                                    <p>No fantasy player data for this match yet.</p>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
     </main>
 
     <!-- Footer -->
-    <footer class="text-center text-gray-700 text-[11px] py-6 border-t border-gray-800/50 mt-8">
-        <span>IPL 2026 Fantasy League</span>
-        <span class="mx-1.5">&middot;</span>
-        <span>Top 11 Scoring</span>
-    </footer>
+    <div class="footer-text">
+        IPL 2026 Fantasy League &middot; Points based on top 11 scoring players
+    </div>
 
+
+    <!-- ============================================================
+         ALPINE.JS APP
+         ============================================================ -->
     <script>
-        function fantasyApp() {
-            return {
-                tab: 'standings',
-                standings: [],
-                liveData: { match: null, team_impacts: [] },
-                expanded: null,
-                liveExpanded: null,
-                pollInterval: null,
-                loadError: null,
-                liveLoading: false,
-                teamDetailLoading: null,
-                teamDetails: {},      // cache: team_name -> detail from /api/team/
-                lastLiveRefresh: 'never',
+    function fantasyApp() {
+        return {
+            // --- State ---
+            tab: 'standings',
+            standings: [],
+            loading: false,
+            error: null,
 
-                async init() {
-                    await this.fetchStandings();
-                    // Auto-poll live data every 30s
-                    this.pollInterval = setInterval(() => {
-                        if (this.tab === 'live') this.fetchLive();
-                    }, 30000);
-                },
+            expandedTeam: null,
+            teamDetail: null,
+            loadingDetail: false,
 
-                async fetchStandings() {
-                    this.loadError = null;
-                    try {
-                        const resp = await fetch('/api/standings');
-                        if (!resp.ok) throw new Error('Failed to load');
-                        this.standings = await resp.json();
-                    } catch (e) {
-                        console.error('Failed to fetch standings:', e);
-                        this.loadError = 'Failed to load standings. Check your connection.';
+            awards: null,
+            loadingAwards: false,
+            awardsError: null,
+
+            liveData: null,
+            loadingLive: false,
+            liveError: null,
+            liveLastUpdated: null,
+            liveTimer: null,
+            expandedLiveTeam: null,
+            prevLivePoints: {},
+
+            // H2H state
+            h2hTeam1: '',
+            h2hTeam2: '',
+            h2hData: null,
+            h2hLoading: false,
+            h2hOpen: false,
+
+            // ===================================================================
+            // PLAYER METADATA (built dynamically from API response)
+            // ===================================================================
+            playerMetaMap: {},
+            teamDesignationsMap: {},
+
+            // IPL team name abbreviation mapping
+            iplTeamAbbrev: {
+                "Sunrisers Hyderabad": "SRH",
+                "Gujarat Titans": "GT",
+                "Mumbai Indians": "MI",
+                "Chennai Super Kings": "CSK",
+                "Kolkata Knight Riders": "KKR",
+                "Delhi Capitals": "DC",
+                "Royal Challengers Bengaluru": "RCB",
+                "Royal Challengers Bangalore": "RCB",
+                "Rajasthan Royals": "RR",
+                "Lucknow Super Giants": "LSG",
+                "Punjab Kings": "PBKS",
+            },
+
+            // ===================================================================
+            // INIT
+            // ===================================================================
+            async init() {
+                await this.loadStandings();
+            },
+
+            // ===================================================================
+            // DATA FETCHING
+            // ===================================================================
+            async loadStandings() {
+                this.loading = true;
+                this.error = null;
+                try {
+                    const res = await fetch('/api/standings');
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    this.standings = await res.json();
+
+                    // Build player metadata and designations from API data
+                    this.playerMetaMap = {};
+                    this.teamDesignationsMap = {};
+                    for (const team of this.standings) {
+                        this.teamDesignationsMap[team.team_name] = { C: null, VC: null };
+                        for (const p of team.players) {
+                            let roleCode = '';
+                            if (p.role === 'batsman') roleCode = 'BAT';
+                            else if (p.role === 'bowler') roleCode = 'BOWL';
+                            else if (p.role === 'all-rounder') roleCode = 'AR';
+                            else if (p.role === 'wicket-keeper') roleCode = 'WK';
+
+                            const iplAbbrev = this.iplTeamAbbrev[p.ipl_team] || p.ipl_team || '';
+                            this.playerMetaMap[p.player_name] = { role: roleCode, ipl: iplAbbrev };
+
+                            if (p.designation === 'C') this.teamDesignationsMap[team.team_name].C = p.player_name;
+                            if (p.designation === 'VC') this.teamDesignationsMap[team.team_name].VC = p.player_name;
+                        }
                     }
-                },
+                } catch (e) {
+                    this.error = e.message;
+                    console.error('Standings error:', e);
+                } finally {
+                    this.loading = false;
+                }
+            },
 
-                async fetchTeamDetail(teamName) {
-                    if (this.teamDetails[teamName]) return;
-                    this.teamDetailLoading = teamName;
-                    try {
-                        const resp = await fetch('/api/team/' + encodeURIComponent(teamName));
-                        if (!resp.ok) throw new Error('Failed');
-                        const data = await resp.json();
-                        this.teamDetails[teamName] = data;
-                    } catch (e) {
-                        console.error('Failed to fetch team detail:', e);
+            async loadTeamDetail(teamName) {
+                this.loadingDetail = true;
+                try {
+                    const res = await fetch(`/api/team/${encodeURIComponent(teamName)}`);
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    this.teamDetail = await res.json();
+                } catch (e) {
+                    console.error('Team detail error:', e);
+                    this.teamDetail = null;
+                } finally {
+                    this.loadingDetail = false;
+                }
+            },
+
+            async loadAwards() {
+                if (this.awards) return;
+                this.loadingAwards = true;
+                this.awardsError = null;
+                try {
+                    const res = await fetch('/api/awards');
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    this.awards = await res.json();
+                } catch (e) {
+                    this.awardsError = e.message;
+                    console.error('Awards error:', e);
+                } finally {
+                    this.loadingAwards = false;
+                }
+            },
+
+            async loadLive() {
+                this.loadingLive = true;
+                this.liveError = null;
+                try {
+                    // Save previous points for flash animation
+                    const prevPoints = {};
+                    if (this.liveData?.team_impacts) {
+                        for (const impact of this.liveData.team_impacts) {
+                            for (const p of impact.players) {
+                                prevPoints[p.player_name] = p.total_pts;
+                            }
+                        }
                     }
-                    this.teamDetailLoading = null;
-                },
 
-                async toggleTeam(teamName) {
-                    if (this.expanded === teamName) {
-                        this.expanded = null;
+                    const res = await fetch('/api/live');
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    this.liveData = await res.json();
+                    this.prevLivePoints = prevPoints;
+                    this.liveLastUpdated = new Date().toLocaleTimeString();
+
+                    // Set up auto-refresh if live
+                    if (this.liveData?.match?.status === 'in_progress') {
+                        this.startLivePolling();
                     } else {
-                        this.expanded = teamName;
-                        await this.fetchTeamDetail(teamName);
+                        this.stopLivePolling();
                     }
-                },
+                } catch (e) {
+                    this.liveError = e.message;
+                    console.error('Live error:', e);
+                } finally {
+                    this.loadingLive = false;
+                }
+            },
 
-                getTeamPlayers(teamName) {
-                    // Use detailed data if available, otherwise fall back to standings
-                    const detail = this.teamDetails[teamName];
-                    if (detail) return detail.players;
-                    const team = this.standings.find(t => t.team_name === teamName);
-                    return team ? team.players : [];
-                },
-
-                getMatchLabels(teamName) {
-                    // Per-match columns from team detail API
-                    // Currently the API doesn't return per-match data, so return empty
-                    // When the API adds match_scores to each player, this will work:
-                    const detail = this.teamDetails[teamName];
-                    if (detail && detail.matches) {
-                        return detail.matches.map(m => m.label);
-                    }
-                    return [];
-                },
-
-                getMatchScore(player, matchLabel) {
-                    // Look up a player's score for a specific match label
-                    if (player.match_scores) {
-                        const ms = player.match_scores.find(s => s.label === matchLabel);
-                        return ms ? ms.pts : null;
-                    }
-                    return null;
-                },
-
-                getSplitPct(player, field) {
-                    const bat = Math.max(0, player.batting_pts || 0);
-                    const bowl = Math.max(0, player.bowling_pts || 0);
-                    const fld = Math.max(0, player.fielding_pts || 0);
-                    const total = bat + bowl + fld;
-                    if (total === 0) return 0;
-                    const val = Math.max(0, player[field] || 0);
-                    return Math.round((val / total) * 100);
-                },
-
-                async fetchLive() {
-                    this.liveLoading = !this.liveData.match; // only show shimmer on first load
+            startLivePolling() {
+                this.stopLivePolling();
+                this.liveTimer = setInterval(async () => {
                     try {
-                        const resp = await fetch('/api/live');
-                        if (!resp.ok) throw new Error('Failed');
-                        this.liveData = await resp.json();
-                        const now = new Date();
-                        this.lastLiveRefresh = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        // Save previous points for flash animation
+                        const prevPoints = {};
+                        if (this.liveData?.team_impacts) {
+                            for (const impact of this.liveData.team_impacts) {
+                                for (const p of impact.players) {
+                                    prevPoints[p.player_name] = p.total_pts;
+                                }
+                            }
+                        }
+
+                        const res = await fetch('/api/live');
+                        if (res.ok) {
+                            this.liveData = await res.json();
+                            this.prevLivePoints = prevPoints;
+                            this.liveLastUpdated = new Date().toLocaleTimeString();
+                            if (this.liveData?.match?.status !== 'in_progress') {
+                                this.stopLivePolling();
+                            }
+                        }
                     } catch (e) {
-                        console.error('Failed to fetch live data:', e);
+                        console.error('Live poll error:', e);
                     }
-                    this.liveLoading = false;
-                },
+                }, 30000);
+            },
 
-                formatMatchDate(dateStr) {
-                    if (!dateStr) return '';
-                    try {
-                        const d = new Date(dateStr + 'T00:00:00');
-                        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                    } catch {
-                        return dateStr;
-                    }
-                },
-            };
+            stopLivePolling() {
+                if (this.liveTimer) {
+                    clearInterval(this.liveTimer);
+                    this.liveTimer = null;
+                }
+            },
+
+            // ===================================================================
+            // TEAM EXPAND / COLLAPSE
+            // ===================================================================
+            async toggleTeam(teamName) {
+                if (this.expandedTeam === teamName) {
+                    this.expandedTeam = null;
+                    this.teamDetail = null;
+                    return;
+                }
+                this.expandedTeam = teamName;
+                this.teamDetail = null;
+                await this.loadTeamDetail(teamName);
+            },
+
+            toggleLiveTeam(teamName) {
+                this.expandedLiveTeam = this.expandedLiveTeam === teamName ? null : teamName;
+            },
+
+            // ===================================================================
+            // PLAYER METADATA HELPERS
+            // ===================================================================
+            getPlayerRole(playerName) {
+                const meta = this.playerMetaMap[playerName];
+                if (!meta || !meta.role) return '';
+                return meta.role;
+            },
+
+            getRolePillClass(playerName) {
+                const meta = this.playerMetaMap[playerName];
+                if (!meta || !meta.role) return '';
+                const r = meta.role;
+                if (r === 'BAT') return 'role-bat';
+                if (r === 'BOWL') return 'role-bowl';
+                if (r === 'AR') return 'role-ar';
+                if (r === 'WK') return 'role-wk';
+                return '';
+            },
+
+            getPlayerIPLTeam(playerName) {
+                return this.playerMetaMap[playerName]?.ipl || '';
+            },
+
+            getPlayerDesignation(teamName, playerName) {
+                const d = this.teamDesignationsMap[teamName];
+                if (!d) return '';
+                if (d.C === playerName) return 'C';
+                if (d.VC === playerName) return 'VC';
+                return '';
+            },
+
+            getTeamCaptain(teamName) {
+                const d = this.teamDesignationsMap[teamName];
+                return d?.C || null;
+            },
+
+            getTeamVC(teamName) {
+                const d = this.teamDesignationsMap[teamName];
+                return d?.VC || null;
+            },
+
+            getEffectivePoints(teamName, player) {
+                // Backend already applies C/VC multiplier to total_pts
+                return player.total_pts;
+            },
+
+            // ===================================================================
+            // TABLE HELPERS
+            // ===================================================================
+            getSplitPct(player, field) {
+                const total = Math.abs(player.batting_pts || 0) + Math.abs(player.bowling_pts || 0) + Math.abs(player.fielding_pts || 0);
+                if (total === 0) return 0;
+                return Math.max(0, ((Math.abs(player[field] || 0) / total) * 100).toFixed(1));
+            },
+
+            getMatchScore(player, label) {
+                if (!player.match_scores) return null;
+                const found = player.match_scores.find(s => s.label === label);
+                return found ? found.pts : null;
+            },
+
+            getScoreClass(score) {
+                if (score === null) return 'neutral';
+                if (score >= 50) return 'score-excellent';
+                if (score >= 20) return 'score-good';
+                if (score >= 0) return 'score-ok';
+                if (score >= -10) return 'score-bad';
+                return 'score-terrible';
+            },
+
+            // ===================================================================
+            // PROJECTED STANDINGS (computed from current standings + live impact)
+            // ===================================================================
+            get projectedStandings() {
+                if (!this.standings.length || !this.liveData?.team_impacts?.length) return [];
+
+                const impactMap = {};
+                for (const impact of this.liveData.team_impacts) {
+                    impactMap[impact.team_name] = impact.match_pts || 0;
+                }
+
+                const projected = this.standings.map(team => ({
+                    team_name: team.team_name,
+                    current_pts: team.total_pts,
+                    live_delta: impactMap[team.team_name] || 0,
+                    projected_pts: team.total_pts + (impactMap[team.team_name] || 0),
+                }));
+
+                projected.sort((a, b) => b.projected_pts - a.projected_pts);
+                return projected;
+            },
+
+            // ===================================================================
+            // SPARKLINE HELPER
+            // ===================================================================
+            computeSparkline(data, w, h) {
+                if (!data || data.length < 2) return '';
+                const max = Math.max(...data);
+                const min = Math.min(...data);
+                const range = max - min || 1;
+                const step = w / (data.length - 1);
+                return data.map((v, i) => `${i * step},${h - ((v - min) / range) * (h - 4) - 2}`).join(' ');
+            },
+
+            // ===================================================================
+            // HEAD-TO-HEAD
+            // ===================================================================
+            async loadH2H() {
+                if (!this.h2hTeam1 || !this.h2hTeam2 || this.h2hTeam1 === this.h2hTeam2) return;
+                this.h2hLoading = true;
+                this.h2hData = null;
+                try {
+                    const res = await fetch(`/api/h2h?team1=${encodeURIComponent(this.h2hTeam1)}&team2=${encodeURIComponent(this.h2hTeam2)}`);
+                    if (res.ok) this.h2hData = await res.json();
+                } catch (e) {
+                    console.error('H2H error:', e);
+                } finally {
+                    this.h2hLoading = false;
+                }
+            },
+
+            // ===================================================================
+            // FORMATTING
+            // ===================================================================
+            formatDate(dateStr) {
+                if (!dateStr) return '';
+                try {
+                    const d = new Date(dateStr);
+                    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                } catch {
+                    return dateStr;
+                }
+            },
         }
+    }
     </script>
 </body>
 </html>

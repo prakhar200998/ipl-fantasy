@@ -12,6 +12,7 @@ import database as db
 from adapters.cricketdata import CricketDataAdapter
 from scoring import calculate_fantasy_points
 from name_mapping import get_display_name
+from teams import get_captain_vc
 from config import (
     CRICKETDATA_API_KEY, SEASON,
     LIVE_POLL_INTERVAL, IDLE_POLL_INTERVAL, ADMIN_SECRET,
@@ -50,6 +51,8 @@ def fetch_and_store_completed_matches():
         logger.info("All completed matches already stored")
         return
 
+    captain_vc = get_captain_vc()
+
     for match in new_matches:
         scorecard = adapter.get_scorecard(match["match_id"])
         if not scorecard:
@@ -60,7 +63,7 @@ def fetch_and_store_completed_matches():
             match["match_id"], match["date"], match["teams"],
             match["venue"], "complete"
         )
-        db.bulk_upsert_player_points(match["match_id"], points)
+        db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
         logger.info("Stored match: %s", match.get("name", match["match_id"]))
 
 
@@ -90,6 +93,8 @@ def poll_live_matches():
                   conn.execute("SELECT match_id, status FROM matches").fetchall()}
         conn.close()
 
+        captain_vc = get_captain_vc()
+
         for match in live_matches:
             # Skip if already stored as complete
             if stored.get(match["match_id"]) == "complete" and match["status"] == "complete":
@@ -102,7 +107,7 @@ def poll_live_matches():
                 match["match_id"], match["date"], match["teams"],
                 match["venue"], match["status"]
             )
-            db.bulk_upsert_player_points(match["match_id"], points)
+            db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
             logger.info("Updated match %s (status=%s)", match["match_id"], match["status"])
     except Exception as e:
         logger.error("Poll error: %s", e)
@@ -219,6 +224,40 @@ async def live():
         },
         "team_impacts": impacts,
     }
+
+
+@app.get("/api/awards")
+async def awards():
+    """All awards and stats for the season."""
+    data = db.get_awards()
+
+    # Add display_name to all player entries
+    def _add_display_names(obj):
+        if obj is None:
+            return
+        if isinstance(obj, list):
+            for item in obj:
+                if isinstance(item, dict) and "player_name" in item:
+                    item["display_name"] = get_display_name(item["player_name"])
+        elif isinstance(obj, dict) and "player_name" in obj:
+            obj["display_name"] = get_display_name(obj["player_name"])
+
+    for key in data:
+        _add_display_names(data[key])
+
+    return data
+
+
+@app.get("/api/h2h")
+async def head_to_head(team1: str, team2: str):
+    """Head-to-head comparison between two teams."""
+    data = db.get_head_to_head(team1, team2)
+    if not data:
+        raise HTTPException(404, "One or both teams not found")
+    for side in ("team1", "team2"):
+        for p in data[side]["players"]:
+            p["display_name"] = get_display_name(p["player_name"])
+    return data
 
 
 @app.post("/api/admin/roster")
