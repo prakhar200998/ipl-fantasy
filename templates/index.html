@@ -446,8 +446,8 @@
            AWARD CARDS
            ================================================================ */
         .award-card {
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 14px;
+            padding: 16px;
             position: relative;
             overflow: hidden;
             transition: all var(--anim-med);
@@ -669,6 +669,9 @@
             .rank-badge { width: 28px; height: 28px; font-size: 0.7rem; border-radius: 7px; }
             .team-pts { font-size: 1.05rem !important; }
             .badge-c, .badge-vc { font-size: 0.5rem; padding: 1px 4px; }
+            .award-card { padding: 14px !important; border-radius: 12px !important; }
+            .award-icon { width: 40px !important; height: 40px !important; border-radius: 12px !important; }
+            .xi-number { width: 22px; height: 22px; font-size: 0.65rem; border-radius: 5px; }
         }
 
         /* ================================================================
@@ -849,6 +852,27 @@
             opacity: 0.4;
             cursor: not-allowed;
         }
+        /* ================================================================
+           POINTS PROGRESS CHART
+           ================================================================ */
+        .chart-line {
+            transition: opacity 200ms, stroke-width 200ms;
+        }
+        .chart-hit-area {
+            cursor: pointer;
+        }
+        .chart-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 6px;
+            transition: background var(--anim-fast);
+        }
+        .chart-legend-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
     </style>
 </head>
 <body x-data="fantasyApp()" x-init="init()" x-cloak>
@@ -957,6 +981,83 @@
                             <span class="tooltip-text">Only the best 11 players' points count toward the team total</span>
                         </div>
                     </div>
+
+                    <!-- Points Progress Chart -->
+                    <template x-if="standings.length && standings[0]?.pts_history?.length >= 1">
+                        <div class="card" style="margin-bottom: 16px; padding: 16px 18px; overflow: visible;">
+                            <!-- Chart Title -->
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                </svg>
+                                <span class="heading-md" style="font-size: 0.9rem;">Points Progress</span>
+                            </div>
+
+                            <!-- SVG Chart -->
+                            <svg :viewBox="'0 0 ' + getChartWidth() + ' ' + getChartHeight()"
+                                 style="width: 100%; height: auto; display: block; overflow: visible;"
+                                 @mouseleave="highlightedTeam = null"
+                                 @touchend.outside="highlightedTeam = null">
+
+                                <!-- Horizontal grid lines -->
+                                <template x-for="(yVal, gi) in getChartGridLines(getChartYMax(standings), 5)" :key="'grid-' + gi">
+                                    <g>
+                                        <line :x1="40" :y1="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8))"
+                                              :x2="getChartWidth()" :y2="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8))"
+                                              stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                                        <text :x="36" :y="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8)) + 3"
+                                              fill="var(--text-dimmed)" font-size="9" text-anchor="end" x-text="yVal"></text>
+                                    </g>
+                                </template>
+
+                                <!-- X-axis labels -->
+                                <template x-for="(m, mi) in standings[0].pts_history" :key="'xlabel-' + mi">
+                                    <text :x="40 + (mi * ((getChartWidth() - 40) / Math.max(standings[0].pts_history.length - 1, 1)))"
+                                          :y="getChartHeight() - 6"
+                                          fill="var(--text-dimmed)" font-size="8" text-anchor="middle"
+                                          x-text="'M' + (mi + 1)"></text>
+                                </template>
+
+                                <!-- Team lines -->
+                                <template x-for="(team, tIdx) in standings" :key="'line-' + team.team_name">
+                                    <polyline class="chart-line"
+                                              :points="getChartPoints(standings, tIdx, getChartWidth(), getChartHeight(), 40, 24)"
+                                              fill="none"
+                                              :stroke="teamColors[tIdx % teamColors.length]"
+                                              stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              :style="'opacity: ' + (highlightedTeam === null ? 0.3 : (highlightedTeam === team.team_name ? 1.0 : 0.15)) + '; stroke-width: ' + (highlightedTeam === team.team_name ? 2.5 : 2)"/>
+                                </template>
+
+                                <!-- Invisible hit-area polylines (on top for hover) -->
+                                <template x-for="(team, tIdx) in standings" :key="'hit-' + team.team_name">
+                                    <polyline class="chart-hit-area"
+                                              :points="getChartPoints(standings, tIdx, getChartWidth(), getChartHeight(), 40, 24)"
+                                              fill="none"
+                                              stroke="transparent"
+                                              stroke-width="10"
+                                              stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              @mouseenter="highlightedTeam = team.team_name"
+                                              @touchstart.passive="highlightedTeam = team.team_name"/>
+                                </template>
+                            </svg>
+
+                            <!-- Legend -->
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px;">
+                                <template x-for="(team, tIdx) in standings" :key="'legend-' + team.team_name">
+                                    <div class="chart-legend-item"
+                                         @mouseenter="highlightedTeam = team.team_name"
+                                         @mouseleave="highlightedTeam = null"
+                                         @touchstart.passive="highlightedTeam = team.team_name"
+                                         @touchend="highlightedTeam = null">
+                                        <span :style="'display:inline-block; width:8px; height:8px; border-radius:50%; background:' + teamColors[tIdx % teamColors.length] + '; flex-shrink:0;'"></span>
+                                        <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;" x-text="team.team_name"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
 
                     <!-- Head-to-Head Comparison -->
                     <div class="card" style="margin-bottom: 16px; overflow: visible;">
@@ -1451,7 +1552,7 @@
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 10px;">
 
                             <!-- Top Batter Season -->
                             <template x-if="awards.top_batter_season">
@@ -1574,7 +1675,7 @@
                                 </div>
                             </div>
 
-                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 10px;">
                                 <!-- Match Top Batter -->
                                 <template x-if="awards.top_batter_week">
                                     <div class="award-card" style="background: linear-gradient(135deg, rgba(59,130,246,0.06), transparent); border: 1px solid rgba(59,130,246,0.12);">
@@ -1676,7 +1777,7 @@
                     <template x-if="liveData.match">
                         <div>
                             <!-- Match Header Card -->
-                            <div class="card" style="padding: 24px; margin-bottom: 20px;"
+                            <div class="card" style="padding: 16px 18px; margin-bottom: 16px;"
                                  :style="liveData.match.status === 'in_progress' ? 'border-color: rgba(239,68,68,0.2); box-shadow: 0 0 30px rgba(239,68,68,0.05);' : ''">
 
                                 <div style="display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
@@ -1727,7 +1828,8 @@
                                             <div class="card stagger-in" :style="'animation-delay: ' + (impIdx * 0.06) + 's;'">
                                                 <!-- Team Impact Header -->
                                                 <div @click="toggleLiveTeam(impact.team_name)"
-                                                     style="padding: 16px 20px; cursor: pointer; display: flex; align-items: center; gap: 14px; user-select: none;">
+                                                     class="team-header-row"
+                                                     style="padding: 14px 18px; cursor: pointer; display: flex; align-items: center; gap: 12px; user-select: none; flex-wrap: nowrap;">
 
                                                     <div class="rank-badge"
                                                          :class="{
@@ -1739,22 +1841,22 @@
                                                         <span x-text="impIdx + 1"></span>
                                                     </div>
 
-                                                    <div style="flex: 1; min-width: 0;">
-                                                        <div class="heading-md" x-text="impact.team_name"></div>
-                                                        <div style="font-size: 0.65rem; color: var(--text-muted);">
+                                                    <div style="flex: 1; min-width: 0; overflow: hidden;">
+                                                        <div class="heading-md" x-text="impact.team_name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                                                        <div style="font-size: 0.6rem; color: var(--text-muted);">
                                                             <span x-text="impact.players.length"></span> players contributed
                                                         </div>
                                                     </div>
 
-                                                    <div style="text-align: right; flex-shrink: 0;">
-                                                        <div class="pts-highlight" style="font-size: 1.1rem;"
+                                                    <div style="text-align: right; flex-shrink: 0; min-width: 50px;">
+                                                        <div class="pts-highlight team-pts" style="font-size: 1.05rem;"
                                                              :style="impIdx === 0 ? 'color: var(--gold);' : ''">
                                                             <span x-text="impact.match_pts >= 0 ? '+' : ''"></span><span x-text="impact.match_pts"></span>
-                                                            <span style="font-size: 0.6rem; font-weight: 500; color: var(--text-muted); margin-left: 2px;">pts</span>
+                                                            <span style="font-size: 0.55rem; font-weight: 500; color: var(--text-muted); margin-left: 1px;">pts</span>
                                                         </div>
                                                     </div>
 
-                                                    <svg class="accordion-chevron"
+                                                    <svg class="accordion-chevron" style="flex-shrink: 0;"
                                                          :class="{ rotated: expandedLiveTeam === impact.team_name }"
                                                          width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                          stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
@@ -1895,6 +1997,20 @@
             liveTimer: null,
             expandedLiveTeam: null,
             prevLivePoints: {},
+
+            // Chart state
+            highlightedTeam: null,
+            teamColors: [
+                '#f97316', // orange
+                '#3b82f6', // blue
+                '#22c55e', // green
+                '#a855f7', // purple
+                '#ef4444', // red
+                '#06b6d4', // cyan
+                '#f59e0b', // amber
+                '#ec4899', // pink
+                '#6366f1', // indigo
+            ],
 
             // H2H state
             h2hTeam1: '',
@@ -2132,6 +2248,63 @@
             getEffectivePoints(teamName, player) {
                 // Backend already applies C/VC multiplier to total_pts
                 return player.total_pts;
+            },
+
+            // ===================================================================
+            // CHART HELPERS
+            // ===================================================================
+            getCumulativeHistory(ptsHistory) {
+                if (!ptsHistory || !ptsHistory.length) return [];
+                let cumulative = [];
+                let sum = 0;
+                for (const pts of ptsHistory) {
+                    sum += pts;
+                    cumulative.push(sum);
+                }
+                return cumulative;
+            },
+
+            getChartWidth() {
+                return 600;
+            },
+
+            getChartHeight() {
+                return window.innerWidth < 640 ? 200 : 300;
+            },
+
+            getChartYMax(standings) {
+                let max = 0;
+                for (const team of standings) {
+                    const cum = this.getCumulativeHistory(team.pts_history);
+                    for (const v of cum) {
+                        if (v > max) max = v;
+                    }
+                }
+                return max || 100;
+            },
+
+            getChartGridLines(yMax, count) {
+                const lines = [];
+                for (let i = 1; i <= count; i++) {
+                    lines.push(Math.round((yMax / count) * i));
+                }
+                return lines;
+            },
+
+            getChartPoints(standings, teamIdx, chartW, chartH, padL, padB) {
+                const team = standings[teamIdx];
+                if (!team?.pts_history?.length) return '';
+                const cum = this.getCumulativeHistory(team.pts_history);
+                const yMax = this.getChartYMax(standings);
+                const numPoints = cum.length;
+                const usableW = chartW - padL;
+                const usableH = chartH - padB - 8; // 8px top padding
+                const points = cum.map((val, i) => {
+                    const x = padL + (numPoints === 1 ? usableW / 2 : (i / (numPoints - 1)) * usableW);
+                    const y = chartH - padB - ((val / yMax) * usableH);
+                    return x.toFixed(1) + ',' + y.toFixed(1);
+                });
+                return points.join(' ');
             },
 
             // ===================================================================
