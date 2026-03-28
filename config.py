@@ -19,7 +19,7 @@ MATCH_END_HOUR_IST = 24
 DB_PATH = os.environ.get("DB_PATH", "data/fantasy.db")
 
 # Admin secret for roster updates
-ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "changeme")
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "adminsecret")
 
 # Season filter
 SEASON = os.environ.get("SEASON", "2026")
