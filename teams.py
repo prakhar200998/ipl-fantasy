@@ -65,8 +65,8 @@ TEAMS = {
         "players": [
             {"name": "Sunil Narine", "role": "all-rounder", "ipl_team": "Kolkata Knight Riders"},
             {"name": "Travis Head", "role": "batsman", "ipl_team": "Sunrisers Hyderabad"},
-            {"name": "Shreyas Iyer", "role": "batsman", "ipl_team": "Punjab Kings"},
-            {"name": "Sanju Samson", "role": "wicket-keeper", "ipl_team": "Chennai Super Kings"},
+            {"name": "Shreyas Iyer", "role": "batsman", "ipl_team": "Punjab Kings", "vice_captain": True},
+            {"name": "Sanju Samson", "role": "wicket-keeper", "ipl_team": "Chennai Super Kings", "captain": True},
             {"name": "KL Rahul", "role": "wicket-keeper", "ipl_team": "Delhi Capitals"},
             {"name": "Jason Holder", "role": "all-rounder", "ipl_team": "Gujarat Titans"},
             {"name": "Josh Hazlewood", "role": "bowler", "ipl_team": "Royal Challengers Bengaluru"},

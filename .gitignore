@@ -3,3 +3,5 @@ __pycache__/
 .env
 *.egg-info/
 data/fantasy.db
+data/api_call_log.json
+data/cricsheet/

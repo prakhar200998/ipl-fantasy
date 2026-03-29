@@ -15,6 +15,7 @@ API_TO_DISPLAY = {
     "Lokesh Rahul": "KL Rahul",
     "Shahrukh Khan": "M Shahrukh Khan",
     "Abhishek Porel": "Abishek Porel",
+    "Varun Chakaravarthy": "Varun Chakravarthy",
 }
 
 # Reverse: display name -> API name

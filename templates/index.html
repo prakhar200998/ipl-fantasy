@@ -908,6 +908,12 @@
                         Awards
                     </span>
                 </button>
+                <button class="tab-btn" :class="{ active: tab === 'trends' }" @click="tab = 'trends'">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Trends
+                    </span>
+                </button>
                 <button class="tab-btn" :class="{ active: tab === 'live' }" @click="tab = 'live'; loadLive()">
                     <span style="display: flex; align-items: center; gap: 6px;">
                         <template x-if="liveData?.match?.status === 'in_progress'">
@@ -980,83 +986,6 @@
                             <span style="font-weight: 800; font-size: 0.9rem; color: var(--gold);" x-text="standings[0]?.total_pts + ' pts'"></span>
                         </div>
                     </div>
-
-                    <!-- Points Progress Chart -->
-                    <template x-if="standings.length && standings[0]?.pts_history?.length >= 1">
-                        <div class="card" style="margin-bottom: 16px; padding: 16px 18px; overflow: visible;">
-                            <!-- Chart Title -->
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                                </svg>
-                                <span class="heading-md" style="font-size: 0.9rem;">Points Progress</span>
-                            </div>
-
-                            <!-- SVG Chart -->
-                            <svg :viewBox="'0 0 ' + getChartWidth() + ' ' + getChartHeight()"
-                                 style="width: 100%; height: auto; display: block; overflow: visible;"
-                                 @mouseleave="highlightedTeam = null"
-                                 @touchend.outside="highlightedTeam = null">
-
-                                <!-- Horizontal grid lines -->
-                                <template x-for="(yVal, gi) in getChartGridLines(getChartYMax(standings), 5)" :key="'grid-' + gi">
-                                    <g>
-                                        <line :x1="40" :y1="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8))"
-                                              :x2="getChartWidth()" :y2="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8))"
-                                              stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-                                        <text :x="36" :y="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8)) + 3"
-                                              fill="var(--text-dimmed)" font-size="9" text-anchor="end" x-text="yVal"></text>
-                                    </g>
-                                </template>
-
-                                <!-- X-axis labels -->
-                                <template x-for="(m, mi) in standings[0].pts_history" :key="'xlabel-' + mi">
-                                    <text :x="40 + (mi * ((getChartWidth() - 40) / Math.max(standings[0].pts_history.length - 1, 1)))"
-                                          :y="getChartHeight() - 6"
-                                          fill="var(--text-dimmed)" font-size="8" text-anchor="middle"
-                                          x-text="'M' + (mi + 1)"></text>
-                                </template>
-
-                                <!-- Team lines -->
-                                <template x-for="(team, tIdx) in standings" :key="'line-' + team.team_name">
-                                    <polyline class="chart-line"
-                                              :points="getChartPoints(standings, tIdx, getChartWidth(), getChartHeight(), 40, 24)"
-                                              fill="none"
-                                              :stroke="teamColors[tIdx % teamColors.length]"
-                                              stroke-linecap="round"
-                                              stroke-linejoin="round"
-                                              :style="'opacity: ' + (highlightedTeam === null ? 0.3 : (highlightedTeam === team.team_name ? 1.0 : 0.15)) + '; stroke-width: ' + (highlightedTeam === team.team_name ? 2.5 : 2)"/>
-                                </template>
-
-                                <!-- Invisible hit-area polylines (on top for hover) -->
-                                <template x-for="(team, tIdx) in standings" :key="'hit-' + team.team_name">
-                                    <polyline class="chart-hit-area"
-                                              :points="getChartPoints(standings, tIdx, getChartWidth(), getChartHeight(), 40, 24)"
-                                              fill="none"
-                                              stroke="transparent"
-                                              stroke-width="10"
-                                              stroke-linecap="round"
-                                              stroke-linejoin="round"
-                                              @mouseenter="highlightedTeam = team.team_name"
-                                              @touchstart.passive="highlightedTeam = team.team_name"/>
-                                </template>
-                            </svg>
-
-                            <!-- Legend -->
-                            <div style="display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px;">
-                                <template x-for="(team, tIdx) in standings" :key="'legend-' + team.team_name">
-                                    <div class="chart-legend-item"
-                                         @mouseenter="highlightedTeam = team.team_name"
-                                         @mouseleave="highlightedTeam = null"
-                                         @touchstart.passive="highlightedTeam = team.team_name"
-                                         @touchend="highlightedTeam = null">
-                                        <span :style="'display:inline-block; width:8px; height:8px; border-radius:50%; background:' + teamColors[tIdx % teamColors.length] + '; flex-shrink:0;'"></span>
-                                        <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;" x-text="team.team_name"></span>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </template>
 
                     <!-- Head-to-Head Comparison -->
                     <div class="card" style="margin-bottom: 16px; overflow: visible;">
@@ -1388,12 +1317,24 @@
                                                             </td>
                                                             <!-- Total -->
                                                             <td style="text-align: right;">
-                                                                <span class="pts-highlight" x-text="getEffectivePoints(team.team_name, player)"></span>
                                                                 <template x-if="getPlayerDesignation(team.team_name, player.player_name) === 'C'">
-                                                                    <span class="multiplier-badge">2x</span>
+                                                                    <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                                                        <span style="font-size: 0.65rem; color: var(--text-muted);" x-text="player.raw_pts"></span>
+                                                                        <span style="font-size: 0.55rem; color: var(--text-dimmed);">&rarr;</span>
+                                                                        <span class="pts-highlight" x-text="player.total_pts"></span>
+                                                                        <span class="multiplier-badge">2x</span>
+                                                                    </span>
                                                                 </template>
                                                                 <template x-if="getPlayerDesignation(team.team_name, player.player_name) === 'VC'">
-                                                                    <span class="multiplier-badge">1.5x</span>
+                                                                    <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                                                        <span style="font-size: 0.65rem; color: var(--text-muted);" x-text="player.raw_pts"></span>
+                                                                        <span style="font-size: 0.55rem; color: var(--text-dimmed);">&rarr;</span>
+                                                                        <span class="pts-highlight" x-text="player.total_pts"></span>
+                                                                        <span class="multiplier-badge">1.5x</span>
+                                                                    </span>
+                                                                </template>
+                                                                <template x-if="!getPlayerDesignation(team.team_name, player.player_name)">
+                                                                    <span class="pts-highlight" x-text="player.total_pts"></span>
                                                                 </template>
                                                             </td>
                                                             <!-- Matches -->
@@ -1447,6 +1388,98 @@
                             </div>
                         </div>
                     </template>
+                </div>
+            </template>
+        </div>
+
+
+        <!-- ========================================================
+             TRENDS TAB
+             ======================================================== -->
+        <div x-show="tab === 'trends'" x-transition:enter="stagger-in" style="animation-delay: 0.05s;">
+            <template x-if="standings.length && standings[0]?.pts_history?.length >= 1">
+                <div class="card" style="margin-bottom: 16px; padding: 16px 18px; overflow: visible;">
+                    <!-- Chart Title -->
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                        <span class="heading-md" style="font-size: 0.9rem;">Cumulative Points Progress</span>
+                    </div>
+
+                    <!-- SVG Chart -->
+                    <svg :viewBox="'0 0 ' + getChartWidth() + ' ' + getChartHeight()"
+                         style="width: 100%; height: auto; display: block; overflow: visible;"
+                         @mouseleave="highlightedTeam = null"
+                         @touchend.outside="highlightedTeam = null">
+
+                        <!-- Horizontal grid lines -->
+                        <template x-for="(yVal, gi) in getChartGridLines(getChartYMax(standings), 5)" :key="'grid-' + gi">
+                            <g>
+                                <line :x1="40" :y1="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8))"
+                                      :x2="getChartWidth()" :y2="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8))"
+                                      stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                                <text :x="36" :y="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8)) + 3"
+                                      fill="var(--text-dimmed)" font-size="9" text-anchor="end" x-text="yVal"></text>
+                            </g>
+                        </template>
+
+                        <!-- X-axis labels -->
+                        <template x-for="(m, mi) in standings[0].pts_history" :key="'xlabel-' + mi">
+                            <text :x="40 + (mi * ((getChartWidth() - 40) / Math.max(standings[0].pts_history.length - 1, 1)))"
+                                  :y="getChartHeight() - 6"
+                                  fill="var(--text-dimmed)" font-size="8" text-anchor="middle"
+                                  x-text="'M' + (mi + 1)"></text>
+                        </template>
+
+                        <!-- Team lines -->
+                        <template x-for="(team, tIdx) in standings" :key="'line-' + team.team_name">
+                            <polyline class="chart-line"
+                                      :points="getChartPoints(standings, tIdx, getChartWidth(), getChartHeight(), 40, 24)"
+                                      fill="none"
+                                      :stroke="teamColors[tIdx % teamColors.length]"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      :style="'opacity: ' + (highlightedTeam === null ? 0.3 : (highlightedTeam === team.team_name ? 1.0 : 0.15)) + '; stroke-width: ' + (highlightedTeam === team.team_name ? 2.5 : 2)"/>
+                        </template>
+
+                        <!-- Invisible hit-area polylines (on top for hover) -->
+                        <template x-for="(team, tIdx) in standings" :key="'hit-' + team.team_name">
+                            <polyline class="chart-hit-area"
+                                      :points="getChartPoints(standings, tIdx, getChartWidth(), getChartHeight(), 40, 24)"
+                                      fill="none"
+                                      stroke="transparent"
+                                      stroke-width="10"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      @mouseenter="highlightedTeam = team.team_name"
+                                      @touchstart.passive="highlightedTeam = team.team_name"/>
+                        </template>
+                    </svg>
+
+                    <!-- Legend -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px;">
+                        <template x-for="(team, tIdx) in standings" :key="'legend-' + team.team_name">
+                            <div class="chart-legend-item"
+                                 @mouseenter="highlightedTeam = team.team_name"
+                                 @mouseleave="highlightedTeam = null"
+                                 @touchstart.passive="highlightedTeam = team.team_name"
+                                 @touchend="highlightedTeam = null">
+                                <span :style="'display:inline-block; width:8px; height:8px; border-radius:50%; background:' + teamColors[tIdx % teamColors.length] + '; flex-shrink:0;'"></span>
+                                <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;" x-text="team.team_name"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Empty state when no history -->
+            <template x-if="!standings.length || !standings[0]?.pts_history?.length">
+                <div class="card" style="padding: 40px 20px; text-align: center;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-dimmed)" stroke-width="1.5" stroke-linecap="round" style="margin: 0 auto 12px;">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">Trends will appear after multiple matches are played</div>
                 </div>
             </template>
         </div>
@@ -1957,6 +1990,10 @@
     <!-- Footer -->
     <div class="footer-text">
         IPL 2026 Fantasy League &middot; Points based on top 11 scoring players
+        <template x-if="apiUsage">
+            <span :style="apiUsage.calls_used >= apiUsage.limit ? 'color: #f87171;' : apiUsage.calls_used >= apiUsage.limit * 0.8 ? 'color: #fbbf24;' : 'color: var(--text-dimmed);'"
+                  x-text="' &middot; API: ' + apiUsage.calls_used + '/' + apiUsage.limit"></span>
+        </template>
     </div>
 
 
@@ -1986,6 +2023,7 @@
             liveLastUpdated: null,
             liveTimer: null,
             expandedLiveTeam: null,
+            apiUsage: null,
             prevLivePoints: {},
 
             // Chart state
@@ -2035,6 +2073,14 @@
             // ===================================================================
             async init() {
                 await this.loadStandings();
+                // Load API usage in background
+                try {
+                    const res = await fetch('/api/status');
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.apiUsage = data.api_usage;
+                    }
+                } catch (e) {}
             },
 
             // ===================================================================

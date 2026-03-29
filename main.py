@@ -73,7 +73,9 @@ def fetch_and_store_completed_matches():
     captain_vc = get_captain_vc()
 
     for match in new_matches:
-        scorecard = adapter.get_scorecard(match["match_id"])
+        scorecard = adapter.get_scorecard(
+            match["match_id"], date=match["date"], teams=match["teams"],
+        )
         if not scorecard:
             logger.warning("No scorecard for match %s", match.get("name", match["match_id"]))
             continue
@@ -84,7 +86,7 @@ def fetch_and_store_completed_matches():
         )
         db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
         logger.info(
-            "Stored match %s: %s (from Cricbuzz, dots=0)",
+            "Stored match %s: %s (with ESPN dots)",
             match["match_id"], match.get("name", ""),
         )
 
@@ -122,7 +124,9 @@ def poll_live_matches():
                     and match["status"] == "complete"):
                 continue
 
-            scorecard = adapter.get_scorecard(match["match_id"])
+            scorecard = adapter.get_scorecard(
+                match["match_id"], date=match["date"], teams=match["teams"],
+            )
             if not scorecard:
                 continue
 
@@ -136,6 +140,8 @@ def poll_live_matches():
                 "Updated match %s (status=%s, source=cricbuzz)",
                 match["match_id"], match["status"],
             )
+            if match["status"] == "complete":
+                db.backup_to_remote()
 
     except Exception as e:
         logger.error("Poll error: %s", e)
@@ -226,8 +232,16 @@ async def lifespan(app: FastAPI):
     if CRICBUZZ_API_KEY:
         try:
             fetch_and_store_completed_matches()
+            db.backup_to_remote()  # persist latest good data to Gist
         except Exception as e:
             logger.error("Startup fetch error (will retry via poller): %s", e)
+
+    # Fallback chain if DB is still empty: Gist backup → seed file
+    if db.get_match_count() == 0:
+        logger.info("No matches in DB — trying remote backup restore")
+        if not db.restore_from_remote():
+            logger.info("Remote restore failed — loading seed file as last resort")
+            db.load_seed_data()
 
     logger.info("DB has %d matches", db.get_match_count())
 
@@ -434,7 +448,9 @@ async def force_rescore(request: Request):
 
 @app.get("/api/status")
 async def status():
-    """Health check — shows DB state."""
+    """Health check — shows DB state and API usage."""
+    from adapters.cricbuzz import get_api_usage
+
     conn = db.get_db()
     team_count = conn.execute("SELECT COUNT(*) as cnt FROM teams").fetchone()["cnt"]
     match_count = conn.execute("SELECT COUNT(*) as cnt FROM matches").fetchone()["cnt"]
@@ -462,4 +478,5 @@ async def status():
         "data_source": "cricbuzz",
         "cricbuzz_key_set": bool(CRICBUZZ_API_KEY),
         "poller_running": scheduler.running,
+        "api_usage": get_api_usage(),
     }

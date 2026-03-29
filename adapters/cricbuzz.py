@@ -1,16 +1,57 @@
 """Adapter for Cricbuzz Cricket API via RapidAPI (live + completed match data)."""
 import re
+import json
+import os
 import httpx
 import logging
+from datetime import datetime, timezone
 from adapters.base import DataSourceAdapter
 from models import MatchScorecard, BattingEntry, BowlingEntry, FieldingEntry
-from config import CRICBUZZ_API_KEY
+from config import CRICBUZZ_API_KEY, CRICBUZZ_MONTHLY_LIMIT
 from name_mapping import get_display_name
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://cricbuzz-cricket.p.rapidapi.com"
 IPL_SERIES_FILTER = "Indian Premier League"
+
+# --- API call tracking (file-persisted across restarts) ---
+_CALL_LOG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "api_call_log.json")
+
+
+def _get_call_log() -> dict:
+    try:
+        with open(_CALL_LOG_PATH) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"month": "", "calls": 0}
+
+
+def _save_call_log(log: dict):
+    os.makedirs(os.path.dirname(_CALL_LOG_PATH), exist_ok=True)
+    with open(_CALL_LOG_PATH, "w") as f:
+        json.dump(log, f)
+
+
+def get_api_usage() -> dict:
+    """Return current API usage stats for UI display."""
+    log = _get_call_log()
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    calls = log["calls"] if log["month"] == current_month else 0
+    return {"month": current_month, "calls_used": calls, "limit": CRICBUZZ_MONTHLY_LIMIT}
+
+
+def _increment_call_count() -> bool:
+    """Increment call counter. Returns False if limit reached."""
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    log = _get_call_log()
+    if log["month"] != current_month:
+        log = {"month": current_month, "calls": 0}
+    if log["calls"] >= CRICBUZZ_MONTHLY_LIMIT:
+        return False
+    log["calls"] += 1
+    _save_call_log(log)
+    return True
 
 
 class CricbuzzAdapter(DataSourceAdapter):
@@ -23,6 +64,13 @@ class CricbuzzAdapter(DataSourceAdapter):
         }
 
     def _get(self, path: str, params: dict = None) -> dict | None:
+        if not _increment_call_count():
+            usage = get_api_usage()
+            logger.warning(
+                "Cricbuzz API monthly limit reached (%d/%d) — skipping call to %s",
+                usage["calls_used"], usage["limit"], path,
+            )
+            return None
         try:
             resp = httpx.get(
                 f"{BASE_URL}/{path}",
@@ -131,8 +179,13 @@ class CricbuzzAdapter(DataSourceAdapter):
     # Scorecard
     # ------------------------------------------------------------------
 
-    def get_scorecard(self, match_id: str) -> MatchScorecard | None:
+    def get_scorecard(self, match_id: str, date: str = "",
+                      teams: list[str] | None = None) -> MatchScorecard | None:
         """Fetch full scorecard and parse into MatchScorecard.
+
+        Tries the RapidAPI first; on failure (e.g. 429), falls back to
+        scraping the Cricbuzz mobile site.  In both cases, bowling dots
+        are enriched from the free ESPN API.
 
         API response per innings:
           batsman[]: name, runs, balls, fours, sixes, outdec, iscaptain, iskeeper
@@ -141,6 +194,18 @@ class CricbuzzAdapter(DataSourceAdapter):
         """
         data = self._get(f"mcenter/v1/{match_id}/hscard")
         if not data or "scorecard" not in data:
+            logger.info("API failed for %s — falling back to web scrape", match_id)
+            result = scrape_scorecard(match_id)
+        else:
+            result = self._parse_api_scorecard(data, match_id)
+
+        if result:
+            _enrich_bowling_dots_espn(result, date, teams or [])
+        return result
+
+    def _parse_api_scorecard(self, data: dict, match_id: str) -> MatchScorecard | None:
+        """Parse the RapidAPI hscard response into a MatchScorecard."""
+        if "scorecard" not in data:
             return None
 
         scorecard_innings = data["scorecard"]
@@ -374,3 +439,187 @@ def _add_lbw_bowled(bowling: dict[str, BowlingEntry], bowler: str) -> None:
         logger.warning(
             "LBW/bowled credit for bowler '%s' but no bowling entry found", bowler
         )
+
+
+# ------------------------------------------------------------------
+# Web scraper — Cricbuzz mobile site (no API key, no rate limits)
+# ------------------------------------------------------------------
+
+def _fetch_mobile_scorecard_json(match_id: str) -> list[dict] | None:
+    """Fetch and extract the scorecard JSON embedded in the Cricbuzz mobile page."""
+    url = f"https://m.cricbuzz.com/live-cricket-scorecard/{match_id}"
+    try:
+        resp = httpx.get(
+            url,
+            headers={"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0)"},
+            follow_redirects=True, timeout=30,
+        )
+        if resp.status_code != 200:
+            return None
+    except Exception as e:
+        logger.error("Failed to fetch Cricbuzz mobile page: %s", e)
+        return None
+
+    html = resp.text
+
+    # Extract batting entries: {"batName":"Name",...,"dots":N,...}
+    bat_pattern = (
+        r'\\"batId\\":(\d+),\\"batName\\":\\"([^\\]+)\\",'
+        r'\\"batShortName\\":\\"[^\\]*\\",'
+        r'\\"isCaptain\\":(true|false),\\"isKeeper\\":(true|false),'
+        r'\\"runs\\":(\d+),\\"balls\\":(\d+),\\"dots\\":(\d+),'
+        r'\\"fours\\":(\d+),\\"sixes\\":(\d+),'
+        r'\\"mins\\":\d+,\\"strikeRate\\":[0-9.]+,'
+        r'\\"outDesc\\":\\"([^\\]*)\\"'
+    )
+
+    # Extract bowling entries (field is bowlerId, not bowlId)
+    bowl_pattern = (
+        r'\\"bowlerId\\":(\d+),\\"bowlName\\":\\"([^\\]+)\\",'
+        r'\\"bowlShortName\\":\\"[^\\]*\\",'
+        r'\\"isCaptain\\":(true|false),\\"isKeeper\\":(true|false),'
+        r'\\"overs\\":([0-9.]+),\\"maidens\\":(\d+),'
+        r'\\"runs\\":(\d+),\\"wickets\\":(\d+),'
+        r'\\"economy\\":[0-9.]+,'
+        r'\\"no_balls\\":(\d+),\\"wides\\":(\d+),\\"dots\\":(\d+),'
+        r'\\"balls\\":(\d+)'
+    )
+
+    bat_matches = re.findall(bat_pattern, html)
+    bowl_matches = re.findall(bowl_pattern, html)
+
+    if not bat_matches and not bowl_matches:
+        logger.warning("No scorecard data found in mobile page for %s", match_id)
+        return None
+
+    return {"batting": bat_matches, "bowling": bowl_matches}
+
+
+def scrape_scorecard(match_id: str) -> MatchScorecard | None:
+    """Scrape the Cricbuzz mobile site to build a MatchScorecard.
+
+    This is the fallback when the RapidAPI is rate-limited.
+    Batting dots are accurate; bowling dots are estimated proportionally.
+    """
+    raw = _fetch_mobile_scorecard_json(match_id)
+    if not raw:
+        return None
+
+    playing_xi: set[str] = set()
+    batting: dict[str, BattingEntry] = {}
+    bowling: dict[str, BowlingEntry] = {}
+    fielding: dict[str, FieldingEntry] = {}
+    batters_who_batted: set[str] = set()
+    all_dismissals: list[str] = []
+    total_bat_dots = 0
+
+    # --- Parse batting ---
+    for m in raw["batting"]:
+        bat_id, name, is_capt, is_keeper, runs, balls, dots, fours, sixes, outdec = m
+        runs, balls, dots, fours, sixes = int(runs), int(balls), int(dots), int(fours), int(sixes)
+        playing_xi.add(name)
+        is_dismissed = outdec != "" and outdec.lower() != "not out"
+
+        if name in batting:
+            e = batting[name]
+            e.runs += runs
+            e.balls += balls
+            e.fours += fours
+            e.sixes += sixes
+            e.dismissed = e.dismissed or is_dismissed
+        else:
+            batting[name] = BattingEntry(
+                player=name, runs=runs, balls=balls,
+                fours=fours, sixes=sixes, dismissed=is_dismissed,
+            )
+
+        if balls > 0 or runs > 0 or is_dismissed:
+            batters_who_batted.add(name)
+
+        total_bat_dots += dots
+
+        if is_dismissed and outdec:
+            all_dismissals.append(outdec)
+
+    # --- Parse bowling ---
+    total_bowl_balls = 0
+    for m in raw["bowling"]:
+        bowl_id, name, is_capt, is_keeper, overs, maidens, runs, wickets, nb, wides, dots, balls_raw = m
+        total_balls = _overs_to_balls(str(overs))
+        maidens = int(maidens)
+        runs = int(runs)
+        wickets = int(wickets)
+        playing_xi.add(name)
+
+        overs_detail: dict = {}
+        for mi in range(maidens):
+            overs_detail[f"maiden_{name}_{mi}"] = {"balls": 6, "runs": 0}
+
+        if name in bowling:
+            e = bowling[name]
+            e.balls += total_balls
+            e.runs += runs
+            e.wickets += wickets
+            e.overs_detail.update(overs_detail)
+        else:
+            bowling[name] = BowlingEntry(
+                player=name, balls=total_balls, runs=runs,
+                wickets=wickets, dots=0, lbw_bowled=0,
+                overs_detail=overs_detail,
+            )
+        total_bowl_balls += total_balls
+
+    # Bowling dots are left at 0 here — ESPN enrichment fills them accurately
+
+    # --- Fielding + lbw/bowled from dismissals ---
+    for outdec in all_dismissals:
+        _parse_dismissal(outdec, fielding, bowling)
+
+    # --- Normalize names ---
+    playing_xi = {get_display_name(n) for n in playing_xi}
+    batting = {get_display_name(k): v for k, v in batting.items()}
+    bowling = {get_display_name(k): v for k, v in bowling.items()}
+    fielding = {get_display_name(k): v for k, v in fielding.items()}
+    batters_who_batted = {get_display_name(n) for n in batters_who_batted}
+
+    return MatchScorecard(
+        match_id=str(match_id),
+        date="", teams=[], venue="",
+        status="complete",
+        playing_xi=playing_xi,
+        batting=batting,
+        bowling=bowling,
+        fielding=fielding,
+        batters_who_batted=batters_who_batted,
+    )
+
+
+def _enrich_bowling_dots_espn(
+    scorecard: MatchScorecard, date: str, teams: list[str],
+) -> None:
+    """Enrich bowling dots from the free ESPN API (accurate per-bowler dots)."""
+    total_existing = sum(e.dots for e in scorecard.bowling.values())
+    if total_existing > 0:
+        return  # already have dots (e.g., from Cricsheet re-scoring)
+
+    from adapters.espn import find_espn_event_id, fetch_espn_bowling_dots
+
+    espn_id = find_espn_event_id(date, teams) if date else None
+    if not espn_id:
+        logger.info("Could not find ESPN event for dots enrichment (date=%s)", date)
+        return
+
+    dots_map = fetch_espn_bowling_dots(espn_id)
+    if not dots_map:
+        return
+
+    enriched = 0
+    for name, entry in scorecard.bowling.items():
+        if name in dots_map:
+            entry.dots = dots_map[name]
+            enriched += 1
+
+    logger.info(
+        "Enriched %d/%d bowlers with ESPN dots (event %s)",
+        enriched, len(scorecard.bowling), espn_id,
+    )

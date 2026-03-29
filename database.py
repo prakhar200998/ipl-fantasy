@@ -2,7 +2,13 @@
 import sqlite3
 import json
 import os
-from config import DB_PATH
+import logging
+from config import DB_PATH, GITHUB_TOKEN
+
+logger = logging.getLogger(__name__)
+
+GITHUB_REPO = "prakhar200998/ipl-fantasy"
+BACKUP_PATH = "data/match_seed.json"
 
 
 def get_db() -> sqlite3.Connection:
@@ -169,6 +175,168 @@ def bulk_upsert_player_points(match_id: str, all_points: dict[str, dict],
     conn.close()
 
 
+def load_seed_data():
+    """Load match data from data/match_seed.json as a fallback when API fails."""
+    seed_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "match_seed.json")
+    if not os.path.exists(seed_path):
+        logger.warning("No seed file found at %s", seed_path)
+        return False
+
+    try:
+        with open(seed_path) as f:
+            seed = json.load(f)
+
+        conn = get_db()
+        for m in seed.get("matches", []):
+            conn.execute("""
+                INSERT OR IGNORE INTO matches (match_id, date, teams_json, venue, status, last_updated)
+                VALUES (?, ?, ?, ?, ?, datetime('now'))
+            """, (m["match_id"], m["date"], m["teams_json"], m["venue"], m["status"]))
+
+        for pp in seed.get("player_points", []):
+            conn.execute("""
+                INSERT OR IGNORE INTO player_match_points
+                    (match_id, player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (pp["match_id"], pp["player_name"], pp["batting_pts"], pp["bowling_pts"],
+                  pp["fielding_pts"], pp["raw_pts"], pp["total_pts"], pp["breakdown_json"]))
+
+        conn.commit()
+        conn.close()
+        logger.info("Loaded seed data: %d matches, %d player entries",
+                     len(seed.get("matches", [])), len(seed.get("player_points", [])))
+        return True
+    except Exception as e:
+        logger.error("Failed to load seed data: %s", e)
+        return False
+
+
+def export_seed_data():
+    """Export current match data to data/match_seed.json for persistence across deploys."""
+    conn = get_db()
+    matches = conn.execute("SELECT match_id, date, teams_json, venue, status FROM matches").fetchall()
+    player_pts = conn.execute(
+        "SELECT match_id, player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json FROM player_match_points"
+    ).fetchall()
+    conn.close()
+
+    if not matches:
+        return False
+
+    seed = {
+        "matches": [dict(m) for m in matches],
+        "player_points": [dict(p) for p in player_pts],
+    }
+
+    seed_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "match_seed.json")
+    os.makedirs(os.path.dirname(seed_path), exist_ok=True)
+    with open(seed_path, "w") as f:
+        json.dump(seed, f, indent=2)
+    logger.info("Exported seed data: %d matches, %d player entries", len(matches), len(player_pts))
+    return True
+
+
+def backup_to_remote():
+    """Back up current match data to data/match_seed.json on master in the GitHub repo."""
+    if not GITHUB_TOKEN:
+        logger.debug("No GITHUB_TOKEN — remote backup skipped")
+        return
+
+    conn = get_db()
+    matches = [dict(m) for m in conn.execute(
+        "SELECT match_id, date, teams_json, venue, status FROM matches"
+    ).fetchall()]
+    points = [dict(p) for p in conn.execute(
+        "SELECT match_id, player_name, batting_pts, bowling_pts, fielding_pts, "
+        "raw_pts, total_pts, breakdown_json FROM player_match_points"
+    ).fetchall()]
+    conn.close()
+
+    if not matches:
+        return
+
+    import httpx, base64
+    content = json.dumps({"matches": matches, "player_points": points}, indent=2)
+    encoded = base64.b64encode(content.encode()).decode()
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+
+    try:
+        # Get current file SHA (needed for updates)
+        sha = None
+        resp = httpx.get(
+            f"https://api.github.com/repos/{GITHUB_REPO}/contents/{BACKUP_PATH}",
+            headers=headers, timeout=30,
+        )
+        if resp.status_code == 200:
+            sha = resp.json()["sha"]
+
+        payload = {
+            "message": "Auto-backup match data",
+            "content": encoded,
+        }
+        if sha:
+            payload["sha"] = sha
+
+        resp = httpx.put(
+            f"https://api.github.com/repos/{GITHUB_REPO}/contents/{BACKUP_PATH}",
+            headers=headers, json=payload, timeout=30,
+        )
+        if resp.status_code in (200, 201):
+            logger.info("Backed up %d matches to GitHub (master)", len(matches))
+        else:
+            logger.error("GitHub backup failed: %s %s", resp.status_code, resp.text[:200])
+    except Exception as e:
+        logger.error("Remote backup failed: %s", e)
+
+
+def restore_from_remote() -> bool:
+    """Restore match data from data/match_seed.json on GitHub master."""
+    if not GITHUB_TOKEN:
+        logger.debug("No GITHUB_TOKEN — remote restore skipped")
+        return False
+
+    import httpx, base64
+    try:
+        headers = {"Authorization": f"token {GITHUB_TOKEN}",
+                   "Accept": "application/vnd.github.v3+json"}
+        resp = httpx.get(
+            f"https://api.github.com/repos/{GITHUB_REPO}/contents/{BACKUP_PATH}",
+            headers=headers, timeout=30,
+        )
+        if resp.status_code != 200:
+            logger.info("No backup found on GitHub")
+            return False
+
+        content = base64.b64decode(resp.json()["content"]).decode()
+        seed = json.loads(content)
+
+        conn = get_db()
+        for m in seed.get("matches", []):
+            conn.execute("""
+                INSERT OR IGNORE INTO matches (match_id, date, teams_json, venue, status, last_updated)
+                VALUES (?, ?, ?, ?, ?, datetime('now'))
+            """, (m["match_id"], m["date"], m["teams_json"], m["venue"], m["status"]))
+
+        for pp in seed.get("player_points", []):
+            conn.execute("""
+                INSERT OR IGNORE INTO player_match_points
+                    (match_id, player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (pp["match_id"], pp["player_name"], pp["batting_pts"], pp["bowling_pts"],
+                  pp["fielding_pts"], pp["raw_pts"], pp["total_pts"], pp["breakdown_json"]))
+
+        conn.commit()
+        conn.close()
+        logger.info("Restored %d matches from GitHub backup", len(seed.get("matches", [])))
+        return True
+    except Exception as e:
+        logger.error("Remote restore failed: %s", e)
+        return False
+
+
 def wipe_match_data():
     """Delete all match and player_match_points data (keeps teams/roster)."""
     conn = get_db()
@@ -204,6 +372,7 @@ def get_standings() -> list[dict]:
                    r.ipl_team,
                    r.designation,
                    COALESCE(SUM(p.total_pts), 0) as total_pts,
+                   COALESCE(SUM(p.raw_pts), 0) as raw_pts,
                    COUNT(p.match_id) as matches_played
             FROM roster r
             LEFT JOIN player_match_points p ON r.player_name = p.player_name
@@ -308,6 +477,7 @@ def get_team_detail(team_name: str) -> dict | None:
                r.ipl_team,
                r.designation,
                COALESCE(SUM(p.total_pts), 0) as total_pts,
+               COALESCE(SUM(p.raw_pts), 0) as raw_pts,
                COALESCE(SUM(p.batting_pts), 0) as batting_pts,
                COALESCE(SUM(p.bowling_pts), 0) as bowling_pts,
                COALESCE(SUM(p.fielding_pts), 0) as fielding_pts,
@@ -348,18 +518,19 @@ def get_team_detail(team_name: str) -> dict | None:
         for r in rows:
             per_match.setdefault(r["player_name"], {})[r["match_id"]] = r["total_pts"]
 
-    # Build match_id -> label map
-    mid_to_label = {m["match_id"]: f"M{i+1}" for i, m in enumerate(matches)}
+    # Build match_id -> date map for sorting
+    mid_to_date = {m["match_id"]: m["date"] for m in matches}
 
     player_list = []
     for p in players:
         pd = dict(p)
-        # Add per-match scores
+        # Add per-match scores — label M1, M2, M3 per player (franchise order)
         scores = per_match.get(p["player_name"], {})
+        sorted_matches = sorted(scores.items(), key=lambda x: mid_to_date.get(x[0], ""))
         pd["match_scores"] = [
-            {"label": mid_to_label[mid], "pts": pts}
-            for mid, pts in scores.items()
-            if mid in mid_to_label
+            {"label": f"M{i + 1}", "pts": pts}
+            for i, (mid, pts) in enumerate(sorted_matches)
+            if mid in mid_to_date
         ]
         player_list.append(pd)
 
@@ -379,7 +550,7 @@ def get_live_match_points(match_id: str) -> list[dict]:
     """Get all player points for a specific match."""
     conn = get_db()
     rows = conn.execute("""
-        SELECT player_name, batting_pts, bowling_pts, fielding_pts, total_pts, breakdown_json
+        SELECT player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json
         FROM player_match_points
         WHERE match_id = ?
         ORDER BY total_pts DESC
@@ -440,15 +611,15 @@ def get_awards() -> dict:
     """).fetchone()
     latest_match_id = latest["match_id"]
 
-    # --- a. best_xi_week: Top 11 scorers in most recent match across all teams ---
+    # --- a. best_xi_week: Top 11 scorers in most recent match (raw pts, no C/VC multiplier) ---
     best_xi_week = [dict(r) for r in conn.execute("""
-        SELECT p.player_name, p.total_pts,
+        SELECT p.player_name, p.raw_pts as total_pts,
                COALESCE(t.team_name, '') as team_name
         FROM player_match_points p
         LEFT JOIN roster r ON p.player_name = r.player_name AND r.removed_date IS NULL
         LEFT JOIN teams t ON r.team_id = t.team_id
         WHERE p.match_id = ?
-        ORDER BY p.total_pts DESC
+        ORDER BY p.raw_pts DESC
         LIMIT 11
     """, (latest_match_id,)).fetchall()]
 
@@ -470,36 +641,36 @@ def get_awards() -> dict:
     # --- g. top_fielder_week ---
     top_fielder_week = _fetch_top_category_match(conn, "fielding_pts", latest_match_id)
 
-    # --- h. best_match_performance: single highest total_pts in any match ---
+    # --- h. best_match_performance: single highest raw_pts in any match (no C/VC multiplier) ---
     row = conn.execute("""
-        SELECT p.player_name, p.total_pts, p.match_id,
+        SELECT p.player_name, p.raw_pts as total_pts, p.match_id,
                m.date as match_date, m.teams_json as match_teams
         FROM player_match_points p
         JOIN matches m ON p.match_id = m.match_id
-        ORDER BY p.total_pts DESC
+        ORDER BY p.raw_pts DESC
         LIMIT 1
     """).fetchone()
     best_match_performance = dict(row) if row else None
     if best_match_performance:
         best_match_performance["match_teams"] = json.loads(best_match_performance["match_teams"])
 
-    # --- i. biggest_dud: lowest total_pts in any match ---
+    # --- i. biggest_dud: lowest raw_pts in any match ---
     row = conn.execute("""
-        SELECT p.player_name, p.total_pts, p.match_id,
+        SELECT p.player_name, p.raw_pts as total_pts, p.match_id,
                m.date as match_date, m.teams_json as match_teams
         FROM player_match_points p
         JOIN matches m ON p.match_id = m.match_id
-        ORDER BY p.total_pts ASC
+        ORDER BY p.raw_pts ASC
         LIMIT 1
     """).fetchone()
     biggest_dud = dict(row) if row else None
     if biggest_dud:
         biggest_dud["match_teams"] = json.loads(biggest_dud["match_teams"])
 
-    # --- j. most_consistent: highest avg pts/match, min 3 matches ---
+    # --- j. most_consistent: highest avg raw_pts/match, min 3 matches ---
     row = conn.execute("""
         SELECT p.player_name,
-               ROUND(AVG(p.total_pts), 2) as avg_pts,
+               ROUND(AVG(p.raw_pts), 2) as avg_pts,
                COUNT(p.match_id) as matches_played,
                COALESCE(t.team_name, '') as team_name
         FROM player_match_points p
@@ -512,10 +683,10 @@ def get_awards() -> dict:
     """).fetchone()
     most_consistent = dict(row) if row else None
 
-    # --- k. carry_award: player with highest % of their team's top-11 total ---
+    # --- k. carry_award: player with highest % of their team's top-11 total (raw pts) ---
     carry_award = _compute_carry_award(conn)
 
-    # --- l. bench_burden: best player NOT in any team's top 11 ---
+    # --- l. bench_burden: best player NOT in any team's top 11 (raw pts) ---
     bench_burden = _compute_bench_burden(conn)
 
     conn.close()
@@ -569,34 +740,33 @@ def _fetch_top_category_match(conn, pts_column: str, match_id: str) -> dict | No
 
 
 def _compute_carry_award(conn) -> dict | None:
-    """Player contributing highest % of their team's top-11 total."""
+    """Player contributing highest % of their team's top-11 total (raw pts)."""
     teams = conn.execute("SELECT team_id, team_name FROM teams").fetchall()
     best = None
 
     for team in teams:
         players = conn.execute("""
             SELECT r.player_name,
-                   COALESCE(SUM(p.total_pts), 0) as total_pts
+                   COALESCE(SUM(p.raw_pts), 0) as raw_pts
             FROM roster r
             LEFT JOIN player_match_points p ON r.player_name = p.player_name
             WHERE r.team_id = ? AND r.removed_date IS NULL
             GROUP BY r.player_name
-            ORDER BY total_pts DESC
+            ORDER BY raw_pts DESC
         """, (team["team_id"],)).fetchall()
 
         top11 = players[:11]
-        team_total = sum(p["total_pts"] for p in top11)
+        team_total = sum(p["raw_pts"] for p in top11)
         if team_total <= 0:
             continue
 
-        # The top player in the top 11 has the highest individual contribution
         top_player = top11[0]
-        pct = round((top_player["total_pts"] / team_total) * 100, 2)
+        pct = round((top_player["raw_pts"] / team_total) * 100, 2)
 
         if best is None or pct > best["percentage"]:
             best = {
                 "player_name": top_player["player_name"],
-                "total_pts": top_player["total_pts"],
+                "total_pts": top_player["raw_pts"],
                 "team_total": team_total,
                 "percentage": pct,
                 "team_name": team["team_name"],
@@ -606,22 +776,21 @@ def _compute_carry_award(conn) -> dict | None:
 
 
 def _compute_bench_burden(conn) -> dict | None:
-    """Best player (by total_pts) NOT in any team's top 11."""
+    """Best player (by raw_pts) NOT in any team's top 11."""
     teams = conn.execute("SELECT team_id, team_name FROM teams").fetchall()
 
-    # Build set of all top-11 players across all teams
     top11_players = set()
-    player_team_map = {}  # player_name -> team_name for bench players
+    player_team_map = {}
 
     for team in teams:
         players = conn.execute("""
             SELECT r.player_name,
-                   COALESCE(SUM(p.total_pts), 0) as total_pts
+                   COALESCE(SUM(p.raw_pts), 0) as raw_pts
             FROM roster r
             LEFT JOIN player_match_points p ON r.player_name = p.player_name
             WHERE r.team_id = ? AND r.removed_date IS NULL
             GROUP BY r.player_name
-            ORDER BY total_pts DESC
+            ORDER BY raw_pts DESC
         """, (team["team_id"],)).fetchall()
 
         for i, p in enumerate(players):
@@ -630,14 +799,13 @@ def _compute_bench_burden(conn) -> dict | None:
             else:
                 player_team_map[p["player_name"]] = team["team_name"]
 
-    # Now find the bench player with the highest total_pts
     if not player_team_map:
         return None
 
     bench_names = list(player_team_map.keys())
     placeholders = ",".join("?" * len(bench_names))
     row = conn.execute(f"""
-        SELECT player_name, COALESCE(SUM(total_pts), 0) as total_pts
+        SELECT player_name, COALESCE(SUM(raw_pts), 0) as total_pts
         FROM player_match_points
         WHERE player_name IN ({placeholders})
         GROUP BY player_name
@@ -646,7 +814,6 @@ def _compute_bench_burden(conn) -> dict | None:
     """, bench_names).fetchone()
 
     if not row or row["total_pts"] == 0:
-        # Fallback: return the first bench player even with 0 pts
         first_bench = bench_names[0]
         return {
             "player_name": first_bench,
