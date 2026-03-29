@@ -8,8 +8,8 @@ CRICKETDATA_API_KEY = os.environ.get("CRICKETDATA_API_KEY", "67ece779-66b8-43ef-
 IPL_2026_SERIES_ID = "87c62aac-bc3c-4738-ab93-19da0690488f"
 
 # Polling intervals (seconds)
-LIVE_POLL_INTERVAL = 60        # During match hours
-IDLE_POLL_INTERVAL = 1800      # Outside match hours (30 min)
+LIVE_POLL_INTERVAL = 300       # During match hours (5 min — free tier has 100 calls/day)
+IDLE_POLL_INTERVAL = 3600      # Outside match hours (1 hour)
 
 # Match hours in IST (UTC+5:30)
 MATCH_START_HOUR_IST = 14
