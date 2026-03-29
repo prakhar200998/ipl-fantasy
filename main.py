@@ -327,23 +327,11 @@ async def status():
     matches = conn.execute("SELECT match_id, date, teams_json, status FROM matches ORDER BY date DESC").fetchall()
     conn.close()
 
-    api_ok = False
-    api_msg = "not tested"
-    if CRICKETDATA_API_KEY:
-        try:
-            adapter = CricketDataAdapter()
-            result = adapter._get("series_info", {"id": "87c62aac-bc3c-4738-ab93-19da0690488f"})
-            api_ok = result is not None
-            api_msg = "ok" if api_ok else "blocked/error"
-        except Exception as e:
-            api_msg = str(e)
-
     return {
         "teams": team_count,
         "matches_stored": match_count,
         "players_with_points": player_pts_count,
         "match_list": [{"match_id": m["match_id"], "date": m["date"], "teams": m["teams_json"], "status": m["status"]} for m in matches],
         "api_key_set": bool(CRICKETDATA_API_KEY),
-        "api_status": api_msg,
         "poller_running": scheduler.running,
     }
