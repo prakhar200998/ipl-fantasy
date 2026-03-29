@@ -1,4 +1,10 @@
-"""FastAPI app — routes, startup, background poller."""
+"""FastAPI app — routes, startup, background poller.
+
+Data-source strategy:
+  Primary (live + completed): Cricbuzz API via RapidAPI
+  Accuracy pass (completed):  Cricsheet ball-by-ball (has dot balls)
+  Legacy fallback:            CricketData.org API
+"""
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone, timedelta
@@ -9,12 +15,15 @@ from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import database as db
-from adapters.cricketdata import CricketDataAdapter
+from adapters.cricbuzz import CricbuzzAdapter
+from adapters.cricsheet import (
+    CricsheetAdapter, download_cricsheet_ipl, find_cricsheet_match_id,
+)
 from scoring import calculate_fantasy_points
 from name_mapping import get_display_name
 from teams import get_captain_vc
 from config import (
-    CRICKETDATA_API_KEY, SEASON,
+    CRICBUZZ_API_KEY, CRICSHEET_DATA_DIR, SEASON,
     LIVE_POLL_INTERVAL, IDLE_POLL_INTERVAL, ADMIN_SECRET,
     MATCH_START_HOUR_IST, MATCH_END_HOUR_IST,
 )
@@ -31,19 +40,29 @@ def is_match_hours() -> bool:
     return MATCH_START_HOUR_IST <= now_ist.hour < MATCH_END_HOUR_IST
 
 
+# ------------------------------------------------------------------
+# Data fetching — Cricbuzz primary
+# ------------------------------------------------------------------
+
 def fetch_and_store_completed_matches():
-    """Fetch completed IPL 2026 matches from API and store points. Skips already-stored matches."""
-    if not CRICKETDATA_API_KEY:
+    """Fetch completed IPL 2026 matches from Cricbuzz and store points."""
+    if not CRICBUZZ_API_KEY:
+        logger.warning("No CRICBUZZ_API_KEY set — skipping fetch")
         return
-    adapter = CricketDataAdapter()
+
+    adapter = CricbuzzAdapter()
     matches = adapter.get_match_list(SEASON)
     completed = [m for m in matches if m["status"] == "complete"]
-    logger.info("Found %d completed IPL 2026 matches from API", len(completed))
+    logger.info("Cricbuzz: found %d completed IPL 2026 matches", len(completed))
 
     # Skip matches already stored as complete
     conn = db.get_db()
-    stored_complete = {row["match_id"] for row in
-                       conn.execute("SELECT match_id FROM matches WHERE status = 'complete'").fetchall()}
+    stored_complete = {
+        row["match_id"]
+        for row in conn.execute(
+            "SELECT match_id FROM matches WHERE status = 'complete'"
+        ).fetchall()
+    }
     conn.close()
 
     new_matches = [m for m in completed if m["match_id"] not in stored_complete]
@@ -61,57 +80,133 @@ def fetch_and_store_completed_matches():
         points = calculate_fantasy_points(scorecard)
         db.upsert_match(
             match["match_id"], match["date"], match["teams"],
-            match["venue"], "complete"
+            match["venue"], "complete",
         )
         db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
-        logger.info("Stored match: %s", match.get("name", match["match_id"]))
+        logger.info(
+            "Stored match %s: %s (from Cricbuzz, dots=0)",
+            match["match_id"], match.get("name", ""),
+        )
 
 
 def poll_live_matches():
-    """Background job: fetch live/in-progress match data and update points."""
-    if not CRICKETDATA_API_KEY:
+    """Background job: fetch live/recently completed match data via Cricbuzz."""
+    if not CRICBUZZ_API_KEY:
         return
     try:
-        adapter = CricketDataAdapter()
+        adapter = CricbuzzAdapter()
 
-        # Check currentMatches for live IPL games
-        live_matches = adapter.get_current_matches()
+        # During match hours: check for live matches
+        # Outside match hours: check for recently completed matches
+        matches = adapter.get_match_list(SEASON)
+        active = [m for m in matches if m["status"] in ("in_progress", "complete")]
 
-        # Also check the full series list for newly completed or in-progress matches
-        all_matches = adapter.get_match_list(SEASON)
-        active = [m for m in all_matches if m["status"] in ("in_progress", "complete")]
+        if not active:
+            return
 
-        # Merge: use live_matches + any active match not already in live_matches
-        seen_ids = {m["match_id"] for m in live_matches}
-        for m in active:
-            if m["match_id"] not in seen_ids:
-                live_matches.append(m)
-
-        # Only process matches that are live OR newly completed (not already stored as complete)
+        # Skip matches already stored as complete
         conn = db.get_db()
-        stored = {row["match_id"]: row["status"] for row in
-                  conn.execute("SELECT match_id, status FROM matches").fetchall()}
+        stored = {
+            row["match_id"]: row["status"]
+            for row in conn.execute(
+                "SELECT match_id, status FROM matches"
+            ).fetchall()
+        }
         conn.close()
 
         captain_vc = get_captain_vc()
 
-        for match in live_matches:
+        for match in active:
             # Skip if already stored as complete
-            if stored.get(match["match_id"]) == "complete" and match["status"] == "complete":
+            if (stored.get(match["match_id"]) == "complete"
+                    and match["status"] == "complete"):
                 continue
+
             scorecard = adapter.get_scorecard(match["match_id"])
             if not scorecard:
                 continue
+
             points = calculate_fantasy_points(scorecard)
             db.upsert_match(
                 match["match_id"], match["date"], match["teams"],
-                match["venue"], match["status"]
+                match["venue"], match["status"],
             )
             db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
-            logger.info("Updated match %s (status=%s)", match["match_id"], match["status"])
+            logger.info(
+                "Updated match %s (status=%s, source=cricbuzz)",
+                match["match_id"], match["status"],
+            )
+
     except Exception as e:
         logger.error("Poll error: %s", e)
 
+
+# ------------------------------------------------------------------
+# Cricsheet re-scoring — adds dot-ball accuracy to completed matches
+# ------------------------------------------------------------------
+
+def rescore_from_cricsheet():
+    """Download Cricsheet ball-by-ball data and re-score completed matches.
+
+    This gives us accurate dot-ball counts (worth 2 pts each) and
+    precise maiden/over-level data that the Cricbuzz scorecard API
+    doesn't provide.
+    """
+    try:
+        if not download_cricsheet_ipl(CRICSHEET_DATA_DIR):
+            return
+
+        cs_adapter = CricsheetAdapter(CRICSHEET_DATA_DIR)
+        captain_vc = get_captain_vc()
+
+        # Get all completed matches from our DB
+        conn = db.get_db()
+        db_matches = conn.execute(
+            "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
+        ).fetchall()
+        conn.close()
+
+        if not db_matches:
+            logger.info("No completed matches to re-score from Cricsheet")
+            return
+
+        rescored = 0
+        for row in db_matches:
+            import json
+            teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+            date = row["date"] or ""
+
+            cs_match_id = find_cricsheet_match_id(
+                cs_adapter, SEASON, date, teams,
+            )
+            if not cs_match_id:
+                continue
+
+            scorecard = cs_adapter.get_scorecard(cs_match_id)
+            if not scorecard:
+                continue
+
+            points = calculate_fantasy_points(scorecard)
+            # Re-store with the ORIGINAL DB match_id (Cricbuzz ID)
+            db.bulk_upsert_player_points(row["match_id"], points, captain_vc)
+            rescored += 1
+            logger.info(
+                "Re-scored match %s from Cricsheet (with dots)",
+                row["match_id"],
+            )
+
+        if rescored:
+            logger.info("Cricsheet re-scoring complete: %d matches updated", rescored)
+        else:
+            logger.info("No new Cricsheet data available for re-scoring")
+
+    except Exception as e:
+        logger.error("Cricsheet re-score error: %s", e)
+
+
+# ------------------------------------------------------------------
+# App lifecycle
+# ------------------------------------------------------------------
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -127,8 +222,8 @@ async def lifespan(app: FastAPI):
         from teams import TEAMS
         db.seed_teams(TEAMS)
 
-    # Fetch any completed matches we don't have yet
-    if CRICKETDATA_API_KEY:
+    # Fetch completed matches from Cricbuzz
+    if CRICBUZZ_API_KEY:
         try:
             fetch_and_store_completed_matches()
         except Exception as e:
@@ -136,11 +231,21 @@ async def lifespan(app: FastAPI):
 
     logger.info("DB has %d matches", db.get_match_count())
 
-    if CRICKETDATA_API_KEY:
+    # Start background scheduler
+    if CRICBUZZ_API_KEY:
         interval = LIVE_POLL_INTERVAL if is_match_hours() else IDLE_POLL_INTERVAL
-        scheduler.add_job(poll_live_matches, "interval", seconds=interval, id="poller")
+        scheduler.add_job(
+            poll_live_matches, "interval",
+            seconds=interval, id="poller",
+        )
+        # Cricsheet re-scoring: run once 30s after startup, then every 2 hours
+        scheduler.add_job(
+            rescore_from_cricsheet, "interval",
+            hours=2, id="cricsheet_rescore",
+            next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30),
+        )
         scheduler.start()
-        logger.info("Scheduler started (interval=%ds)", interval)
+        logger.info("Scheduler started (poll=%ds, cricsheet every 2h)", interval)
     else:
         logger.info("No API key set — live polling disabled")
 
@@ -154,6 +259,10 @@ app = FastAPI(title="IPL Fantasy League", lifespan=lifespan)
 templates = Jinja2Templates(directory="templates")
 
 
+# ------------------------------------------------------------------
+# Routes
+# ------------------------------------------------------------------
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -162,7 +271,6 @@ async def dashboard(request: Request):
 @app.get("/api/standings")
 async def standings():
     data = db.get_standings()
-    # Add display names
     for team in data:
         for p in team["players"]:
             p["display_name"] = get_display_name(p["player_name"])
@@ -189,16 +297,14 @@ async def live():
         return {"match": None, "team_impacts": []}
 
     match_points = db.get_live_match_points(latest["match_id"])
-    standings = db.get_standings()
+    standings_data = db.get_standings()
 
-    # Map players to their fantasy teams
     player_to_team = {}
-    for team in standings:
+    for team in standings_data:
         for p in team["players"]:
             player_to_team[p["player_name"]] = team["team_name"]
 
-    # Build per-team impact for this match
-    team_impacts = {}
+    team_impacts: dict = {}
     for pp in match_points:
         team_name = player_to_team.get(pp["player_name"])
         if not team_name:
@@ -209,7 +315,6 @@ async def live():
         team_impacts[team_name]["players"].append(pp)
         team_impacts[team_name]["match_pts"] += pp["total_pts"]
 
-    # Sort teams by match impact, players within teams by points
     impacts = sorted(team_impacts.values(), key=lambda x: x["match_pts"], reverse=True)
     for t in impacts:
         t["players"].sort(key=lambda x: x["total_pts"], reverse=True)
@@ -231,7 +336,6 @@ async def awards():
     """All awards and stats for the season."""
     data = db.get_awards()
 
-    # Add display_name to all player entries
     def _add_display_names(obj):
         if obj is None:
             return
@@ -260,6 +364,10 @@ async def head_to_head(team1: str, team2: str):
     return data
 
 
+# ------------------------------------------------------------------
+# Admin endpoints
+# ------------------------------------------------------------------
+
 @app.post("/api/admin/roster")
 async def update_roster(request: Request):
     body = await request.json()
@@ -276,20 +384,16 @@ async def update_roster(request: Request):
 
     today = datetime.now().strftime("%Y-%m-%d")
 
-    # Remove player
     if body.get("remove_player"):
-        player_name = body["remove_player"]
         conn.execute(
             "UPDATE roster SET removed_date = ? WHERE team_id = ? AND player_name = ? AND removed_date IS NULL",
-            (today, team["team_id"], player_name)
+            (today, team["team_id"], body["remove_player"]),
         )
 
-    # Add player
     if body.get("add_player"):
-        player_name = body["add_player"]
         conn.execute(
             "INSERT INTO roster (team_id, player_name, added_date) VALUES (?, ?, ?)",
-            (team["team_id"], player_name, today)
+            (team["team_id"], body["add_player"], today),
         )
 
     conn.commit()
@@ -308,30 +412,54 @@ async def force_refresh(request: Request):
 
 @app.post("/api/admin/reseed")
 async def reseed(request: Request):
-    """Wipe all match data and re-fetch from API."""
+    """Wipe all match data and re-fetch from Cricbuzz + Cricsheet."""
     body = await request.json()
     if body.get("secret") != ADMIN_SECRET:
         raise HTTPException(403, "Invalid secret")
     db.wipe_match_data()
     fetch_and_store_completed_matches()
+    rescore_from_cricsheet()
     return {"status": "reseeded", "matches": db.get_match_count()}
+
+
+@app.post("/api/admin/rescore-cricsheet")
+async def force_rescore(request: Request):
+    """Force re-score all completed matches from Cricsheet data."""
+    body = await request.json()
+    if body.get("secret") != ADMIN_SECRET:
+        raise HTTPException(403, "Invalid secret")
+    rescore_from_cricsheet()
+    return {"status": "rescored", "matches": db.get_match_count()}
 
 
 @app.get("/api/status")
 async def status():
-    """Health check — shows DB state and API connectivity."""
+    """Health check — shows DB state."""
     conn = db.get_db()
     team_count = conn.execute("SELECT COUNT(*) as cnt FROM teams").fetchone()["cnt"]
     match_count = conn.execute("SELECT COUNT(*) as cnt FROM matches").fetchone()["cnt"]
-    player_pts_count = conn.execute("SELECT COUNT(DISTINCT player_name) as cnt FROM player_match_points").fetchone()["cnt"]
-    matches = conn.execute("SELECT match_id, date, teams_json, status FROM matches ORDER BY date DESC").fetchall()
+    player_pts_count = conn.execute(
+        "SELECT COUNT(DISTINCT player_name) as cnt FROM player_match_points"
+    ).fetchone()["cnt"]
+    matches = conn.execute(
+        "SELECT match_id, date, teams_json, status FROM matches ORDER BY date DESC"
+    ).fetchall()
     conn.close()
 
     return {
         "teams": team_count,
         "matches_stored": match_count,
         "players_with_points": player_pts_count,
-        "match_list": [{"match_id": m["match_id"], "date": m["date"], "teams": m["teams_json"], "status": m["status"]} for m in matches],
-        "api_key_set": bool(CRICKETDATA_API_KEY),
+        "match_list": [
+            {
+                "match_id": m["match_id"],
+                "date": m["date"],
+                "teams": m["teams_json"],
+                "status": m["status"],
+            }
+            for m in matches
+        ],
+        "data_source": "cricbuzz",
+        "cricbuzz_key_set": bool(CRICBUZZ_API_KEY),
         "poller_running": scheduler.running,
     }

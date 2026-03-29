@@ -1,11 +1,17 @@
 """Configuration settings."""
 import os
 
-# CricketData.org API
+# CricketData.org API (legacy/fallback)
 CRICKETDATA_API_KEY = os.environ.get("CRICKETDATA_API_KEY", "67ece779-66b8-43ef-84a7-a6ae6a0afff3")
 
 # IPL 2026 series ID on CricketData.org
 IPL_2026_SERIES_ID = "87c62aac-bc3c-4738-ab93-19da0690488f"
+
+# Cricbuzz API via RapidAPI (primary)
+CRICBUZZ_API_KEY = os.environ.get("CRICBUZZ_API_KEY", "03d0bf7c11mshbe21719256b1b49p188ab0jsn121922dab5cc")
+
+# Cricsheet data directory for ball-by-ball rescoring
+CRICSHEET_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cricsheet")
 
 # Polling intervals (seconds)
 LIVE_POLL_INTERVAL = 300       # During match hours (5 min — free tier has 100 calls/day)

@@ -7,10 +7,14 @@ the API name differs from what we use internally.
 
 # API name -> display name (only needed when they differ)
 API_TO_DISPLAY = {
-    # Add entries here if the API returns a different name than teams.py uses
-    # e.g., "Nithish Kumar Reddy": "Nitish Kumar Reddy",
+    # CricketData.org differences
     "Nithish Kumar Reddy": "Nitish Kumar Reddy",
     "Vaibhav Suryavanshi": "Vaibhav Sooryavanshi",
+    # Cricbuzz API differences (name field vs our display name)
+    "Philip Salt": "Phil Salt",
+    "Lokesh Rahul": "KL Rahul",
+    "Shahrukh Khan": "M Shahrukh Khan",
+    "Abhishek Porel": "Abishek Porel",
 }
 
 # Reverse: display name -> API name

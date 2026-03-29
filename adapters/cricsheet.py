@@ -1,11 +1,20 @@
-"""Adapter for local Cricsheet JSON files."""
+"""Adapter for local Cricsheet JSON files (ball-by-ball data)."""
 import json
 import glob
 import os
+import logging
+import zipfile
 from collections import defaultdict
+
+import httpx
 
 from adapters.base import DataSourceAdapter
 from models import MatchScorecard, BattingEntry, BowlingEntry, FieldingEntry
+from name_mapping import get_display_name
+
+logger = logging.getLogger(__name__)
+
+CRICSHEET_IPL_ZIP_URL = "https://cricsheet.org/downloads/ipl_json.zip"
 
 BOWLING_WICKET_KINDS = {"caught", "caught and bowled", "bowled", "lbw", "stumped", "hit wicket"}
 LBW_BOWLED_KINDS = {"lbw", "bowled"}
@@ -151,6 +160,13 @@ class CricsheetAdapter(DataSourceAdapter):
                                     fielding[name] = FieldingEntry(player=name)
                                 fielding[name].runouts += 1
 
+        # Normalize all player names to display names
+        playing_xi = {get_display_name(n) for n in playing_xi}
+        batting = {get_display_name(k): v for k, v in batting.items()}
+        bowling = {get_display_name(k): v for k, v in bowling.items()}
+        fielding = {get_display_name(k): v for k, v in fielding.items()}
+        batters_who_batted = {get_display_name(n) for n in batters_who_batted}
+
         return MatchScorecard(
             match_id=match_id,
             date=date,
@@ -163,3 +179,77 @@ class CricsheetAdapter(DataSourceAdapter):
             fielding=fielding,
             batters_who_batted=batters_who_batted,
         )
+
+
+# ------------------------------------------------------------------
+# Cricsheet download + team matching utilities
+# ------------------------------------------------------------------
+
+def download_cricsheet_ipl(data_dir: str) -> bool:
+    """Download the Cricsheet IPL JSON zip and extract to data_dir.
+
+    Returns True on success, False on failure.
+    """
+    os.makedirs(data_dir, exist_ok=True)
+    zip_path = os.path.join(data_dir, "ipl_json.zip")
+
+    try:
+        logger.info("Downloading Cricsheet IPL data from %s", CRICSHEET_IPL_ZIP_URL)
+        resp = httpx.get(CRICSHEET_IPL_ZIP_URL, timeout=120, follow_redirects=True)
+        resp.raise_for_status()
+
+        with open(zip_path, "wb") as f:
+            f.write(resp.content)
+
+        with zipfile.ZipFile(zip_path) as zf:
+            zf.extractall(data_dir)
+
+        logger.info("Cricsheet data extracted to %s", data_dir)
+        return True
+    except Exception as e:
+        logger.error("Failed to download Cricsheet data: %s", e)
+        return False
+
+
+# Canonical IPL team abbreviation for fuzzy matching
+_TEAM_KEYWORDS = {
+    "chennai": "csk", "super kings": "csk",
+    "mumbai": "mi", "indians": "mi",
+    "bangalore": "rcb", "bengaluru": "rcb", "royal challengers": "rcb",
+    "kolkata": "kkr", "knight riders": "kkr",
+    "delhi": "dc", "capitals": "dc",
+    "rajasthan": "rr", "royals": "rr",
+    "punjab": "pbks", "kings xi": "pbks",
+    "sunrisers": "srh", "hyderabad": "srh",
+    "gujarat": "gt", "titans": "gt",
+    "lucknow": "lsg", "super giants": "lsg",
+}
+
+
+def _canonical_team(name: str) -> str:
+    """Map any IPL team name to a canonical 2-3 letter code."""
+    lower = name.strip().lower()
+    for keyword, code in _TEAM_KEYWORDS.items():
+        if keyword in lower:
+            return code
+    return lower
+
+
+def find_cricsheet_match_id(
+    adapter: "CricsheetAdapter",
+    season: str,
+    date: str,
+    teams: list[str],
+) -> str | None:
+    """Find a Cricsheet match that matches the given date and teams.
+
+    Returns the Cricsheet match_id or None.
+    """
+    target_teams = {_canonical_team(t) for t in teams}
+    for m in adapter.get_match_list(season):
+        if m["date"] != date:
+            continue
+        cs_teams = {_canonical_team(t) for t in m["teams"]}
+        if cs_teams == target_teams:
+            return m["match_id"]
+    return None
