@@ -1407,55 +1407,16 @@
                         <span class="heading-md" style="font-size: 0.9rem;">Cumulative Points Progress</span>
                     </div>
 
-                    <!-- SVG Chart -->
-                    <svg :viewBox="'0 0 ' + getChartWidth() + ' ' + getChartHeight()"
-                         style="width: 100%; height: auto; display: block; overflow: visible;"
+                    <!-- SVG Chart — built via innerHTML to avoid template-in-SVG issues -->
+                    <div x-ref="chartContainer"
+                         x-effect="$refs.chartContainer.innerHTML = buildChartSVG(standings, highlightedTeam)"
                          @mouseleave="highlightedTeam = null"
-                         @touchend.outside="highlightedTeam = null">
-
-                        <!-- Horizontal grid lines -->
-                        <template x-for="(yVal, gi) in getChartGridLines(getChartYMax(standings), 5)" :key="'grid-' + gi">
-                            <g>
-                                <line :x1="40" :y1="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8))"
-                                      :x2="getChartWidth()" :y2="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8))"
-                                      stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-                                <text :x="36" :y="getChartHeight() - 24 - ((yVal / getChartYMax(standings)) * (getChartHeight() - 24 - 8)) + 3"
-                                      fill="var(--text-dimmed)" font-size="9" text-anchor="end" x-text="yVal"></text>
-                            </g>
-                        </template>
-
-                        <!-- X-axis labels -->
-                        <template x-for="(m, mi) in standings[0].pts_history" :key="'xlabel-' + mi">
-                            <text :x="40 + (mi * ((getChartWidth() - 40) / Math.max(standings[0].pts_history.length - 1, 1)))"
-                                  :y="getChartHeight() - 6"
-                                  fill="var(--text-dimmed)" font-size="8" text-anchor="middle"
-                                  x-text="'M' + (mi + 1)"></text>
-                        </template>
-
-                        <!-- Team lines -->
-                        <template x-for="(team, tIdx) in standings" :key="'line-' + team.team_name">
-                            <polyline class="chart-line"
-                                      :points="getChartPoints(standings, tIdx, getChartWidth(), getChartHeight(), 40, 24)"
-                                      fill="none"
-                                      :stroke="teamColors[tIdx % teamColors.length]"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      :style="'opacity: ' + (highlightedTeam === null ? 0.3 : (highlightedTeam === team.team_name ? 1.0 : 0.15)) + '; stroke-width: ' + (highlightedTeam === team.team_name ? 2.5 : 2)"/>
-                        </template>
-
-                        <!-- Invisible hit-area polylines (on top for hover) -->
-                        <template x-for="(team, tIdx) in standings" :key="'hit-' + team.team_name">
-                            <polyline class="chart-hit-area"
-                                      :points="getChartPoints(standings, tIdx, getChartWidth(), getChartHeight(), 40, 24)"
-                                      fill="none"
-                                      stroke="transparent"
-                                      stroke-width="10"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      @mouseenter="highlightedTeam = team.team_name"
-                                      @touchstart.passive="highlightedTeam = team.team_name"/>
-                        </template>
-                    </svg>
+                         @mouseenter.self="highlightedTeam = null"
+                         @click="handleChartClick($event, standings)"
+                         @mousemove="handleChartHover($event, standings)"
+                         @touchstart.passive="handleChartHover($event, standings)"
+                         @touchend="highlightedTeam = null"
+                         style="width: 100%;"></div>
 
                     <!-- Legend -->
                     <div style="display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px;">
@@ -2334,13 +2295,70 @@
                 const yMax = this.getChartYMax(standings);
                 const numPoints = cum.length;
                 const usableW = chartW - padL;
-                const usableH = chartH - padB - 8; // 8px top padding
+                const usableH = chartH - padB - 8;
                 const points = cum.map((val, i) => {
                     const x = padL + (numPoints === 1 ? usableW / 2 : (i / (numPoints - 1)) * usableW);
                     const y = chartH - padB - ((val / yMax) * usableH);
                     return x.toFixed(1) + ',' + y.toFixed(1);
                 });
                 return points.join(' ');
+            },
+
+            buildChartSVG(standings, highlightedTeam) {
+                if (!standings?.length || !standings[0]?.pts_history?.length) return '';
+                const W = this.getChartWidth();
+                const H = this.getChartHeight();
+                const yMax = this.getChartYMax(standings);
+                const gridLines = this.getChartGridLines(yMax, 5);
+                const numMatches = standings[0].pts_history.length;
+
+                let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;overflow:visible;">`;
+
+                // Grid lines
+                for (const yVal of gridLines) {
+                    const y = (H - 24 - ((yVal / yMax) * (H - 32))).toFixed(1);
+                    svg += `<line x1="40" y1="${y}" x2="${W}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+                    svg += `<text x="36" y="${(parseFloat(y) + 3).toFixed(1)}" fill="#475569" font-size="9" text-anchor="end" font-family="Inter,sans-serif">${yVal}</text>`;
+                }
+
+                // X-axis labels
+                for (let mi = 0; mi < numMatches; mi++) {
+                    const x = (40 + (mi * ((W - 40) / Math.max(numMatches - 1, 1)))).toFixed(1);
+                    svg += `<text x="${x}" y="${H - 6}" fill="#475569" font-size="8" text-anchor="middle" font-family="Inter,sans-serif">M${mi + 1}</text>`;
+                }
+
+                // Team lines
+                for (let tIdx = 0; tIdx < standings.length; tIdx++) {
+                    const pts = this.getChartPoints(standings, tIdx, W, H, 40, 24);
+                    if (!pts) continue;
+                    const color = this.teamColors[tIdx % this.teamColors.length];
+                    const isHighlighted = highlightedTeam === standings[tIdx].team_name;
+                    const opacity = highlightedTeam === null ? 0.8 : (isHighlighted ? 1.0 : 0.15);
+                    const sw = isHighlighted ? 3 : 2;
+                    svg += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" style="opacity:${opacity};transition:opacity 200ms,stroke-width 200ms;" data-team="${tIdx}"/>`;
+                }
+
+                // Hit areas (transparent, wider for hover)
+                for (let tIdx = 0; tIdx < standings.length; tIdx++) {
+                    const pts = this.getChartPoints(standings, tIdx, W, H, 40, 24);
+                    if (!pts) continue;
+                    svg += `<polyline points="${pts}" fill="none" stroke="transparent" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" data-team="${tIdx}" style="cursor:pointer;"/>`;
+                }
+
+                svg += '</svg>';
+                return svg;
+            },
+
+            handleChartHover(event, standings) {
+                const el = event.target;
+                const tIdx = el?.getAttribute?.('data-team');
+                if (tIdx !== null && tIdx !== undefined && standings[tIdx]) {
+                    this.highlightedTeam = standings[tIdx].team_name;
+                }
+            },
+
+            handleChartClick(event, standings) {
+                this.handleChartHover(event, standings);
             },
 
             // ===================================================================
