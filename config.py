@@ -13,16 +13,24 @@ CRICBUZZ_API_KEY = os.environ.get("CRICBUZZ_API_KEY", "")
 # Cricsheet data directory for ball-by-ball rescoring
 CRICSHEET_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cricsheet")
 
-# Polling intervals (seconds)
-LIVE_POLL_INTERVAL = 600       # During match hours (10 min, 1 API call each)
-IDLE_POLL_INTERVAL = 3600      # Outside match hours (1 hour)
+# Cricbuzz RapidAPI monthly call limit (free tier: 200/month)
+CRICBUZZ_MONTHLY_LIMIT = int(os.environ.get("CRICBUZZ_MONTHLY_LIMIT", "200"))
 
-# Cricbuzz RapidAPI monthly call limit (free tier)
-CRICBUZZ_MONTHLY_LIMIT = int(os.environ.get("CRICBUZZ_MONTHLY_LIMIT", "80"))
-
-# Match hours in IST (UTC+5:30)
-MATCH_START_HOUR_IST = 14
-MATCH_END_HOUR_IST = 24
+# Scheduled fetch times in IST (hour, minute)
+# Afternoon match slots (double-header days):
+#   3:45 PM — mid 1st innings, 5:00 PM — end 1st innings
+# Evening match slots (every match day):
+#   7:30 PM — start, 8:30 PM — mid 1st, 9:30 PM — end 1st,
+#   10:30 PM — mid 2nd, 11:30 PM — match end
+FETCH_TIMES_IST = [
+    (15, 45),
+    (17, 0),
+    (19, 30),
+    (20, 30),
+    (21, 30),
+    (22, 30),
+    (23, 30),
+]
 
 # Database
 DB_PATH = os.environ.get("DB_PATH", "data/fantasy.db")

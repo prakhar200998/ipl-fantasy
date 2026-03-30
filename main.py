@@ -24,8 +24,7 @@ from name_mapping import get_display_name
 from teams import get_captain_vc
 from config import (
     CRICBUZZ_API_KEY, CRICSHEET_DATA_DIR, SEASON,
-    LIVE_POLL_INTERVAL, IDLE_POLL_INTERVAL, ADMIN_SECRET,
-    MATCH_START_HOUR_IST, MATCH_END_HOUR_IST,
+    ADMIN_SECRET, FETCH_TIMES_IST,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -35,25 +34,17 @@ IST = timezone(timedelta(hours=5, minutes=30))
 scheduler = BackgroundScheduler()
 
 
-def is_match_hours() -> bool:
-    now_ist = datetime.now(IST)
-    return MATCH_START_HOUR_IST <= now_ist.hour < MATCH_END_HOUR_IST
-
-
-# ------------------------------------------------------------------
-# Keep-alive — prevents Render free tier from sleeping during matches
-# ------------------------------------------------------------------
-
 def _keep_alive_ping():
-    """Self-ping to prevent Render free tier from sleeping."""
-    if not is_match_hours():
-        return  # only keep alive during match hours
+    """Self-ping to prevent Render free tier from sleeping during match hours."""
+    now_ist = datetime.now(IST)
+    # Only keep alive from 1 hour before first fetch to after last fetch
+    if not (14 <= now_ist.hour < 24):
+        return
     try:
         import httpx
         httpx.get("https://ipl-fantasy-5soj.onrender.com/api/status", timeout=10)
-        logger.debug("Keep-alive ping sent")
     except Exception:
-        pass  # non-critical
+        pass
 
 
 # ------------------------------------------------------------------
@@ -287,28 +278,44 @@ async def lifespan(app: FastAPI):
 
     # Start background scheduler
     if CRICBUZZ_API_KEY:
-        interval = LIVE_POLL_INTERVAL if is_match_hours() else IDLE_POLL_INTERVAL
+        from apscheduler.triggers.cron import CronTrigger
+
+        # Schedule fetches at specific IST times (cricket-relevant moments)
+        for i, (hour, minute) in enumerate(FETCH_TIMES_IST):
+            # Convert IST (UTC+5:30) to UTC
+            total_min = hour * 60 + minute - 330  # 5h30m = 330min
+            utc_hour = total_min // 60
+            utc_minute = total_min % 60
+            scheduler.add_job(
+                poll_live_matches, CronTrigger(hour=utc_hour, minute=utc_minute),
+                id=f"fetch_{hour:02d}{minute:02d}",
+            )
+            logger.info("Scheduled fetch at %02d:%02d IST (UTC %02d:%02d)",
+                         hour, minute, utc_hour, utc_minute)
+
+        # Also fire once 15s after startup to catch up
         scheduler.add_job(
-            poll_live_matches, "interval",
-            seconds=interval, id="poller",
-            # Fire immediately on startup so waking from sleep catches up
-            next_run_time=datetime.now(timezone.utc) + timedelta(seconds=10),
+            poll_live_matches, "date",
+            run_date=datetime.now(timezone.utc) + timedelta(seconds=15),
+            id="startup_poll",
         )
+
         # Cricsheet re-scoring: run once 30s after startup, then every 2 hours
         scheduler.add_job(
             rescore_from_cricsheet, "interval",
             hours=2, id="cricsheet_rescore",
             next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30),
         )
-        # Keep-alive self-ping during match hours (prevents Render free tier sleep)
+        # Keep-alive self-ping (prevents Render free tier sleep during match hours)
         scheduler.add_job(
             _keep_alive_ping, "interval",
             minutes=10, id="keep_alive",
         )
         scheduler.start()
-        logger.info("Scheduler started (poll=%ds, cricsheet every 2h, keep-alive 10m)", interval)
+        logger.info("Scheduler started: %d fetch times, cricsheet every 2h, keep-alive 10m",
+                     len(FETCH_TIMES_IST))
     else:
-        logger.info("No API key set — live polling disabled")
+        logger.info("No API key set — scheduled fetching disabled")
 
     yield
 
