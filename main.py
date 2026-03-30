@@ -41,6 +41,22 @@ def is_match_hours() -> bool:
 
 
 # ------------------------------------------------------------------
+# Keep-alive — prevents Render free tier from sleeping during matches
+# ------------------------------------------------------------------
+
+def _keep_alive_ping():
+    """Self-ping to prevent Render free tier from sleeping."""
+    if not is_match_hours():
+        return  # only keep alive during match hours
+    try:
+        import httpx
+        httpx.get("https://ipl-fantasy-5soj.onrender.com/api/status", timeout=10)
+        logger.debug("Keep-alive ping sent")
+    except Exception:
+        pass  # non-critical
+
+
+# ------------------------------------------------------------------
 # Data fetching — Cricbuzz primary
 # ------------------------------------------------------------------
 
@@ -108,9 +124,9 @@ def poll_live_matches():
     try:
         adapter = CricbuzzAdapter()
 
-        # During match hours: check for live matches
-        # Outside match hours: check for recently completed matches
-        matches = adapter.get_match_list(SEASON)
+        # Use live_only=True to save API credits (1 call instead of 2)
+        # The live endpoint includes both in-progress AND recently completed
+        matches = adapter.get_match_list(SEASON, live_only=True)
         active = [m for m in matches if m["status"] in ("in_progress", "complete", "abandoned")]
 
         if not active:
@@ -275,6 +291,8 @@ async def lifespan(app: FastAPI):
         scheduler.add_job(
             poll_live_matches, "interval",
             seconds=interval, id="poller",
+            # Fire immediately on startup so waking from sleep catches up
+            next_run_time=datetime.now(timezone.utc) + timedelta(seconds=10),
         )
         # Cricsheet re-scoring: run once 30s after startup, then every 2 hours
         scheduler.add_job(
@@ -282,8 +300,13 @@ async def lifespan(app: FastAPI):
             hours=2, id="cricsheet_rescore",
             next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30),
         )
+        # Keep-alive self-ping during match hours (prevents Render free tier sleep)
+        scheduler.add_job(
+            _keep_alive_ping, "interval",
+            minutes=10, id="keep_alive",
+        )
         scheduler.start()
-        logger.info("Scheduler started (poll=%ds, cricsheet every 2h)", interval)
+        logger.info("Scheduler started (poll=%ds, cricsheet every 2h, keep-alive 10m)", interval)
     else:
         logger.info("No API key set — live polling disabled")
 

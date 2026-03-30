@@ -156,12 +156,17 @@ class CricbuzzAdapter(DataSourceAdapter):
                     })
         return matches
 
-    def get_match_list(self, season: str = "") -> list[dict]:
-        """Get IPL matches from both recent and live endpoints."""
+    def get_match_list(self, season: str = "", live_only: bool = False) -> list[dict]:
+        """Get IPL matches from Cricbuzz endpoints.
+
+        live_only=True uses only the live endpoint (1 API call instead of 2).
+        The live endpoint includes both in-progress AND recently completed matches.
+        """
         all_matches: list[dict] = []
         seen_ids: set[str] = set()
 
-        for endpoint in ("matches/v1/recent", "matches/v1/live"):
+        endpoints = ["matches/v1/live"] if live_only else ["matches/v1/recent", "matches/v1/live"]
+        for endpoint in endpoints:
             data = self._get(endpoint)
             if not data:
                 continue

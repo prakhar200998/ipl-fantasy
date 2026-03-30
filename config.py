@@ -14,7 +14,7 @@ CRICBUZZ_API_KEY = os.environ.get("CRICBUZZ_API_KEY", "")
 CRICSHEET_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cricsheet")
 
 # Polling intervals (seconds)
-LIVE_POLL_INTERVAL = 300       # During match hours (5 min)
+LIVE_POLL_INTERVAL = 600       # During match hours (10 min, 1 API call each)
 IDLE_POLL_INTERVAL = 3600      # Outside match hours (1 hour)
 
 # Cricbuzz RapidAPI monthly call limit (free tier)
