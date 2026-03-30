@@ -67,7 +67,8 @@ TEAMS = {
             {"name": "Travis Head", "role": "batsman", "ipl_team": "Sunrisers Hyderabad"},
             {"name": "Shreyas Iyer", "role": "batsman", "ipl_team": "Punjab Kings", "vice_captain": True},
             {"name": "Sanju Samson", "role": "wicket-keeper", "ipl_team": "Chennai Super Kings", "captain": True},
-            {"name": "KL Rahul", "role": "wicket-keeper", "ipl_team": "Delhi Capitals"},
+            {"name": "Dewald Brevis", "role": "batsman", "ipl_team": "Chennai Super Kings"},
+            {"name": "Suyash Sharma", "role": "bowler", "ipl_team": "Royal Challengers Bengaluru"},
             {"name": "Jason Holder", "role": "all-rounder", "ipl_team": "Gujarat Titans"},
             {"name": "Josh Hazlewood", "role": "bowler", "ipl_team": "Royal Challengers Bengaluru"},
             {"name": "Bhuvneshwar Kumar", "role": "bowler", "ipl_team": "Royal Challengers Bengaluru"},
@@ -138,7 +139,7 @@ TEAMS = {
         "players": [
             {"name": "Virat Kohli", "role": "batsman", "ipl_team": "Royal Challengers Bengaluru", "captain": True},
             {"name": "Angkrish Raghuvanshi", "role": "batsman", "ipl_team": "Kolkata Knight Riders"},
-            {"name": "Dewald Brevis", "role": "batsman", "ipl_team": "Chennai Super Kings"},
+            {"name": "KL Rahul", "role": "wicket-keeper", "ipl_team": "Delhi Capitals"},
             {"name": "Sherfane Rutherford", "role": "batsman", "ipl_team": "Mumbai Indians"},
             {"name": "Rajat Patidar", "role": "batsman", "ipl_team": "Royal Challengers Bengaluru", "vice_captain": True},
             {"name": "Harshal Patel", "role": "bowler", "ipl_team": "Sunrisers Hyderabad"},
@@ -149,7 +150,6 @@ TEAMS = {
             {"name": "Venkatesh Iyer", "role": "all-rounder", "ipl_team": "Royal Challengers Bengaluru"},
             {"name": "Mukesh Kumar", "role": "bowler", "ipl_team": "Delhi Capitals"},
             {"name": "Digvesh Rathi", "role": "bowler", "ipl_team": "Lucknow Super Giants"},
-            {"name": "Suyash Sharma", "role": "bowler", "ipl_team": "Royal Challengers Bengaluru"},
             {"name": "Mohammed Shami", "role": "bowler", "ipl_team": "Lucknow Super Giants"},
             {"name": "Mukesh Choudhary", "role": "bowler", "ipl_team": "Chennai Super Kings"},
         ]

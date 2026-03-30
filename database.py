@@ -337,6 +337,28 @@ def restore_from_remote() -> bool:
         return False
 
 
+def reseed_rosters(teams_dict: dict):
+    """Wipe roster table and re-seed from TEAMS dict. Preserves all match data."""
+    conn = get_db()
+    conn.execute("DELETE FROM roster")
+    for team_name, team_data in teams_dict.items():
+        team_id = conn.execute(
+            "SELECT team_id FROM teams WHERE team_name = ?", (team_name,)
+        ).fetchone()
+        if not team_id:
+            continue
+        tid = team_id["team_id"]
+        for p in team_data["players"]:
+            designation = "C" if p.get("captain") else "VC" if p.get("vice_captain") else ""
+            conn.execute(
+                "INSERT INTO roster (team_id, player_name, role, ipl_team, designation) VALUES (?, ?, ?, ?, ?)",
+                (tid, p["name"], p.get("role", ""), p.get("ipl_team", ""), designation),
+            )
+    conn.commit()
+    conn.close()
+    logger.info("Re-seeded rosters from TEAMS dict")
+
+
 def wipe_match_data():
     """Delete all match and player_match_points data (keeps teams/roster)."""
     conn = get_db()

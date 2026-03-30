@@ -223,10 +223,13 @@ async def lifespan(app: FastAPI):
     team_count = conn.execute("SELECT COUNT(*) as cnt FROM teams").fetchone()["cnt"]
     conn.close()
 
+    from teams import TEAMS
     if team_count == 0:
         logger.info("No teams in DB — seeding teams...")
-        from teams import TEAMS
         db.seed_teams(TEAMS)
+    else:
+        # Always re-sync rosters so trades take effect retroactively
+        db.reseed_rosters(TEAMS)
 
     # Fetch completed matches from Cricbuzz
     if CRICBUZZ_API_KEY:
@@ -434,6 +437,17 @@ async def reseed(request: Request):
     fetch_and_store_completed_matches()
     rescore_from_cricsheet()
     return {"status": "reseeded", "matches": db.get_match_count()}
+
+
+@app.post("/api/admin/reseed-rosters")
+async def reseed_rosters(request: Request):
+    """Re-sync roster table from TEAMS dict (retroactive)."""
+    body = await request.json()
+    if body.get("secret") != ADMIN_SECRET:
+        raise HTTPException(403, "Invalid secret")
+    from teams import TEAMS
+    db.reseed_rosters(TEAMS)
+    return {"status": "rosters reseeded"}
 
 
 @app.post("/api/admin/rescore-cricsheet")
