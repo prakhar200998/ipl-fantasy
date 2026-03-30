@@ -175,6 +175,33 @@ def bulk_upsert_player_points(match_id: str, all_points: dict[str, dict],
     conn.close()
 
 
+def insert_washout_zeroes(match_id: str, ipl_teams: list[str],
+                          captain_vc: dict[str, str] | None = None):
+    """Insert 0 points for all roster players whose IPL team is in the match."""
+    if captain_vc is None:
+        captain_vc = {}
+    conn = get_db()
+    placeholders = ",".join("?" * len(ipl_teams))
+    players = conn.execute(f"""
+        SELECT DISTINCT player_name FROM roster
+        WHERE ipl_team IN ({placeholders}) AND removed_date IS NULL
+    """, ipl_teams).fetchall()
+
+    for p in players:
+        name = p["player_name"]
+        designation = captain_vc.get(name, "")
+        # raw_pts = 0, so total_pts = 0 regardless of C/VC
+        conn.execute("""
+            INSERT OR IGNORE INTO player_match_points
+                (match_id, player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json)
+            VALUES (?, ?, 0, 0, 0, 0, 0, '{}')
+        """, (match_id, name))
+
+    conn.commit()
+    conn.close()
+    logger.info("Washout: inserted 0 pts for %d players in match %s", len(players), match_id)
+
+
 def load_seed_data():
     """Load match data from data/match_seed.json as a fallback when API fails."""
     seed_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "match_seed.json")

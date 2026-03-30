@@ -110,8 +110,15 @@ class CricbuzzAdapter(DataSourceAdapter):
                 for match_wrapper in wrapper.get("matches", []):
                     mi = match_wrapper.get("matchInfo", {})
                     state = (mi.get("state") or "").lower()
+                    status_text = (mi.get("status") or "").lower()
                     if state == "complete":
-                        status = "complete"
+                        # Check for abandoned / no result
+                        if any(kw in status_text for kw in ("abandon", "no result", "wash")):
+                            status = "abandoned"
+                        else:
+                            status = "complete"
+                    elif state in ("abandon", "abandoned", "no result"):
+                        status = "abandoned"
                     elif state in ("in progress", "innings break",
                                    "toss", "stumps", "lunch", "tea"):
                         status = "in_progress"

@@ -52,15 +52,15 @@ def fetch_and_store_completed_matches():
 
     adapter = CricbuzzAdapter()
     matches = adapter.get_match_list(SEASON)
-    completed = [m for m in matches if m["status"] == "complete"]
-    logger.info("Cricbuzz: found %d completed IPL 2026 matches", len(completed))
+    completed = [m for m in matches if m["status"] in ("complete", "abandoned")]
+    logger.info("Cricbuzz: found %d completed/abandoned IPL 2026 matches", len(completed))
 
-    # Skip matches already stored as complete
+    # Skip matches already stored as complete or abandoned
     conn = db.get_db()
     stored_complete = {
         row["match_id"]
         for row in conn.execute(
-            "SELECT match_id FROM matches WHERE status = 'complete'"
+            "SELECT match_id FROM matches WHERE status IN ('complete', 'abandoned')"
         ).fetchall()
     }
     conn.close()
@@ -73,6 +73,16 @@ def fetch_and_store_completed_matches():
     captain_vc = get_captain_vc()
 
     for match in new_matches:
+        # Washed out / abandoned — 0 pts for all players on both teams
+        if match["status"] == "abandoned":
+            db.upsert_match(
+                match["match_id"], match["date"], match["teams"],
+                match["venue"], "abandoned",
+            )
+            db.insert_washout_zeroes(match["match_id"], match["teams"], captain_vc)
+            logger.info("Stored abandoned match %s: %s", match["match_id"], match.get("name", ""))
+            continue
+
         scorecard = adapter.get_scorecard(
             match["match_id"], date=match["date"], teams=match["teams"],
         )
@@ -101,12 +111,12 @@ def poll_live_matches():
         # During match hours: check for live matches
         # Outside match hours: check for recently completed matches
         matches = adapter.get_match_list(SEASON)
-        active = [m for m in matches if m["status"] in ("in_progress", "complete")]
+        active = [m for m in matches if m["status"] in ("in_progress", "complete", "abandoned")]
 
         if not active:
             return
 
-        # Skip matches already stored as complete
+        # Skip matches already stored as complete or abandoned
         conn = db.get_db()
         stored = {
             row["match_id"]: row["status"]
@@ -119,9 +129,20 @@ def poll_live_matches():
         captain_vc = get_captain_vc()
 
         for match in active:
-            # Skip if already stored as complete
-            if (stored.get(match["match_id"]) == "complete"
-                    and match["status"] == "complete"):
+            stored_status = stored.get(match["match_id"])
+            # Skip if already finalized
+            if stored_status in ("complete", "abandoned"):
+                continue
+
+            # Washed out / abandoned — 0 pts for all players on both teams
+            if match["status"] == "abandoned":
+                db.upsert_match(
+                    match["match_id"], match["date"], match["teams"],
+                    match["venue"], "abandoned",
+                )
+                db.insert_washout_zeroes(match["match_id"], match["teams"], captain_vc)
+                logger.info("Stored abandoned match %s", match["match_id"])
+                db.backup_to_remote()
                 continue
 
             scorecard = adapter.get_scorecard(
