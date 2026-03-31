@@ -1356,7 +1356,7 @@
                                                         </tr>
                                                         <!-- Breakdown expansion row (inside same x-for) -->
                                                         <tr x-show="expandedPlayer === player.player_name" x-cloak style="border-top: none;">
-                                                            <td :colspan="4 + (teamDetail.matches?.length || 0)" style="padding: 4px 12px 10px; background: rgba(255,255,255,0.02);">
+                                                            <td :colspan="5 + (teamDetail.matches?.length || 0)" style="padding: 4px 12px 10px; background: rgba(255,255,255,0.02);">
                                                                 <div style="display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
                                                                     <template x-for="chip in getPlayerBreakdown(player)" :key="chip.l">
                                                                         <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 500;"

@@ -157,6 +157,9 @@ def fetch_missing_from_cricketdata():
             scorecard = cd.get_scorecard(match["match_id"])
             if not scorecard:
                 continue
+            # Enrich bowling dots from ESPN (CricketData.org doesn't provide them)
+            from adapters.cricbuzz import _enrich_bowling_dots_espn
+            _enrich_bowling_dots_espn(scorecard, match["date"][:10], match["teams"])
             points = calculate_fantasy_points(scorecard)
             db.upsert_match(
                 match["match_id"], match["date"], match["teams"],
