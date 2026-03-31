@@ -172,6 +172,50 @@ def fetch_missing_from_cricketdata():
         logger.warning("CricketData.org fallback failed: %s", e)
 
 
+def refresh_in_progress_matches():
+    """Scrape Cricbuzz for score updates on in-progress matches (0 API calls).
+
+    Runs every 10 min during match hours. Only the 7 cron-time API polls
+    can *discover* new matches; this job just refreshes ones already tracked.
+    """
+    now_ist = datetime.now(IST)
+    if not (14 <= now_ist.hour < 24):
+        return
+
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT match_id, date, teams_json FROM matches WHERE status = 'in_progress'"
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return
+
+    import json
+    from adapters.cricbuzz import scrape_scorecard, _enrich_bowling_dots_espn
+
+    captain_vc = get_captain_vc()
+
+    for row in rows:
+        match_id = row["match_id"]
+        scorecard = scrape_scorecard(match_id)
+        if not scorecard:
+            continue
+        teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+        _enrich_bowling_dots_espn(scorecard, row["date"] or "", teams)
+        points = calculate_fantasy_points(scorecard)
+        db.bulk_upsert_player_points(match_id, points, captain_vc)
+
+        # If scraper sees 2 completed innings, mark complete
+        if scorecard.status == "complete":
+            db.upsert_match(match_id, row["date"], teams,
+                            scorecard.venue or "", "complete")
+            db.backup_to_remote()
+            logger.info("Match %s completed (detected by scraper)", match_id)
+        else:
+            logger.info("Refreshed in-progress match %s via scraper", match_id)
+
+
 def poll_live_matches():
     """Background job: fetch live/recently completed match data via Cricbuzz."""
     if not CRICBUZZ_API_KEY:
@@ -366,6 +410,12 @@ async def lifespan(app: FastAPI):
             poll_live_matches, "date",
             run_date=datetime.now(timezone.utc) + timedelta(seconds=15),
             id="startup_poll",
+        )
+
+        # Scraper-based live refresh: every 10 min during match hours (0 API calls)
+        scheduler.add_job(
+            refresh_in_progress_matches, "interval",
+            minutes=10, id="live_scraper",
         )
 
         # Cricsheet re-scoring: run once 30s after startup, then every 2 hours
