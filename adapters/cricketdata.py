@@ -224,6 +224,14 @@ class CricketDataAdapter(DataSourceAdapter):
                 if lbw_bowled_total > 0 and name in bowling:
                     bowling[name].lbw_bowled += lbw_bowled_total
 
+        # Extract full playing XI from teamInfo (catches players with zero
+        # involvement who don't appear in batting/bowling/catching arrays)
+        for team_info in match_data.get("teamInfo", []):
+            for p in team_info.get("players", []):
+                name = p.get("name", "")
+                if name:
+                    playing_xi.add(name)
+
         # Determine match status
         if match_data.get("matchEnded"):
             status = "complete"
