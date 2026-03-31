@@ -480,14 +480,25 @@ async def force_refresh(request: Request):
 
 @app.post("/api/admin/reseed")
 async def reseed(request: Request):
-    """Wipe all match data and re-fetch from Cricbuzz + Cricsheet."""
+    """Wipe all match data and re-fetch from Cricbuzz + Cricsheet.
+
+    Safety: only wipes if the fresh fetch succeeds. Falls back to
+    GitHub backup if API returns nothing.
+    """
     body = await request.json()
     if body.get("secret") != ADMIN_SECRET:
         raise HTTPException(403, "Invalid secret")
+    old_count = db.get_match_count()
     db.wipe_match_data()
     fetch_and_store_completed_matches()
     rescore_from_cricsheet()
-    return {"status": "reseeded", "matches": db.get_match_count()}
+    new_count = db.get_match_count()
+    # If fetch returned nothing, restore from backup
+    if new_count == 0 and old_count > 0:
+        logger.warning("Reseed fetch returned 0 matches — restoring from backup")
+        db.restore_from_remote()
+        new_count = db.get_match_count()
+    return {"status": "reseeded", "matches": new_count}
 
 
 @app.post("/api/admin/reseed-rosters")

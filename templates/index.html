@@ -1285,7 +1285,7 @@
                                                 </thead>
                                                 <tbody>
                                                     <template x-for="(player, pIdx) in teamDetail.players" :key="player.player_name">
-                                                        <tr :class="{ 'player-dimmed': pIdx >= 11 }" @click="expandedPlayer = expandedPlayer === player.player_name ? null : player.player_name" style="cursor: pointer;">
+                                                        <tr :class="{ 'player-dimmed': pIdx >= 11, 'player-expanded': expandedPlayer === player.player_name }" @click="expandedPlayer = expandedPlayer === player.player_name ? null : player.player_name" style="cursor: pointer;">
                                                             <!-- # -->
                                                             <td>
                                                                 <span style="font-weight: 700; font-size: 0.7rem; color: var(--text-muted);" x-text="pIdx + 1"></span>
@@ -1354,13 +1354,10 @@
                                                                 </template>
                                                             </template>
                                                         </tr>
-                                                    </template>
-                                                    <!-- Breakdown expansion row -->
-                                                    <template x-for="(player, pIdx) in teamDetail.players" :key="'bd-'+player.player_name">
-                                                        <tr x-show="expandedPlayer === player.player_name" x-cloak>
-                                                            <td :colspan="4 + (teamDetail.matches?.length || 0)" style="padding: 6px 12px 12px; background: var(--card-inner-bg, rgba(255,255,255,0.02));">
-                                                                <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-                                                                    <span style="font-size: 0.65rem; color: var(--text-dimmed); margin-right: 4px; font-weight: 600; text-transform: uppercase;">Breakdown</span>
+                                                        <!-- Breakdown expansion row (inside same x-for) -->
+                                                        <tr x-show="expandedPlayer === player.player_name" x-cloak style="border-top: none;">
+                                                            <td :colspan="4 + (teamDetail.matches?.length || 0)" style="padding: 4px 12px 10px; background: rgba(255,255,255,0.02);">
+                                                                <div style="display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
                                                                     <template x-for="chip in getPlayerBreakdown(player)" :key="chip.l">
                                                                         <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 500;"
                                                                               :style="chip.p >= 0 ? 'background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.2);' : 'background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.2);'">
