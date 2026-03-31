@@ -259,20 +259,21 @@ async def lifespan(app: FastAPI):
         # Always re-sync rosters so trades take effect retroactively
         db.reseed_rosters(TEAMS)
 
-    # Fetch completed matches from Cricbuzz
-    if CRICBUZZ_API_KEY:
-        try:
-            fetch_and_store_completed_matches()
-            db.backup_to_remote()  # persist latest good data to Gist
-        except Exception as e:
-            logger.error("Startup fetch error (will retry via poller): %s", e)
-
-    # Fallback chain if DB is still empty: Gist backup → seed file
+    # Restore persisted data FIRST so we never lose matches across deploys
     if db.get_match_count() == 0:
-        logger.info("No matches in DB — trying remote backup restore")
+        logger.info("No matches in DB — restoring from remote backup")
         if not db.restore_from_remote():
             logger.info("Remote restore failed — loading seed file as last resort")
             db.load_seed_data()
+        logger.info("After restore: %d matches in DB", db.get_match_count())
+
+    # Then fetch new/updated matches from Cricbuzz (additive — skips existing)
+    if CRICBUZZ_API_KEY:
+        try:
+            fetch_and_store_completed_matches()
+            db.backup_to_remote()  # persist latest good data
+        except Exception as e:
+            logger.error("Startup fetch error (will retry via poller): %s", e)
 
     logger.info("DB has %d matches", db.get_match_count())
 

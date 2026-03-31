@@ -291,7 +291,7 @@ def backup_to_remote():
     }
 
     try:
-        # Get current file SHA (needed for updates)
+        # Get current file SHA and check for regression
         sha = None
         resp = httpx.get(
             f"https://api.github.com/repos/{GITHUB_REPO}/contents/{BACKUP_PATH}",
@@ -299,6 +299,18 @@ def backup_to_remote():
         )
         if resp.status_code == 200:
             sha = resp.json()["sha"]
+            # Regression guard: never overwrite remote with fewer matches
+            try:
+                existing = json.loads(base64.b64decode(resp.json()["content"]).decode())
+                remote_count = len(existing.get("matches", []))
+                if len(matches) < remote_count:
+                    logger.warning(
+                        "Backup skipped: local %d matches < remote %d matches",
+                        len(matches), remote_count,
+                    )
+                    return
+            except Exception:
+                pass  # can't parse existing backup — overwrite is fine
 
         payload = {
             "message": "Auto-backup match data",
