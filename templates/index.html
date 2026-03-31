@@ -1283,8 +1283,8 @@
                                                         </template>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
                                                     <template x-for="(player, pIdx) in teamDetail.players" :key="player.player_name">
+                                                        <tbody>
                                                         <tr :class="{ 'player-dimmed': pIdx >= 11, 'player-expanded': expandedPlayer === player.player_name }" @click="expandedPlayer = expandedPlayer === player.player_name ? null : player.player_name" style="cursor: pointer;">
                                                             <!-- # -->
                                                             <td>
@@ -1354,7 +1354,7 @@
                                                                 </template>
                                                             </template>
                                                         </tr>
-                                                        <!-- Breakdown expansion row (inside same x-for) -->
+                                                        <!-- Breakdown expansion row -->
                                                         <tr x-show="expandedPlayer === player.player_name" x-cloak style="border-top: none;">
                                                             <td :colspan="5 + (teamDetail.matches?.length || 0)" style="padding: 4px 12px 10px; background: rgba(255,255,255,0.02);">
                                                                 <div style="display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
@@ -1368,8 +1368,8 @@
                                                                 </div>
                                                             </td>
                                                         </tr>
+                                                        </tbody>
                                                     </template>
-                                                </tbody>
                                             </table>
                                         </div>
 
