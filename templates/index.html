@@ -1276,7 +1276,6 @@
                                                         <th style="text-align: right;">Total</th>
                                                         <th style="text-align: center;">M</th>
                                                         <th class="hide-mobile" style="text-align: right;">Avg</th>
-                                                        <th class="hide-mobile" style="min-width: 90px;">Split</th>
                                                         <template x-if="teamDetail.matches">
                                                             <template x-for="match in teamDetail.matches" :key="match.match_id">
                                                                 <th class="match-cell" :title="match.teams?.join(' vs ')" x-text="match.label"></th>
@@ -1286,7 +1285,7 @@
                                                 </thead>
                                                 <tbody>
                                                     <template x-for="(player, pIdx) in teamDetail.players" :key="player.player_name">
-                                                        <tr :class="{ 'player-dimmed': pIdx >= 11 }">
+                                                        <tr :class="{ 'player-dimmed': pIdx >= 11 }" @click="expandedPlayer = expandedPlayer === player.player_name ? null : player.player_name" style="cursor: pointer;">
                                                             <!-- # -->
                                                             <td>
                                                                 <span style="font-weight: 700; font-size: 0.7rem; color: var(--text-muted);" x-text="pIdx + 1"></span>
@@ -1345,21 +1344,6 @@
                                                             <td class="hide-mobile" style="text-align: right; color: var(--text-secondary);">
                                                                 <span x-text="player.matches_played > 0 ? (player.total_pts / player.matches_played).toFixed(1) : '-'"></span>
                                                             </td>
-                                                            <!-- Split bar -->
-                                                            <td class="hide-mobile">
-                                                                <template x-if="player.total_pts > 0">
-                                                                    <div :title="'Bat: ' + (player.batting_pts || 0) + ' | Bowl: ' + (player.bowling_pts || 0) + ' | Field: ' + (player.fielding_pts || 0)">
-                                                                        <div class="split-bar">
-                                                                            <div class="split-bat" :style="'width: ' + getSplitPct(player, 'batting_pts') + '%'"></div>
-                                                                            <div class="split-bowl" :style="'width: ' + getSplitPct(player, 'bowling_pts') + '%'"></div>
-                                                                            <div class="split-field" :style="'width: ' + getSplitPct(player, 'fielding_pts') + '%'"></div>
-                                                                        </div>
-                                                                    </div>
-                                                                </template>
-                                                                <template x-if="player.total_pts <= 0">
-                                                                    <span style="color: var(--text-dimmed); font-size: 0.65rem;">--</span>
-                                                                </template>
-                                                            </td>
                                                             <!-- Per-match scores -->
                                                             <template x-if="teamDetail.matches">
                                                                 <template x-for="match in teamDetail.matches" :key="match.match_id">
@@ -1369,6 +1353,23 @@
                                                                     </td>
                                                                 </template>
                                                             </template>
+                                                        </tr>
+                                                    </template>
+                                                    <!-- Breakdown expansion row -->
+                                                    <template x-for="(player, pIdx) in teamDetail.players" :key="'bd-'+player.player_name">
+                                                        <tr x-show="expandedPlayer === player.player_name" x-cloak>
+                                                            <td :colspan="4 + (teamDetail.matches?.length || 0)" style="padding: 6px 12px 12px; background: var(--card-inner-bg, rgba(255,255,255,0.02));">
+                                                                <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                                                                    <span style="font-size: 0.65rem; color: var(--text-dimmed); margin-right: 4px; font-weight: 600; text-transform: uppercase;">Breakdown</span>
+                                                                    <template x-for="chip in getPlayerBreakdown(player)" :key="chip.l">
+                                                                        <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 500;"
+                                                                              :style="chip.p >= 0 ? 'background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.2);' : 'background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.2);'">
+                                                                            <span x-text="chip.l"></span>
+                                                                            <span style="font-weight: 700;" x-text="(chip.p >= 0 ? '+' : '') + chip.p"></span>
+                                                                        </span>
+                                                                    </template>
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     </template>
                                                 </tbody>
@@ -1973,6 +1974,7 @@
             expandedTeam: null,
             teamDetail: null,
             loadingDetail: false,
+            expandedPlayer: null,
 
             awards: null,
             loadingAwards: false,
@@ -2186,6 +2188,7 @@
             // TEAM EXPAND / COLLAPSE
             // ===================================================================
             async toggleTeam(teamName) {
+                this.expandedPlayer = null;
                 if (this.expandedTeam === teamName) {
                     this.expandedTeam = null;
                     this.teamDetail = null;
@@ -2327,7 +2330,7 @@
                     svg += `<text x="${x}" y="${H - 6}" fill="#475569" font-size="8" text-anchor="middle" font-family="Inter,sans-serif">M${mi + 1}</text>`;
                 }
 
-                // Team lines
+                // Team lines + data point circles
                 for (let tIdx = 0; tIdx < standings.length; tIdx++) {
                     const pts = this.getChartPoints(standings, tIdx, W, H, 40, 24);
                     if (!pts) continue;
@@ -2336,6 +2339,17 @@
                     const opacity = highlightedTeam === null ? 0.8 : (isHighlighted ? 1.0 : 0.15);
                     const sw = isHighlighted ? 3 : 2;
                     svg += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" style="opacity:${opacity};transition:opacity 200ms,stroke-width 200ms;" data-team="${tIdx}"/>`;
+
+                    // Data point circles with tooltip
+                    const cum = this.getCumulativeHistory(standings[tIdx].pts_history);
+                    const coords = pts.split(' ');
+                    coords.forEach((coord, ci) => {
+                        const [cx, cy] = coord.split(',');
+                        const r = isHighlighted ? 4 : 3;
+                        svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="#1e293b" stroke-width="1.5" style="opacity:${opacity};transition:opacity 200ms;" data-team="${tIdx}">`;
+                        svg += `<title>${standings[tIdx].team_name} — M${ci+1}: ${cum[ci]} pts</title>`;
+                        svg += `</circle>`;
+                    });
                 }
 
                 // Hit areas (transparent, wider for hover)
@@ -2374,6 +2388,63 @@
                 if (!player.match_scores) return null;
                 const found = player.match_scores.find(s => s.label === label);
                 return found ? found.pts : null;
+            },
+
+            getPlayerBreakdown(player) {
+                if (!player.match_scores?.length) return [];
+                let runs=0, balls=0, fours=0, sixes=0, ducks=0, mp=0;
+                let milePts=0, srPts=0;
+                let wkts=0, dots=0, maidens=0, bBalls=0, bRuns=0;
+                let wMilePts=0, ecoPts=0;
+                let catches=0, runouts=0, stumpings=0, catch3Bonus=0;
+                for (const ms of player.match_scores) {
+                    if (!ms.breakdown) continue;
+                    let b; try { b = JSON.parse(ms.breakdown); } catch(e) { continue; }
+                    if (b.playing_xi) mp++;
+                    if (b.batting) {
+                        const r = b.batting.runs||0, bl = b.batting.balls||0;
+                        runs += r; balls += bl; fours += b.batting.fours||0; sixes += b.batting.sixes||0;
+                        if (b.batting.dismissed && r === 0) ducks++;
+                        if (r >= 100) milePts += 16; else if (r >= 75) milePts += 12; else if (r >= 50) milePts += 8; else if (r >= 25) milePts += 4;
+                        if ((bl >= 10 || r >= 20) && bl > 0) {
+                            const sr = (r/bl)*100;
+                            if (sr>190) srPts+=8; else if (sr>170) srPts+=6; else if (sr>150) srPts+=4; else if (sr>=130) srPts+=2;
+                            else if (sr>=70&&sr<=100) srPts-=2; else if (sr>=60&&sr<70) srPts-=4; else if (sr>=50&&sr<60) srPts-=6;
+                        }
+                    }
+                    if (b.bowling) {
+                        const w=b.bowling.wickets||0; wkts+=w; dots+=b.bowling.dots||0; maidens+=b.bowling.maidens||0;
+                        bBalls+=b.bowling.balls||0; bRuns+=b.bowling.runs||0;
+                        if (w>=5) wMilePts+=16; else if (w>=4) wMilePts+=12; else if (w>=3) wMilePts+=8;
+                        if (b.bowling.balls>=12) {
+                            const eco=b.bowling.runs/(b.bowling.balls/6);
+                            if (eco<5) ecoPts+=8; else if (eco<6) ecoPts+=6; else if (eco<=7) ecoPts+=4; else if (eco<=8) ecoPts+=2;
+                            else if (eco>=10&&eco<=11) ecoPts-=2; else if (eco>11&&eco<=12) ecoPts-=4; else if (eco>12) ecoPts-=6;
+                        }
+                    }
+                    if (b.fielding) {
+                        const c=b.fielding.catches||0; catches+=c; runouts+=b.fielding.runouts||0; stumpings+=b.fielding.stumpings||0;
+                        if (c>=3) catch3Bonus+=4;
+                    }
+                }
+                const chips = [];
+                if (mp) chips.push({l:`${mp}× XI`, p:mp*4});
+                if (runs) chips.push({l:`${runs} runs`, p:runs});
+                if (fours) chips.push({l:`${fours}×4s`, p:fours*4});
+                if (sixes) chips.push({l:`${sixes}×6s`, p:sixes*6});
+                if (ducks) chips.push({l:`${ducks} duck`, p:ducks*-2});
+                if (milePts) chips.push({l:'Milestones', p:milePts});
+                if (srPts) chips.push({l:'SR bonus', p:srPts});
+                if (wkts) chips.push({l:`${wkts}W`, p:wkts*30});
+                if (dots) chips.push({l:`${dots} dots`, p:dots*2});
+                if (maidens) chips.push({l:`${maidens} maiden`, p:maidens*12});
+                if (wMilePts) chips.push({l:'W milestone', p:wMilePts});
+                if (ecoPts) chips.push({l:'Economy', p:ecoPts});
+                if (catches) chips.push({l:`${catches} catch`, p:catches*8});
+                if (catch3Bonus) chips.push({l:'3+ catches', p:catch3Bonus});
+                if (runouts) chips.push({l:`${runouts} runout`, p:runouts*10});
+                if (stumpings) chips.push({l:`${stumpings} stumping`, p:stumpings*12});
+                return chips;
             },
 
             getScoreClass(score) {

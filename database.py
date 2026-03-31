@@ -554,31 +554,42 @@ def get_team_detail(team_name: str) -> dict | None:
             "teams": json.loads(m["teams_json"]),
         })
 
-    # Get per-match scores for roster players
+    # Get per-match scores for roster players (including breakdown)
     roster_names = [p["player_name"] for p in players]
     per_match = {}
     if roster_names:
         placeholders = ",".join("?" * len(roster_names))
         rows = conn.execute(f"""
-            SELECT player_name, match_id, total_pts
+            SELECT player_name, match_id, total_pts, raw_pts, breakdown_json
             FROM player_match_points
             WHERE player_name IN ({placeholders})
         """, roster_names).fetchall()
         for r in rows:
-            per_match.setdefault(r["player_name"], {})[r["match_id"]] = r["total_pts"]
+            per_match.setdefault(r["player_name"], {})[r["match_id"]] = {
+                "pts": r["total_pts"],
+                "raw_pts": r["raw_pts"],
+                "breakdown": r["breakdown_json"],
+            }
 
-    # Build match_id -> date map for sorting
+    # Build match_id -> date/teams maps for sorting and display
     mid_to_date = {m["match_id"]: m["date"] for m in matches}
+    mid_to_teams = {m["match_id"]: json.loads(m["teams_json"]) for m in matches}
 
     player_list = []
     for p in players:
         pd = dict(p)
-        # Add per-match scores — label M1, M2, M3 per player (franchise order)
+        # Add per-match scores with breakdown
         scores = per_match.get(p["player_name"], {})
         sorted_matches = sorted(scores.items(), key=lambda x: mid_to_date.get(x[0], ""))
         pd["match_scores"] = [
-            {"label": f"M{i + 1}", "pts": pts}
-            for i, (mid, pts) in enumerate(sorted_matches)
+            {
+                "label": f"M{i + 1}",
+                "pts": data["pts"],
+                "raw_pts": data["raw_pts"],
+                "breakdown": data["breakdown"],
+                "teams": mid_to_teams.get(mid, []),
+            }
+            for i, (mid, data) in enumerate(sorted_matches)
             if mid in mid_to_date
         ]
         player_list.append(pd)
