@@ -217,16 +217,44 @@ def refresh_in_progress_matches():
 
 
 def poll_live_matches():
-    """Background job: fetch live/recently completed match data via Cricbuzz."""
+    """Background job: fetch live/recently completed match data.
+
+    Tries Cricbuzz live endpoint first (1 API call). If no active matches
+    found, falls back to CricketData.org series endpoint which reliably
+    returns all matches including in-progress ones.
+    """
     if not CRICBUZZ_API_KEY:
         return
     try:
         adapter = CricbuzzAdapter()
 
         # Use live_only=True to save API credits (1 call instead of 2)
-        # The live endpoint includes both in-progress AND recently completed
         matches = adapter.get_match_list(SEASON, live_only=True)
         active = [m for m in matches if m["status"] in ("in_progress", "complete", "abandoned")]
+
+        # Cricbuzz live endpoint is unreliable — fall back to CricketData.org
+        if not active and CRICKETDATA_API_KEY:
+            try:
+                import json as _json
+                from adapters.cricketdata import CricketDataAdapter
+                cd = CricketDataAdapter()
+                cd_matches = cd.get_match_list(SEASON)
+                cd_active = [m for m in cd_matches if m["status"] in ("in_progress", "complete", "abandoned")]
+                # Dedup against already-stored matches by date+teams
+                conn = db.get_db()
+                stored_keys = set()
+                for row in conn.execute("SELECT date, teams_json FROM matches WHERE status IN ('complete','abandoned')").fetchall():
+                    teams = tuple(sorted(_json.loads(row["teams_json"]))) if row["teams_json"] else ()
+                    stored_keys.add((row["date"], teams))
+                conn.close()
+                for m in cd_active:
+                    key = (m["date"][:10], tuple(sorted(m["teams"])))
+                    if key not in stored_keys:
+                        active.append(m)
+                if cd_active:
+                    logger.info("CricketData.org found %d active matches (%d new)", len(cd_active), len(active))
+            except Exception as e:
+                logger.warning("CricketData.org poll fallback failed: %s", e)
 
         if not active:
             return
@@ -260,9 +288,19 @@ def poll_live_matches():
                 db.backup_to_remote()
                 continue
 
-            scorecard = adapter.get_scorecard(
-                match["match_id"], date=match["date"], teams=match["teams"],
-            )
+            # Fetch scorecard — use Cricbuzz for Cricbuzz IDs, CricketData for UUIDs
+            is_cd_match = "-" in match["match_id"]  # CricketData UUIDs have dashes
+            if is_cd_match:
+                from adapters.cricketdata import CricketDataAdapter
+                from adapters.cricbuzz import _enrich_bowling_dots_espn
+                cd = CricketDataAdapter()
+                scorecard = cd.get_scorecard(match["match_id"])
+                if scorecard:
+                    _enrich_bowling_dots_espn(scorecard, match["date"][:10], match["teams"])
+            else:
+                scorecard = adapter.get_scorecard(
+                    match["match_id"], date=match["date"], teams=match["teams"],
+                )
             if not scorecard:
                 continue
 
@@ -272,9 +310,10 @@ def poll_live_matches():
                 match["venue"], match["status"],
             )
             db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
+            source = "cricketdata" if is_cd_match else "cricbuzz"
             logger.info(
-                "Updated match %s (status=%s, source=cricbuzz)",
-                match["match_id"], match["status"],
+                "Updated match %s (status=%s, source=%s)",
+                match["match_id"], match["status"], source,
             )
             if match["status"] == "complete":
                 db.backup_to_remote()
