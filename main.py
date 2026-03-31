@@ -23,7 +23,7 @@ from scoring import calculate_fantasy_points
 from name_mapping import get_display_name
 from teams import get_captain_vc
 from config import (
-    CRICBUZZ_API_KEY, CRICSHEET_DATA_DIR, SEASON,
+    CRICBUZZ_API_KEY, CRICKETDATA_API_KEY, CRICSHEET_DATA_DIR, SEASON,
     ADMIN_SECRET, FETCH_TIMES_IST,
 )
 
@@ -106,6 +106,67 @@ def fetch_and_store_completed_matches():
             "Stored match %s: %s (with ESPN dots)",
             match["match_id"], match.get("name", ""),
         )
+
+
+def fetch_missing_from_cricketdata():
+    """Use CricketData.org series endpoint to find matches Cricbuzz missed.
+
+    The series_info endpoint returns ALL matches in the IPL (not just recent),
+    so it catches anything that dropped off Cricbuzz's recent/live window.
+    """
+    if not CRICKETDATA_API_KEY:
+        return
+    try:
+        import json
+        from adapters.cricketdata import CricketDataAdapter
+
+        cd = CricketDataAdapter()
+        all_matches = cd.get_match_list(SEASON)
+        completed = [m for m in all_matches if m["status"] in ("complete", "abandoned")]
+        if not completed:
+            return
+
+        # Dedup by date + sorted teams (IDs differ across sources)
+        conn = db.get_db()
+        stored_rows = conn.execute(
+            "SELECT date, teams_json FROM matches WHERE status IN ('complete', 'abandoned')"
+        ).fetchall()
+        conn.close()
+
+        stored_keys = set()
+        for row in stored_rows:
+            teams = tuple(sorted(json.loads(row["teams_json"]))) if row["teams_json"] else ()
+            stored_keys.add((row["date"], teams))
+
+        captain_vc = get_captain_vc()
+
+        for match in completed:
+            key = (match["date"][:10], tuple(sorted(match["teams"])))
+            if key in stored_keys:
+                continue
+
+            if match["status"] == "abandoned":
+                db.upsert_match(
+                    match["match_id"], match["date"], match["teams"],
+                    match["venue"], "abandoned",
+                )
+                db.insert_washout_zeroes(match["match_id"], match["teams"], captain_vc)
+                logger.info("CricketData: stored abandoned match %s", match.get("name", ""))
+                continue
+
+            scorecard = cd.get_scorecard(match["match_id"])
+            if not scorecard:
+                continue
+            points = calculate_fantasy_points(scorecard)
+            db.upsert_match(
+                match["match_id"], match["date"], match["teams"],
+                match["venue"], "complete",
+            )
+            db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
+            logger.info("CricketData: stored missed match %s", match.get("name", match["match_id"]))
+
+    except Exception as e:
+        logger.warning("CricketData.org fallback failed: %s", e)
 
 
 def poll_live_matches():
@@ -271,10 +332,13 @@ async def lifespan(app: FastAPI):
     if CRICBUZZ_API_KEY:
         try:
             fetch_and_store_completed_matches()
-            db.backup_to_remote()  # persist latest good data
         except Exception as e:
             logger.error("Startup fetch error (will retry via poller): %s", e)
 
+    # Catch any matches Cricbuzz missed via CricketData.org series endpoint
+    fetch_missing_from_cricketdata()
+
+    db.backup_to_remote()
     logger.info("DB has %d matches", db.get_match_count())
 
     # Start background scheduler
