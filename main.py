@@ -133,14 +133,20 @@ def fetch_and_store_matches():
             stored_count += 1
             continue
 
-        # complete → CricketData scorecard (10 credits, has lbw/bowled/runouts)
+        # complete → CricketData scorecard (has lbw/bowled/runouts), ESPN fallback
         # in_progress → ESPN scorecard (free, live refresh handles updates)
         if match["status"] == "complete":
             scorecard = cd.get_scorecard(match["match_id"])
-            if not scorecard:
-                logger.warning("No scorecard for match %s", match.get("name", match["match_id"]))
-                continue
-            enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
+            if scorecard:
+                enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
+            else:
+                # CD failed (rate limit etc.) — fall back to ESPN (free)
+                logger.warning("CD scorecard failed for %s, falling back to ESPN", match.get("name", match["match_id"]))
+                scorecard = get_espn_scorecard(match["date"][:10], match["teams"])
+                if not scorecard:
+                    logger.warning("ESPN also failed for %s — skipping", match.get("name", match["match_id"]))
+                    continue
+                scorecard.match_id = match["match_id"]
         else:
             # in_progress — use ESPN (free) for initial scoring
             scorecard = get_espn_scorecard(match["date"][:10], match["teams"])
