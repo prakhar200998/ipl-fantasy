@@ -291,10 +291,10 @@
       "player_name": "Anukul Roy",
       "batting_pts": 0,
       "bowling_pts": 2,
-      "fielding_pts": 18,
-      "raw_pts": 24,
-      "total_pts": 24,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 7, \"runs\": 15, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 1, \"stumpings\": 0}}"
+      "fielding_pts": 8,
+      "raw_pts": 14,
+      "total_pts": 14,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 7, \"runs\": 15, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "149629",
