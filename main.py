@@ -1,10 +1,16 @@
 """FastAPI app — routes, startup, background poller.
 
 Data-source strategy:
-  Primary (live + completed): CricketData.org API (series_info returns ALL matches)
-  Dots enrichment:            ESPN free API (accurate per-bowler dot balls)
-  Accuracy pass (manual):     Cricsheet ball-by-ball (admin-triggered only)
-  Dormant fallback:           Cricbuzz API via RapidAPI (available via admin)
+  Discovery:    CricketData.org series_info (1 credit, returns ALL matches)
+  Live scores:  ESPN free API (every 5 min, batting/bowling/dots/fielding/playing XI)
+  Enrichment:   CricketData.org match_scorecard (10 credits, adds lbw/bowled/runouts)
+  Re-scoring:   Cricsheet ball-by-ball (admin-triggered only)
+  Dormant:      Cricbuzz API via RapidAPI (available via admin)
+
+Daily budget (90 cap):
+  Discovery:  6 series_info crons = 6 credits
+  CD refresh: 7 weekday / 8 weekend crons × 10 = 70-80 credits (0 if no live match)
+  Total:      ≤ 86 credits/day
 """
 import json
 import logging
@@ -18,7 +24,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 import database as db
 from adapters.cricketdata import CricketDataAdapter
-from adapters.espn import enrich_bowling_dots
+from adapters.espn import enrich_bowling_dots, get_espn_scorecard
 from adapters.cricsheet import (
     CricsheetAdapter, download_cricsheet_ipl, find_cricsheet_match_id,
 )
@@ -127,12 +133,27 @@ def fetch_and_store_matches():
             stored_count += 1
             continue
 
-        # complete or in_progress — fetch scorecard
-        scorecard = cd.get_scorecard(match["match_id"])
-        if not scorecard:
-            logger.warning("No scorecard for match %s", match.get("name", match["match_id"]))
-            continue
-        enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
+        # complete → CricketData scorecard (10 credits, has lbw/bowled/runouts)
+        # in_progress → ESPN scorecard (free, live refresh handles updates)
+        if match["status"] == "complete":
+            scorecard = cd.get_scorecard(match["match_id"])
+            if not scorecard:
+                logger.warning("No scorecard for match %s", match.get("name", match["match_id"]))
+                continue
+            enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
+        else:
+            # in_progress — use ESPN (free) for initial scoring
+            scorecard = get_espn_scorecard(match["date"][:10], match["teams"])
+            if not scorecard:
+                # ESPN failed — register match so live refresh can pick it up
+                db.upsert_match(
+                    match["match_id"], match["date"], match["teams"],
+                    match["venue"], "in_progress",
+                )
+                stored_count += 1
+                continue
+            scorecard.match_id = match["match_id"]
+
         points = calculate_fantasy_points(scorecard)
         db.upsert_match(
             match["match_id"], match["date"], match["teams"],
@@ -166,16 +187,85 @@ def discover_matches():
         logger.error("Discovery error: %s", e)
 
 
-def refresh_live_scores():
-    """Scheduled every 5 min: update scores for in_progress matches.
+def refresh_live_espn():
+    """Every 1 min: free ESPN scorecard refresh for live matches.
 
-    Only calls match_scorecard for matches already tracked as in_progress in DB.
-    Costs 0 API calls if no live matches, 1 per live match otherwise.
-    No series_info call — discovery job handles that.
+    ESPN provides: batting, bowling (with dots), catches, stumpings, playing XI.
+    Missing: lbw/bowled bonus, runout credits (added by CD cron refresh).
+    Gated: weekdays 7:30-11:30 PM IST, weekends 3:30-11:30 PM IST.
     """
     now_ist = datetime.now(IST)
-    if not (14 <= now_ist.hour < 24):
+    dow = now_ist.weekday()  # 0=Mon, 5=Sat, 6=Sun
+    is_weekend = dow >= 5
+    start = 15 * 60 + 30 if is_weekend else 19 * 60 + 30  # 3:30 PM or 7:30 PM
+    end = 23 * 60 + 30  # 11:30 PM
+    now_mins = now_ist.hour * 60 + now_ist.minute
+    if not (start <= now_mins < end):
         return
+
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT match_id, date, teams_json FROM matches WHERE status = 'in_progress'"
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return
+
+    captain_vc = get_captain_vc()
+
+    for row in rows:
+        try:
+            teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+            date = row["date"][:10] if row["date"] else ""
+            scorecard = get_espn_scorecard(date, teams)
+            if not scorecard:
+                continue
+            scorecard.match_id = row["match_id"]
+            points = calculate_fantasy_points(scorecard)
+            # force=True: live scores can go up/down (SR penalties etc.)
+            db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
+
+            if scorecard.status == "complete":
+                # ESPN sees match done → final CricketData fetch for lbw/bowled/runouts
+                _finalize_match_cd(row["match_id"], row["date"], teams, captain_vc)
+            else:
+                logger.info("ESPN refreshed live match %s", row["match_id"])
+        except Exception as e:
+            logger.error("ESPN refresh error for %s: %s", row["match_id"], e)
+
+
+def _finalize_match_cd(match_id: str, date: str, teams: list, captain_vc: dict):
+    """Final CricketData fetch when match completes — gets lbw/bowled/runouts."""
+    if not CRICKETDATA_API_KEY:
+        db.upsert_match(match_id, date, teams, "", "complete")
+        db.backup_to_remote()
+        return
+    try:
+        cd = CricketDataAdapter()
+        scorecard = cd.get_scorecard(match_id)
+        if scorecard:
+            enrich_bowling_dots(scorecard, date[:10] if date else "", teams)
+            points = calculate_fantasy_points(scorecard)
+            db.upsert_match(match_id, date, teams, scorecard.venue or "", "complete")
+            db.bulk_upsert_player_points(match_id, points, captain_vc, force=True)
+        else:
+            db.upsert_match(match_id, date, teams, "", "complete")
+        db.backup_to_remote()
+        logger.info("Match %s finalized with CricketData", match_id)
+    except Exception as e:
+        logger.error("Finalize error for %s: %s", match_id, e)
+        db.upsert_match(match_id, date, teams, "", "complete")
+        db.backup_to_remote()
+
+
+def refresh_live_cd():
+    """Cron-scheduled CricketData scorecard for live matches.
+
+    Adds lbw/bowled bonus and runout credits that ESPN doesn't have.
+    Weekdays: 7 calls (7:30-11:30 PM IST), Weekends: 8 calls (3:30-11:30 PM IST).
+    No-op if no live matches → 0 credits.
+    """
     if not CRICKETDATA_API_KEY:
         return
 
@@ -203,16 +293,16 @@ def refresh_live_scores():
                 row["match_id"], row["date"], teams,
                 scorecard.venue or "", scorecard.status,
             )
-            db.bulk_upsert_player_points(row["match_id"], points, captain_vc)
+            db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
 
             if scorecard.status == "complete":
                 db.backup_to_remote()
-                logger.info("Match %s completed (detected by refresh)", row["match_id"])
+                logger.info("Match %s completed (detected by CD refresh)", row["match_id"])
             else:
-                logger.info("Refreshed live match %s", row["match_id"])
+                logger.info("CD refreshed live match %s", row["match_id"])
 
     except Exception as e:
-        logger.error("Live refresh error: %s", e)
+        logger.error("CD live refresh error: %s", e)
 
 
 # ------------------------------------------------------------------
@@ -309,13 +399,10 @@ async def lifespan(app: FastAPI):
     logger.info("DB has %d matches", db.get_match_count())
 
     # Start background scheduler
-    if CRICKETDATA_API_KEY:
-        from apscheduler.triggers.cron import CronTrigger
+    from apscheduler.triggers.cron import CronTrigger
 
-        # Discovery: cron at known IPL start windows (~6 calls/day)
-        # 3:15, 3:45 IST (afternoon match) → 9:45, 10:15 UTC
-        # 7:15, 7:45 IST (evening match)   → 13:45, 14:15 UTC
-        # 9:00, 10:30 IST (mid/late game)  → 15:30, 17:00 UTC
+    if CRICKETDATA_API_KEY:
+        # Discovery: cron at known IPL start windows (~6 series_info calls/day = 6 credits)
         discovery_times_ist = [(15, 15), (15, 45), (19, 15), (19, 45), (21, 0), (22, 30)]
         for hour, minute in discovery_times_ist:
             utc_total = hour * 60 + minute - 330  # IST offset = 5h30m
@@ -327,21 +414,47 @@ async def lifespan(app: FastAPI):
             )
             logger.info("Discovery at %02d:%02d IST (UTC %02d:%02d)", hour, minute, utc_h, utc_m)
 
-        # Live refresh: scorecard-only every 5 min (0 calls if no live match)
-        scheduler.add_job(
-            refresh_live_scores, "interval",
-            minutes=5, id="live_refresh",
-        )
+        # CricketData scorecard refresh (10 credits each, adds lbw/bowled/runouts)
+        # Weekdays: 7 calls between 7:30-11:30 PM IST (~every 34 min)
+        weekday_cd_ist = [(19, 30), (20, 5), (20, 40), (21, 15), (21, 50), (22, 25), (23, 0)]
+        for hour, minute in weekday_cd_ist:
+            utc_total = hour * 60 + minute - 330
+            utc_h, utc_m = utc_total // 60, utc_total % 60
+            scheduler.add_job(
+                refresh_live_cd,
+                CronTrigger(day_of_week="mon-fri", hour=utc_h, minute=utc_m),
+                id=f"cd_wd_{hour:02d}{minute:02d}",
+            )
+            logger.info("CD refresh weekday %02d:%02d IST (UTC %02d:%02d)", hour, minute, utc_h, utc_m)
 
-        # Keep-alive self-ping (prevents Render free tier sleep during match hours)
-        scheduler.add_job(
-            _keep_alive_ping, "interval",
-            minutes=10, id="keep_alive",
-        )
-        scheduler.start()
-        logger.info("Scheduler started: 6 discovery crons, live refresh 5m, keep-alive 10m")
+        # Weekends: 8 calls between 3:30-11:30 PM IST (~every 60 min)
+        weekend_cd_ist = [(15, 45), (17, 0), (18, 0), (19, 30), (20, 30), (21, 30), (22, 30), (23, 15)]
+        for hour, minute in weekend_cd_ist:
+            utc_total = hour * 60 + minute - 330
+            utc_h, utc_m = utc_total // 60, utc_total % 60
+            scheduler.add_job(
+                refresh_live_cd,
+                CronTrigger(day_of_week="sat,sun", hour=utc_h, minute=utc_m),
+                id=f"cd_we_{hour:02d}{minute:02d}",
+            )
+            logger.info("CD refresh weekend %02d:%02d IST (UTC %02d:%02d)", hour, minute, utc_h, utc_m)
+
+    # ESPN live refresh: every 1 min, FREE (time-gated inside the function)
+    scheduler.add_job(
+        refresh_live_espn, "interval",
+        minutes=1, id="espn_live",
+    )
+
+    # Keep-alive self-ping (prevents Render free tier sleep during match hours)
+    scheduler.add_job(
+        _keep_alive_ping, "interval",
+        minutes=10, id="keep_alive",
+    )
+    scheduler.start()
+    if CRICKETDATA_API_KEY:
+        logger.info("Scheduler started: 6 discovery, 7 weekday CD, 8 weekend CD, ESPN 1m, keep-alive 10m")
     else:
-        logger.info("No CRICKETDATA_API_KEY set — scheduled fetching disabled")
+        logger.info("Scheduler started: ESPN 1m + keep-alive (no CD key — discovery/CD refresh disabled)")
 
     yield
 
@@ -501,7 +614,7 @@ async def force_refresh(request: Request):
     if body.get("secret") != ADMIN_SECRET:
         raise HTTPException(403, "Invalid secret")
     fetch_and_store_matches()
-    refresh_live_scores()
+    refresh_live_espn()
     return {"status": "refreshed"}
 
 

@@ -1,12 +1,16 @@
-"""ESPN API adapter — free, unauthenticated source for bowling dot balls.
+"""ESPN API adapter — free, unauthenticated source for match data.
 
 Endpoint: https://site.web.api.espn.com/apis/site/v2/sports/cricket/8048/summary?event={id}
 League 8048 = IPL. No API key needed.
+
+Provides: full scorecard (batting, bowling with dots, fielding catches/stumpings,
+playing XI including impact subs). Missing: lbw/bowled bonus, runout credits
+(these get filled in by CricketData scorecard at match completion).
 """
 import logging
 import httpx
 from name_mapping import get_display_name
-from models import MatchScorecard
+from models import MatchScorecard, BattingEntry, BowlingEntry, FieldingEntry
 
 logger = logging.getLogger(__name__)
 
@@ -14,38 +18,146 @@ ESPN_BASE = "https://site.web.api.espn.com/apis/site/v2/sports/cricket"
 IPL_LEAGUE_ID = "8048"
 
 
-def fetch_espn_match_data(espn_event_id: str) -> dict:
-    """Fetch ESPN summary and return {dots: {name: count}, playing_xi: set(names)}.
-
-    Single API call provides both bowling dots and the full playing XI roster
-    (including impact subs who didn't bat/bowl/field).
-    """
+def _fetch_espn_summary(espn_event_id: str) -> dict | None:
+    """Fetch raw ESPN summary JSON for an event."""
     url = f"{ESPN_BASE}/{IPL_LEAGUE_ID}/summary?event={espn_event_id}"
     try:
         resp = httpx.get(url, timeout=30)
         resp.raise_for_status()
-        data = resp.json()
+        return resp.json()
     except Exception as e:
         logger.error("ESPN API error for event %s: %s", espn_event_id, e)
-        return {"dots": {}, "playing_xi": set()}
+        return None
 
-    dots: dict[str, int] = {}
+
+def _overs_to_balls(overs) -> int:
+    """Convert overs (float like 3.2) to total legal deliveries."""
+    try:
+        full = int(overs)
+        partial = round((float(overs) - full) * 10)
+        return full * 6 + partial
+    except (ValueError, TypeError):
+        return 0
+
+
+def get_espn_scorecard(date: str, teams: list[str]) -> MatchScorecard | None:
+    """Build a full MatchScorecard from ESPN's free API.
+
+    Has: playing XI, batting, bowling (with dots!), catches, stumpings.
+    Missing: lbw/bowled bonus, runout credits (filled by CricketData at match end).
+    """
+    espn_id = find_espn_event_id(date, teams) if date else None
+    if not espn_id:
+        logger.info("Could not find ESPN event (date=%s)", date)
+        return None
+
+    data = _fetch_espn_summary(espn_id)
+    if not data:
+        return None
+
     playing_xi: set[str] = set()
+    batting: dict[str, BattingEntry] = {}
+    bowling: dict[str, BowlingEntry] = {}
+    fielding: dict[str, FieldingEntry] = {}
+    batters_who_batted: set[str] = set()
 
     for team in data.get("rosters", []):
         for player in team.get("roster", []):
-            name = player.get("athlete", {}).get("displayName", "")
-            if not name:
+            raw_name = player.get("athlete", {}).get("displayName", "")
+            if not raw_name:
                 continue
-            display = get_display_name(name)
-            playing_xi.add(display)
+            name = get_display_name(raw_name)
+            playing_xi.add(name)
+
             for ls in player.get("linescores", []):
                 for cat in ls.get("statistics", {}).get("categories", []):
-                    stat_dict = {s["name"]: s["value"] for s in cat.get("stats", [])}
-                    if stat_dict.get("overs", 0) > 0 and "dots" in stat_dict:
-                        dots[display] = dots.get(display, 0) + int(stat_dict["dots"])
+                    s = {st["name"]: st["value"] for st in cat.get("stats", [])}
 
-    return {"dots": dots, "playing_xi": playing_xi}
+                    # --- Batting ---
+                    if s.get("batted", 0) > 0:
+                        runs = int(s.get("runs", 0))
+                        balls = int(s.get("ballsFaced", 0))
+                        fours = int(s.get("fours", 0))
+                        sixes = int(s.get("sixes", 0))
+                        dismissed = int(s.get("outs", 0)) > 0
+
+                        if name in batting:
+                            e = batting[name]
+                            e.runs += runs
+                            e.balls += balls
+                            e.fours += fours
+                            e.sixes += sixes
+                            e.dismissed = e.dismissed or dismissed
+                        else:
+                            batting[name] = BattingEntry(
+                                player=name, runs=runs, balls=balls,
+                                fours=fours, sixes=sixes, dismissed=dismissed,
+                            )
+                        if balls > 0 or runs > 0 or dismissed:
+                            batters_who_batted.add(name)
+
+                    # --- Bowling ---
+                    if s.get("overs", 0) > 0:
+                        total_balls = _overs_to_balls(s.get("overs", 0))
+                        runs_conceded = int(s.get("conceded", 0))
+                        wickets = int(s.get("wickets", 0))
+                        dots = int(s.get("dots", 0))
+                        maidens = int(s.get("maidens", 0))
+
+                        overs_detail: dict = {}
+                        for mi in range(maidens):
+                            overs_detail[f"maiden_{name}_{mi}"] = {"balls": 6, "runs": 0}
+
+                        if name in bowling:
+                            e = bowling[name]
+                            e.balls += total_balls
+                            e.runs += runs_conceded
+                            e.wickets += wickets
+                            e.dots += dots
+                            e.overs_detail.update(overs_detail)
+                        else:
+                            bowling[name] = BowlingEntry(
+                                player=name, balls=total_balls, runs=runs_conceded,
+                                wickets=wickets, dots=dots, lbw_bowled=0,
+                                overs_detail=overs_detail,
+                            )
+
+                    # --- Fielding (catches + stumpings only; runouts need CricketData) ---
+                    catches = int(s.get("caught", 0))
+                    stumpings = int(s.get("stumped", 0))
+                    if catches > 0 or stumpings > 0:
+                        if name in fielding:
+                            fielding[name].catches += catches
+                            fielding[name].stumpings += stumpings
+                        else:
+                            fielding[name] = FieldingEntry(
+                                player=name, catches=catches, stumpings=stumpings,
+                            )
+
+    # Determine match status from ESPN header
+    status = "in_progress"
+    try:
+        comp = data.get("header", {}).get("competitions", [{}])[0]
+        state = comp.get("status", {}).get("type", {}).get("description", "")
+        if state.lower() in ("result", "complete"):
+            status = "complete"
+        elif state.lower() in ("abandoned", "no result"):
+            status = "abandoned"
+    except (IndexError, KeyError):
+        pass
+
+    return MatchScorecard(
+        match_id="",  # caller sets this
+        date=date,
+        teams=teams,
+        venue="",
+        status=status,
+        playing_xi=playing_xi,
+        batting=batting,
+        bowling=bowling,
+        fielding=fielding,
+        batters_who_batted=batters_who_batted,
+    )
 
 
 def find_espn_event_id(date: str, teams: list[str]) -> str | None:
@@ -94,17 +206,14 @@ def enrich_from_espn(
     ensuring they get their 4-point playing XI bonus.
     No-op for dots if already populated (e.g. from Cricsheet re-scoring).
     """
-    espn_id = find_espn_event_id(date, teams) if date else None
-    if not espn_id:
-        logger.info("Could not find ESPN event for enrichment (date=%s)", date)
+    espn_sc = get_espn_scorecard(date, teams)
+    if not espn_sc:
         return
 
-    espn_data = fetch_espn_match_data(espn_id)
-
     # Enrich playing XI (always — ESPN has impact subs CricketData misses)
-    if espn_data["playing_xi"]:
-        added = espn_data["playing_xi"] - scorecard.playing_xi
-        scorecard.playing_xi |= espn_data["playing_xi"]
+    if espn_sc.playing_xi:
+        added = espn_sc.playing_xi - scorecard.playing_xi
+        scorecard.playing_xi |= espn_sc.playing_xi
         if added:
             logger.info("ESPN added %d players to playing XI: %s", len(added), added)
 
@@ -113,20 +222,18 @@ def enrich_from_espn(
     if total_existing > 0:
         return
 
-    dots_map = espn_data["dots"]
-    if not dots_map:
-        return
-
     enriched = 0
     for name, entry in scorecard.bowling.items():
-        if name in dots_map:
-            entry.dots = dots_map[name]
+        espn_bowl = espn_sc.bowling.get(name)
+        if espn_bowl and espn_bowl.dots > 0:
+            entry.dots = espn_bowl.dots
             enriched += 1
 
-    logger.info(
-        "Enriched %d/%d bowlers with ESPN dots (event %s)",
-        enriched, len(scorecard.bowling), espn_id,
-    )
+    if enriched:
+        logger.info(
+            "Enriched %d/%d bowlers with ESPN dots",
+            enriched, len(scorecard.bowling),
+        )
 
 
 # Backward-compatible alias
