@@ -23,7 +23,7 @@ class CricketDataAdapter(DataSourceAdapter):
             resp.raise_for_status()
             data = resp.json()
             if data.get("status") != "success":
-                logger.warning("API error: %s", data.get("status"))
+                logger.warning("CricketData API error: %s — %s", data.get("status"), data.get("reason", "unknown"))
                 return None
             return data
         except Exception as e:

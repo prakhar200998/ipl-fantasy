@@ -299,13 +299,6 @@ async def lifespan(app: FastAPI):
             minutes=15, id="live_poll",
         )
 
-        # One-shot startup poll 15s after boot
-        scheduler.add_job(
-            poll_live_matches, "date",
-            run_date=datetime.now(timezone.utc) + timedelta(seconds=15),
-            id="startup_poll",
-        )
-
         # Keep-alive self-ping (prevents Render free tier sleep during match hours)
         scheduler.add_job(
             _keep_alive_ping, "interval",
