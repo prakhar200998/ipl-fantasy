@@ -1,10 +1,12 @@
 """FastAPI app — routes, startup, background poller.
 
 Data-source strategy:
-  Primary (live + completed): Cricbuzz API via RapidAPI
-  Accuracy pass (completed):  Cricsheet ball-by-ball (has dot balls)
-  Legacy fallback:            CricketData.org API
+  Primary (live + completed): CricketData.org API (series_info returns ALL matches)
+  Dots enrichment:            ESPN free API (accurate per-bowler dot balls)
+  Accuracy pass (manual):     Cricsheet ball-by-ball (admin-triggered only)
+  Dormant fallback:           Cricbuzz API via RapidAPI (available via admin)
 """
+import json
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone, timedelta
@@ -15,7 +17,8 @@ from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import database as db
-from adapters.cricbuzz import CricbuzzAdapter
+from adapters.cricketdata import CricketDataAdapter
+from adapters.espn import enrich_bowling_dots
 from adapters.cricsheet import (
     CricsheetAdapter, download_cricsheet_ipl, find_cricsheet_match_id,
 )
@@ -24,7 +27,7 @@ from name_mapping import get_display_name
 from teams import get_captain_vc
 from config import (
     CRICBUZZ_API_KEY, CRICKETDATA_API_KEY, CRICSHEET_DATA_DIR, SEASON,
-    ADMIN_SECRET, FETCH_TIMES_IST,
+    ADMIN_SECRET,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -37,7 +40,6 @@ scheduler = BackgroundScheduler()
 def _keep_alive_ping():
     """Self-ping to prevent Render free tier from sleeping during match hours."""
     now_ist = datetime.now(IST)
-    # Only keep alive from 1 hour before first fetch to after last fetch
     if not (14 <= now_ist.hour < 24):
         return
     try:
@@ -48,39 +50,52 @@ def _keep_alive_ping():
 
 
 # ------------------------------------------------------------------
-# Data fetching — Cricbuzz primary
+# Data fetching — CricketData.org primary
 # ------------------------------------------------------------------
 
-def fetch_and_store_completed_matches():
-    """Fetch completed IPL 2026 matches from Cricbuzz and store points."""
-    if not CRICBUZZ_API_KEY:
-        logger.warning("No CRICBUZZ_API_KEY set — skipping fetch")
-        return
-
-    adapter = CricbuzzAdapter()
-    matches = adapter.get_match_list(SEASON)
-    completed = [m for m in matches if m["status"] in ("complete", "abandoned")]
-    logger.info("Cricbuzz: found %d completed/abandoned IPL 2026 matches", len(completed))
-
-    # Skip matches already stored as complete or abandoned
+def _get_stored_match_keys() -> set[tuple[str, tuple]]:
+    """Return set of (date, sorted_teams) for all stored complete/abandoned matches."""
     conn = db.get_db()
-    stored_complete = {
-        row["match_id"]
-        for row in conn.execute(
-            "SELECT match_id FROM matches WHERE status IN ('complete', 'abandoned')"
-        ).fetchall()
-    }
+    rows = conn.execute(
+        "SELECT date, teams_json FROM matches WHERE status IN ('complete', 'abandoned')"
+    ).fetchall()
     conn.close()
+    keys = set()
+    for row in rows:
+        teams = tuple(sorted(json.loads(row["teams_json"]))) if row["teams_json"] else ()
+        keys.add((row["date"], teams))
+    return keys
 
-    new_matches = [m for m in completed if m["match_id"] not in stored_complete]
-    if not new_matches:
-        logger.info("All completed matches already stored")
+
+def fetch_and_store_matches():
+    """Fetch ALL completed/abandoned IPL 2026 matches from CricketData.org and store points.
+
+    Uses series_info which returns every match in the series (not just recent),
+    so it recovers matches that would otherwise be lost across Render redeploys.
+    """
+    if not CRICKETDATA_API_KEY:
+        logger.warning("No CRICKETDATA_API_KEY set — skipping fetch")
         return
+
+    cd = CricketDataAdapter()
+    all_matches = cd.get_match_list(SEASON)
+    completed = [m for m in all_matches if m["status"] in ("complete", "abandoned")]
+    logger.info("CricketData: found %d completed/abandoned IPL 2026 matches", len(completed))
+
+    if not completed:
+        return
+
+    # Dedup by date + sorted teams (handles existing Cricbuzz-ID matches in DB)
+    stored_keys = _get_stored_match_keys()
 
     captain_vc = get_captain_vc()
+    stored_count = 0
 
-    for match in new_matches:
-        # Washed out / abandoned — 0 pts for all players on both teams
+    for match in completed:
+        key = (match["date"][:10], tuple(sorted(match["teams"])))
+        if key in stored_keys:
+            continue
+
         if match["status"] == "abandoned":
             db.upsert_match(
                 match["match_id"], match["date"], match["teams"],
@@ -88,59 +103,66 @@ def fetch_and_store_completed_matches():
             )
             db.insert_washout_zeroes(match["match_id"], match["teams"], captain_vc)
             logger.info("Stored abandoned match %s: %s", match["match_id"], match.get("name", ""))
+            stored_keys.add(key)
+            stored_count += 1
             continue
 
-        scorecard = adapter.get_scorecard(
-            match["match_id"], date=match["date"], teams=match["teams"],
-        )
+        scorecard = cd.get_scorecard(match["match_id"])
         if not scorecard:
             logger.warning("No scorecard for match %s", match.get("name", match["match_id"]))
             continue
+        enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
         points = calculate_fantasy_points(scorecard)
         db.upsert_match(
             match["match_id"], match["date"], match["teams"],
             match["venue"], "complete",
         )
         db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
-        logger.info(
-            "Stored match %s: %s (with ESPN dots)",
-            match["match_id"], match.get("name", ""),
-        )
+        stored_keys.add(key)
+        stored_count += 1
+        logger.info("Stored match %s: %s (with ESPN dots)", match["match_id"], match.get("name", ""))
+
+    if stored_count == 0:
+        logger.info("All completed matches already stored")
 
 
-def fetch_missing_from_cricketdata():
-    """Use CricketData.org series endpoint to find matches Cricbuzz missed.
+def poll_live_matches():
+    """Background job: discover in-progress + newly completed matches via CricketData.org."""
+    now_ist = datetime.now(IST)
+    if not (14 <= now_ist.hour < 24):
+        return
 
-    The series_info endpoint returns ALL matches in the IPL (not just recent),
-    so it catches anything that dropped off Cricbuzz's recent/live window.
-    """
     if not CRICKETDATA_API_KEY:
         return
-    try:
-        import json
-        from adapters.cricketdata import CricketDataAdapter
 
+    try:
         cd = CricketDataAdapter()
         all_matches = cd.get_match_list(SEASON)
-        completed = [m for m in all_matches if m["status"] in ("complete", "abandoned")]
-        if not completed:
+        active = [m for m in all_matches if m["status"] in ("in_progress", "complete", "abandoned")]
+
+        if not active:
             return
 
-        # Dedup by date + sorted teams (IDs differ across sources)
+        # Skip matches already stored as complete or abandoned
         conn = db.get_db()
-        stored_rows = conn.execute(
-            "SELECT date, teams_json FROM matches WHERE status IN ('complete', 'abandoned')"
-        ).fetchall()
+        stored = {
+            row["match_id"]: row["status"]
+            for row in conn.execute("SELECT match_id, status FROM matches").fetchall()
+        }
         conn.close()
 
-        stored_keys = set()
-        for row in stored_rows:
-            teams = tuple(sorted(json.loads(row["teams_json"]))) if row["teams_json"] else ()
-            stored_keys.add((row["date"], teams))
+        # Also build dedup keys for cross-source matching
+        stored_keys = _get_stored_match_keys()
 
         captain_vc = get_captain_vc()
 
-        for match in completed:
+        for match in active:
+            # Skip by direct ID match
+            stored_status = stored.get(match["match_id"])
+            if stored_status in ("complete", "abandoned"):
+                continue
+
+            # Skip by date+teams dedup (handles Cricbuzz-ID matches)
             key = (match["date"][:10], tuple(sorted(match["teams"])))
             if key in stored_keys:
                 continue
@@ -151,169 +173,23 @@ def fetch_missing_from_cricketdata():
                     match["venue"], "abandoned",
                 )
                 db.insert_washout_zeroes(match["match_id"], match["teams"], captain_vc)
-                logger.info("CricketData: stored abandoned match %s", match.get("name", ""))
+                logger.info("Stored abandoned match %s", match["match_id"])
+                db.backup_to_remote()
                 continue
 
             scorecard = cd.get_scorecard(match["match_id"])
             if not scorecard:
                 continue
-            # Enrich bowling dots from ESPN (CricketData.org doesn't provide them)
-            from adapters.cricbuzz import _enrich_bowling_dots_espn
-            _enrich_bowling_dots_espn(scorecard, match["date"][:10], match["teams"])
-            points = calculate_fantasy_points(scorecard)
-            db.upsert_match(
-                match["match_id"], match["date"], match["teams"],
-                match["venue"], "complete",
-            )
-            db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
-            logger.info("CricketData: stored missed match %s", match.get("name", match["match_id"]))
-
-    except Exception as e:
-        logger.warning("CricketData.org fallback failed: %s", e)
-
-
-def refresh_in_progress_matches():
-    """Scrape Cricbuzz for score updates on in-progress matches (0 API calls).
-
-    Runs every 10 min during match hours. Only the 7 cron-time API polls
-    can *discover* new matches; this job just refreshes ones already tracked.
-    """
-    now_ist = datetime.now(IST)
-    if not (14 <= now_ist.hour < 24):
-        return
-
-    conn = db.get_db()
-    rows = conn.execute(
-        "SELECT match_id, date, teams_json FROM matches WHERE status = 'in_progress'"
-    ).fetchall()
-    conn.close()
-
-    if not rows:
-        return
-
-    import json
-    from adapters.cricbuzz import scrape_scorecard, _enrich_bowling_dots_espn
-
-    captain_vc = get_captain_vc()
-
-    for row in rows:
-        match_id = row["match_id"]
-        scorecard = scrape_scorecard(match_id)
-        if not scorecard:
-            continue
-        teams = json.loads(row["teams_json"]) if row["teams_json"] else []
-        _enrich_bowling_dots_espn(scorecard, row["date"] or "", teams)
-        points = calculate_fantasy_points(scorecard)
-        db.bulk_upsert_player_points(match_id, points, captain_vc)
-
-        # If scraper sees 2 completed innings, mark complete
-        if scorecard.status == "complete":
-            db.upsert_match(match_id, row["date"], teams,
-                            scorecard.venue or "", "complete")
-            db.backup_to_remote()
-            logger.info("Match %s completed (detected by scraper)", match_id)
-        else:
-            logger.info("Refreshed in-progress match %s via scraper", match_id)
-
-
-def poll_live_matches():
-    """Background job: fetch live/recently completed match data.
-
-    Tries Cricbuzz live endpoint first (1 API call). If no active matches
-    found, falls back to CricketData.org series endpoint which reliably
-    returns all matches including in-progress ones.
-    """
-    if not CRICBUZZ_API_KEY:
-        return
-    try:
-        adapter = CricbuzzAdapter()
-
-        # Use live_only=True to save API credits (1 call instead of 2)
-        matches = adapter.get_match_list(SEASON, live_only=True)
-        active = [m for m in matches if m["status"] in ("in_progress", "complete", "abandoned")]
-
-        # Cricbuzz live endpoint is unreliable — fall back to CricketData.org
-        if not active and CRICKETDATA_API_KEY:
-            try:
-                import json as _json
-                from adapters.cricketdata import CricketDataAdapter
-                cd = CricketDataAdapter()
-                cd_matches = cd.get_match_list(SEASON)
-                cd_active = [m for m in cd_matches if m["status"] in ("in_progress", "complete", "abandoned")]
-                # Dedup against already-stored matches by date+teams
-                conn = db.get_db()
-                stored_keys = set()
-                for row in conn.execute("SELECT date, teams_json FROM matches WHERE status IN ('complete','abandoned')").fetchall():
-                    teams = tuple(sorted(_json.loads(row["teams_json"]))) if row["teams_json"] else ()
-                    stored_keys.add((row["date"], teams))
-                conn.close()
-                for m in cd_active:
-                    key = (m["date"][:10], tuple(sorted(m["teams"])))
-                    if key not in stored_keys:
-                        active.append(m)
-                if cd_active:
-                    logger.info("CricketData.org found %d active matches (%d new)", len(cd_active), len(active))
-            except Exception as e:
-                logger.warning("CricketData.org poll fallback failed: %s", e)
-
-        if not active:
-            return
-
-        # Skip matches already stored as complete or abandoned
-        conn = db.get_db()
-        stored = {
-            row["match_id"]: row["status"]
-            for row in conn.execute(
-                "SELECT match_id, status FROM matches"
-            ).fetchall()
-        }
-        conn.close()
-
-        captain_vc = get_captain_vc()
-
-        for match in active:
-            stored_status = stored.get(match["match_id"])
-            # Skip if already finalized
-            if stored_status in ("complete", "abandoned"):
-                continue
-
-            # Washed out / abandoned — 0 pts for all players on both teams
-            if match["status"] == "abandoned":
-                db.upsert_match(
-                    match["match_id"], match["date"], match["teams"],
-                    match["venue"], "abandoned",
-                )
-                db.insert_washout_zeroes(match["match_id"], match["teams"], captain_vc)
-                logger.info("Stored abandoned match %s", match["match_id"])
-                db.backup_to_remote()
-                continue
-
-            # Fetch scorecard — use Cricbuzz for Cricbuzz IDs, CricketData for UUIDs
-            is_cd_match = "-" in match["match_id"]  # CricketData UUIDs have dashes
-            if is_cd_match:
-                from adapters.cricketdata import CricketDataAdapter
-                from adapters.cricbuzz import _enrich_bowling_dots_espn
-                cd = CricketDataAdapter()
-                scorecard = cd.get_scorecard(match["match_id"])
-                if scorecard:
-                    _enrich_bowling_dots_espn(scorecard, match["date"][:10], match["teams"])
-            else:
-                scorecard = adapter.get_scorecard(
-                    match["match_id"], date=match["date"], teams=match["teams"],
-                )
-            if not scorecard:
-                continue
-
+            enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
             points = calculate_fantasy_points(scorecard)
             db.upsert_match(
                 match["match_id"], match["date"], match["teams"],
                 match["venue"], match["status"],
             )
             db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
-            source = "cricketdata" if is_cd_match else "cricbuzz"
             logger.info(
-                "Updated match %s (status=%s, source=%s)",
-                match["match_id"], match["status"], source,
+                "Updated match %s (status=%s, source=cricketdata)",
+                match["match_id"], match["status"],
             )
             if match["status"] == "complete":
                 db.backup_to_remote()
@@ -323,15 +199,14 @@ def poll_live_matches():
 
 
 # ------------------------------------------------------------------
-# Cricsheet re-scoring — adds dot-ball accuracy to completed matches
+# Cricsheet re-scoring — admin-triggered only
 # ------------------------------------------------------------------
 
 def rescore_from_cricsheet():
     """Download Cricsheet ball-by-ball data and re-score completed matches.
 
-    This gives us accurate dot-ball counts (worth 2 pts each) and
-    precise maiden/over-level data that the Cricbuzz scorecard API
-    doesn't provide.
+    Uses force=True to bypass monotonicity guard since Cricsheet is
+    the most accurate source (has real dot-ball counts).
     """
     try:
         if not download_cricsheet_ipl(CRICSHEET_DATA_DIR):
@@ -340,7 +215,6 @@ def rescore_from_cricsheet():
         cs_adapter = CricsheetAdapter(CRICSHEET_DATA_DIR)
         captain_vc = get_captain_vc()
 
-        # Get all completed matches from our DB
         conn = db.get_db()
         db_matches = conn.execute(
             "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
@@ -353,7 +227,6 @@ def rescore_from_cricsheet():
 
         rescored = 0
         for row in db_matches:
-            import json
             teams = json.loads(row["teams_json"]) if row["teams_json"] else []
             date = row["date"] or ""
 
@@ -368,13 +241,9 @@ def rescore_from_cricsheet():
                 continue
 
             points = calculate_fantasy_points(scorecard)
-            # Re-store with the ORIGINAL DB match_id (Cricbuzz ID)
-            db.bulk_upsert_player_points(row["match_id"], points, captain_vc)
+            db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
             rescored += 1
-            logger.info(
-                "Re-scored match %s from Cricsheet (with dots)",
-                row["match_id"],
-            )
+            logger.info("Re-scored match %s from Cricsheet (with dots)", row["match_id"])
 
         if rescored:
             logger.info("Cricsheet re-scoring complete: %d matches updated", rescored)
@@ -403,7 +272,6 @@ async def lifespan(app: FastAPI):
         logger.info("No teams in DB — seeding teams...")
         db.seed_teams(TEAMS)
     else:
-        # Always re-sync rosters so trades take effect retroactively
         db.reseed_rosters(TEAMS)
 
     # Restore persisted data FIRST so we never lose matches across deploys
@@ -414,65 +282,39 @@ async def lifespan(app: FastAPI):
             db.load_seed_data()
         logger.info("After restore: %d matches in DB", db.get_match_count())
 
-    # Then fetch new/updated matches from Cricbuzz (additive — skips existing)
-    if CRICBUZZ_API_KEY:
-        try:
-            fetch_and_store_completed_matches()
-        except Exception as e:
-            logger.error("Startup fetch error (will retry via poller): %s", e)
-
-    # Catch any matches Cricbuzz missed via CricketData.org series endpoint
-    fetch_missing_from_cricketdata()
+    # CricketData primary — discovers ALL matches (not just recent)
+    try:
+        fetch_and_store_matches()
+    except Exception as e:
+        logger.error("Startup fetch error (will retry via poller): %s", e)
 
     db.backup_to_remote()
     logger.info("DB has %d matches", db.get_match_count())
 
     # Start background scheduler
-    if CRICBUZZ_API_KEY:
-        from apscheduler.triggers.cron import CronTrigger
+    if CRICKETDATA_API_KEY:
+        # Single interval job: poll every 15 min during match hours
+        scheduler.add_job(
+            poll_live_matches, "interval",
+            minutes=15, id="live_poll",
+        )
 
-        # Schedule fetches at specific IST times (cricket-relevant moments)
-        for i, (hour, minute) in enumerate(FETCH_TIMES_IST):
-            # Convert IST (UTC+5:30) to UTC
-            total_min = hour * 60 + minute - 330  # 5h30m = 330min
-            utc_hour = total_min // 60
-            utc_minute = total_min % 60
-            scheduler.add_job(
-                poll_live_matches, CronTrigger(hour=utc_hour, minute=utc_minute),
-                id=f"fetch_{hour:02d}{minute:02d}",
-            )
-            logger.info("Scheduled fetch at %02d:%02d IST (UTC %02d:%02d)",
-                         hour, minute, utc_hour, utc_minute)
-
-        # Also fire once 15s after startup to catch up
+        # One-shot startup poll 15s after boot
         scheduler.add_job(
             poll_live_matches, "date",
             run_date=datetime.now(timezone.utc) + timedelta(seconds=15),
             id="startup_poll",
         )
 
-        # Scraper-based live refresh: every 10 min during match hours (0 API calls)
-        scheduler.add_job(
-            refresh_in_progress_matches, "interval",
-            minutes=10, id="live_scraper",
-        )
-
-        # Cricsheet re-scoring: run once 30s after startup, then every 2 hours
-        scheduler.add_job(
-            rescore_from_cricsheet, "interval",
-            hours=2, id="cricsheet_rescore",
-            next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30),
-        )
         # Keep-alive self-ping (prevents Render free tier sleep during match hours)
         scheduler.add_job(
             _keep_alive_ping, "interval",
             minutes=10, id="keep_alive",
         )
         scheduler.start()
-        logger.info("Scheduler started: %d fetch times, cricsheet every 2h, keep-alive 10m",
-                     len(FETCH_TIMES_IST))
+        logger.info("Scheduler started: poll every 15m, keep-alive 10m")
     else:
-        logger.info("No API key set — scheduled fetching disabled")
+        logger.info("No CRICKETDATA_API_KEY set — scheduled fetching disabled")
 
     yield
 
@@ -637,7 +479,7 @@ async def force_refresh(request: Request):
 
 @app.post("/api/admin/reseed")
 async def reseed(request: Request):
-    """Wipe all match data and re-fetch from Cricbuzz + Cricsheet.
+    """Wipe all match data and re-fetch from CricketData.org.
 
     Safety: only wipes if the fresh fetch succeeds. Falls back to
     GitHub backup if API returns nothing.
@@ -647,10 +489,8 @@ async def reseed(request: Request):
         raise HTTPException(403, "Invalid secret")
     old_count = db.get_match_count()
     db.wipe_match_data()
-    fetch_and_store_completed_matches()
-    rescore_from_cricsheet()
+    fetch_and_store_matches()
     new_count = db.get_match_count()
-    # If fetch returned nothing, restore from backup
     if new_count == 0 and old_count > 0:
         logger.warning("Reseed fetch returned 0 matches — restoring from backup")
         db.restore_from_remote()
@@ -708,8 +548,9 @@ async def status():
             }
             for m in matches
         ],
-        "data_source": "cricbuzz",
+        "data_source": "cricketdata",
+        "cricketdata_key_set": bool(CRICKETDATA_API_KEY),
         "cricbuzz_key_set": bool(CRICBUZZ_API_KEY),
         "poller_running": scheduler.running,
-        "api_usage": get_api_usage(),
+        "cricbuzz_api_usage": get_api_usage(),
     }

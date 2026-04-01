@@ -104,7 +104,9 @@ def upsert_match(match_id: str, date: str, teams: list, venue: str, status: str)
         INSERT INTO matches (match_id, date, teams_json, venue, status, last_updated)
         VALUES (?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(match_id) DO UPDATE SET
-            status = excluded.status,
+            status = CASE
+                WHEN matches.status IN ('complete', 'abandoned') THEN matches.status
+                ELSE excluded.status END,
             last_updated = datetime('now')
     """, (match_id, date, json.dumps(teams), venue, status))
     conn.commit()
@@ -141,11 +143,15 @@ def upsert_player_points(match_id: str, player_name: str, pts: dict,
 
 
 def bulk_upsert_player_points(match_id: str, all_points: dict[str, dict],
-                              captain_vc: dict[str, str] | None = None):
+                              captain_vc: dict[str, str] | None = None,
+                              force: bool = False):
     """Upsert all player points for a match in a single transaction.
 
     captain_vc: optional dict of player_name -> 'C' or 'VC'.
     Captain gets 2x total_pts, Vice Captain gets 1.5x. raw_pts stores the original.
+
+    force=False (default): only update if new raw_pts >= existing (monotonicity guard).
+    force=True: unconditional overwrite (used by admin Cricsheet rescore).
     """
     if captain_vc is None:
         captain_vc = {}
@@ -159,18 +165,34 @@ def bulk_upsert_player_points(match_id: str, all_points: dict[str, dict],
             total_pts = int(raw_pts * 1.5)
         else:
             total_pts = raw_pts
-        conn.execute("""
-            INSERT INTO player_match_points (match_id, player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(match_id, player_name) DO UPDATE SET
-                batting_pts = excluded.batting_pts,
-                bowling_pts = excluded.bowling_pts,
-                fielding_pts = excluded.fielding_pts,
-                raw_pts = excluded.raw_pts,
-                total_pts = excluded.total_pts,
-                breakdown_json = excluded.breakdown_json
-        """, (match_id, player_name, pts["batting_pts"], pts["bowling_pts"],
-              pts["fielding_pts"], raw_pts, total_pts, json.dumps(pts["breakdown"])))
+
+        if force:
+            conn.execute("""
+                INSERT INTO player_match_points (match_id, player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(match_id, player_name) DO UPDATE SET
+                    batting_pts = excluded.batting_pts,
+                    bowling_pts = excluded.bowling_pts,
+                    fielding_pts = excluded.fielding_pts,
+                    raw_pts = excluded.raw_pts,
+                    total_pts = excluded.total_pts,
+                    breakdown_json = excluded.breakdown_json
+            """, (match_id, player_name, pts["batting_pts"], pts["bowling_pts"],
+                  pts["fielding_pts"], raw_pts, total_pts, json.dumps(pts["breakdown"])))
+        else:
+            conn.execute("""
+                INSERT INTO player_match_points (match_id, player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(match_id, player_name) DO UPDATE SET
+                    batting_pts = excluded.batting_pts,
+                    bowling_pts = excluded.bowling_pts,
+                    fielding_pts = excluded.fielding_pts,
+                    raw_pts = excluded.raw_pts,
+                    total_pts = excluded.total_pts,
+                    breakdown_json = excluded.breakdown_json
+                WHERE excluded.raw_pts >= player_match_points.raw_pts
+            """, (match_id, player_name, pts["batting_pts"], pts["bowling_pts"],
+                  pts["fielding_pts"], raw_pts, total_pts, json.dumps(pts["breakdown"])))
     conn.commit()
     conn.close()
 

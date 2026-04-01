@@ -212,7 +212,8 @@ class CricbuzzAdapter(DataSourceAdapter):
             result = self._parse_api_scorecard(data, match_id)
 
         if result:
-            _enrich_bowling_dots_espn(result, date, teams or [])
+            from adapters.espn import enrich_bowling_dots
+            enrich_bowling_dots(result, date, teams or [])
         return result
 
     def _parse_api_scorecard(self, data: dict, match_id: str) -> MatchScorecard | None:
@@ -606,32 +607,3 @@ def scrape_scorecard(match_id: str) -> MatchScorecard | None:
     )
 
 
-def _enrich_bowling_dots_espn(
-    scorecard: MatchScorecard, date: str, teams: list[str],
-) -> None:
-    """Enrich bowling dots from the free ESPN API (accurate per-bowler dots)."""
-    total_existing = sum(e.dots for e in scorecard.bowling.values())
-    if total_existing > 0:
-        return  # already have dots (e.g., from Cricsheet re-scoring)
-
-    from adapters.espn import find_espn_event_id, fetch_espn_bowling_dots
-
-    espn_id = find_espn_event_id(date, teams) if date else None
-    if not espn_id:
-        logger.info("Could not find ESPN event for dots enrichment (date=%s)", date)
-        return
-
-    dots_map = fetch_espn_bowling_dots(espn_id)
-    if not dots_map:
-        return
-
-    enriched = 0
-    for name, entry in scorecard.bowling.items():
-        if name in dots_map:
-            entry.dots = dots_map[name]
-            enriched += 1
-
-    logger.info(
-        "Enriched %d/%d bowlers with ESPN dots (event %s)",
-        enriched, len(scorecard.bowling), espn_id,
-    )
