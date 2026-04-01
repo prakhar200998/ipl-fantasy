@@ -28,7 +28,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 import database as db
 from adapters.cricketdata import CricketDataAdapter
-from adapters.espn import enrich_bowling_dots, get_espn_scorecard
+from adapters.espn import enrich_bowling_dots, get_espn_scorecard, discover_espn_matches
 from adapters.cricsheet import (
     CricsheetAdapter, download_cricsheet_ipl, find_cricsheet_match_id,
 )
@@ -78,20 +78,39 @@ def _get_stored_match_map() -> dict[tuple[str, tuple], str]:
 
 
 def fetch_and_store_matches():
-    """Discover IPL 2026 matches via CricketData series_info, score NEW ones via ESPN.
+    """Discover IPL 2026 matches and score NEW ones via ESPN.
 
-    Costs: 1 series_info call (1 credit). Zero match_scorecard calls.
+    Discovery: CricketData series_info (1 credit) → fallback to ESPN (free, scans dates).
+    Scoring: ESPN (free, correct economy/dots). Zero match_scorecard calls.
     Already-stored matches are skipped — no re-fetching on redeploy.
-    ESPN (free) is the primary scorecard source for correct economy/dots.
     """
-    if not CRICKETDATA_API_KEY:
-        logger.warning("No CRICKETDATA_API_KEY set — skipping fetch")
-        return
+    actionable = []
 
-    cd = CricketDataAdapter()
-    all_matches = cd.get_match_list(SEASON)
-    actionable = [m for m in all_matches if m["status"] in ("complete", "abandoned", "in_progress")]
-    logger.info("CricketData: found %d actionable IPL 2026 matches", len(actionable))
+    # Try CricketData first (1 credit, returns ALL matches at once)
+    if CRICKETDATA_API_KEY:
+        cd = CricketDataAdapter()
+        all_matches = cd.get_match_list(SEASON)
+        actionable = [m for m in all_matches if m["status"] in ("complete", "abandoned", "in_progress")]
+        if actionable:
+            logger.info("CricketData: found %d actionable matches", len(actionable))
+
+    # Fallback: ESPN discovery (free, scans date range)
+    if not actionable:
+        logger.info("CricketData unavailable — falling back to ESPN discovery")
+        today = datetime.now(IST).strftime("%Y-%m-%d")
+        espn_matches = discover_espn_matches("2026-03-28", today)
+        for em in espn_matches:
+            if em["status"] in ("complete", "abandoned", "in_progress"):
+                actionable.append({
+                    "match_id": f"espn_{em['espn_id']}",
+                    "date": em["date"],
+                    "teams": em["teams"],
+                    "venue": "",
+                    "status": em["status"],
+                    "name": em["name"],
+                })
+        if actionable:
+            logger.info("ESPN discovery: found %d actionable matches", len(actionable))
 
     if not actionable:
         return

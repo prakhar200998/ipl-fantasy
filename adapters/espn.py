@@ -160,6 +160,57 @@ def get_espn_scorecard(date: str, teams: list[str]) -> MatchScorecard | None:
     )
 
 
+def discover_espn_matches(start_date: str, end_date: str) -> list[dict]:
+    """Discover IPL matches from ESPN scoreboard by scanning a date range.
+
+    Free, no auth. Returns list of dicts with: espn_id, date, teams, status, name.
+    """
+    from datetime import datetime, timedelta
+    results = []
+    current = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+
+    while current <= end:
+        date_compact = current.strftime("%Y%m%d")
+        try:
+            resp = httpx.get(
+                f"{ESPN_BASE}/{IPL_LEAGUE_ID}/scoreboard?dates={date_compact}",
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as e:
+            logger.error("ESPN discovery error for %s: %s", date_compact, e)
+            current += timedelta(days=1)
+            continue
+
+        for event in data.get("events", []):
+            teams = []
+            for comp in event.get("competitions", []):
+                for c in comp.get("competitors", []):
+                    teams.append(c.get("team", {}).get("displayName", ""))
+            status_desc = event.get("status", {}).get("type", {}).get("description", "")
+            if status_desc.lower() in ("result", "complete"):
+                status = "complete"
+            elif status_desc.lower() in ("abandoned", "no result"):
+                status = "abandoned"
+            elif status_desc.lower() == "live":
+                status = "in_progress"
+            else:
+                status = "upcoming"
+            results.append({
+                "espn_id": event.get("id", ""),
+                "date": current.strftime("%Y-%m-%d"),
+                "teams": teams,
+                "status": status,
+                "name": event.get("name", ""),
+            })
+
+        current += timedelta(days=1)
+
+    return results
+
+
 def find_espn_event_id(date: str, teams: list[str]) -> str | None:
     """Find the ESPN event ID for an IPL match by date.
 

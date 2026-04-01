@@ -355,20 +355,24 @@ def backup_to_remote():
 
 def restore_from_remote() -> bool:
     """Restore match data from data/match_seed.json on GitHub master."""
-    if not GITHUB_TOKEN:
-        logger.debug("No GITHUB_TOKEN — remote restore skipped")
-        return False
-
     import httpx, base64
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{BACKUP_PATH}"
     try:
-        headers = {"Authorization": f"token {GITHUB_TOKEN}",
-                   "Accept": "application/vnd.github.v3+json"}
-        resp = httpx.get(
-            f"https://api.github.com/repos/{GITHUB_REPO}/contents/{BACKUP_PATH}",
-            headers=headers, timeout=30,
-        )
+        # Try with auth first, fall back to unauthenticated (public repo)
+        resp = None
+        if GITHUB_TOKEN:
+            headers = {"Authorization": f"token {GITHUB_TOKEN}",
+                       "Accept": "application/vnd.github.v3+json"}
+            resp = httpx.get(url, headers=headers, timeout=30)
+            if resp.status_code != 200:
+                logger.warning("Authenticated restore failed (%s) — trying unauthenticated", resp.status_code)
+                resp = None
+
+        if resp is None:
+            resp = httpx.get(url, headers={"Accept": "application/vnd.github.v3+json"}, timeout=30)
+
         if resp.status_code != 200:
-            logger.info("No backup found on GitHub")
+            logger.info("No backup found on GitHub (status=%s)", resp.status_code)
             return False
 
         content = base64.b64decode(resp.json()["content"]).decode()
