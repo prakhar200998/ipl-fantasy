@@ -2,10 +2,14 @@
 
 Data-source strategy:
   Discovery:    CricketData.org series_info (1 credit, returns ALL matches)
-  Live scores:  ESPN free API (every 5 min, batting/bowling/dots/fielding/playing XI)
+  Scorecards:   ESPN free API (primary — correct economy/dots, unlimited)
+  Live scores:  ESPN free API (every 1 min during match hours)
   Enrichment:   CricketData.org match_scorecard (10 credits, adds lbw/bowled/runouts)
   Re-scoring:   Cricsheet ball-by-ball (admin-triggered only)
   Dormant:      Cricbuzz API via RapidAPI (available via admin)
+
+Startup: restore backup → ESPN re-score (free) → CD discovery (1 credit) → backup
+Deploy cost: 1 credit (series_info only). Zero match_scorecard calls.
 
 Daily budget (90 cap):
   Discovery:  6 series_info crons = 6 credits
@@ -74,12 +78,11 @@ def _get_stored_match_map() -> dict[tuple[str, tuple], str]:
 
 
 def fetch_and_store_matches():
-    """Fetch ALL IPL 2026 matches from CricketData.org and store/update them.
+    """Discover IPL 2026 matches via CricketData series_info, score NEW ones via ESPN.
 
-    Uses series_info which returns every match in the series (not just recent),
-    so it recovers matches that would otherwise be lost across Render redeploys.
-    Handles complete, abandoned, AND in_progress matches.
-    Costs: 1 series_info call + 1 match_scorecard per new match.
+    Costs: 1 series_info call (1 credit). Zero match_scorecard calls.
+    Already-stored matches are skipped — no re-fetching on redeploy.
+    ESPN (free) is the primary scorecard source for correct economy/dots.
     """
     if not CRICKETDATA_API_KEY:
         logger.warning("No CRICKETDATA_API_KEY set — skipping fetch")
@@ -93,10 +96,9 @@ def fetch_and_store_matches():
     if not actionable:
         return
 
-    # Map (date, sorted_teams) → existing match_id for dedup across sources
+    # Map (date, sorted_teams) → existing match_id for cross-source dedup
     stored_map = _get_stored_match_map()
 
-    # Also check by match_id for status-based decisions
     conn = db.get_db()
     stored_statuses = {
         row["match_id"]: row["status"]
@@ -111,15 +113,15 @@ def fetch_and_store_matches():
         stored_status = stored_statuses.get(match["match_id"])
         key = (match["date"][:10], tuple(sorted(match["teams"])))
         existing_id = stored_map.get(key)
-
-        # Use existing match_id if this match is already in DB under a different source ID
-        # (e.g. Cricbuzz ID vs CricketData UUID for the same real match)
         match_id = existing_id or match["match_id"]
 
-        # Skip abandoned that are already stored
-        if stored_status == "abandoned" or (existing_id and match["status"] == "abandoned"):
+        # Skip already-finalized matches (by ID or by dedup)
+        if stored_status in ("complete", "abandoned"):
             continue
-        # in_progress already tracked — refresh job handles live updates
+        if existing_id:
+            continue
+
+        # in_progress already tracked — ESPN refresh handles live updates
         if stored_status == "in_progress" and match["status"] == "in_progress":
             continue
 
@@ -134,39 +136,25 @@ def fetch_and_store_matches():
             stored_count += 1
             continue
 
-        # complete → CricketData scorecard (has lbw/bowled/runouts), ESPN fallback
-        # in_progress → ESPN scorecard (free, live refresh handles updates)
-        if match["status"] == "complete":
-            scorecard = cd.get_scorecard(match["match_id"])
-            if scorecard:
-                enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
-            else:
-                # CD failed (rate limit etc.) — fall back to ESPN (free)
-                logger.warning("CD scorecard failed for %s, falling back to ESPN", match.get("name", match_id))
-                scorecard = get_espn_scorecard(match["date"][:10], match["teams"])
-                if not scorecard:
-                    logger.warning("ESPN also failed for %s — skipping", match.get("name", match_id))
-                    continue
-                scorecard.match_id = match_id
-        else:
-            # in_progress — use ESPN (free) for initial scoring
-            scorecard = get_espn_scorecard(match["date"][:10], match["teams"])
-            if not scorecard:
-                # ESPN failed — register match so live refresh can pick it up
+        # Score from ESPN (free, correct economy/dots)
+        scorecard = get_espn_scorecard(match["date"][:10], match["teams"])
+        if not scorecard:
+            if match["status"] == "in_progress":
                 db.upsert_match(
                     match_id, match["date"], match["teams"],
                     match["venue"], "in_progress",
                 )
                 stored_count += 1
-                continue
-            scorecard.match_id = match_id
+            else:
+                logger.warning("ESPN failed for %s — skipping", match.get("name", match_id))
+            continue
+        scorecard.match_id = match_id
 
         points = calculate_fantasy_points(scorecard)
         db.upsert_match(
             match_id, match["date"], match["teams"],
             match["venue"], match["status"],
         )
-        # force=True: ensures scoring fixes apply even if corrected points are lower
         db.bulk_upsert_player_points(match_id, points, captain_vc, force=True)
         stored_map[key] = match_id
         stored_count += 1
@@ -177,6 +165,39 @@ def fetch_and_store_matches():
 
     if stored_count == 0:
         logger.info("All matches already stored")
+
+
+def _rescore_existing_espn():
+    """Re-score all complete matches from ESPN (free, 0 credits).
+
+    Fixes economy/dots for matches restored from backup.
+    Runs once on startup.
+    """
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return
+
+    captain_vc = get_captain_vc()
+    rescored = 0
+
+    for row in rows:
+        teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+        date = row["date"][:10] if row["date"] else ""
+        scorecard = get_espn_scorecard(date, teams)
+        if not scorecard:
+            continue
+        scorecard.match_id = row["match_id"]
+        points = calculate_fantasy_points(scorecard)
+        db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
+        rescored += 1
+
+    if rescored:
+        logger.info("ESPN re-scored %d existing matches (free)", rescored)
 
 
 def discover_matches():
@@ -396,6 +417,12 @@ async def lifespan(app: FastAPI):
             logger.info("Remote restore failed — loading seed file as last resort")
             db.load_seed_data()
         logger.info("After restore: %d matches in DB", db.get_match_count())
+
+    # Re-score existing matches from ESPN (free) — fixes economy/dots in backup data
+    try:
+        _rescore_existing_espn()
+    except Exception as e:
+        logger.error("ESPN re-score error: %s", e)
 
     # CricketData primary — discovers ALL matches (not just recent)
     try:
