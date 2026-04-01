@@ -390,6 +390,22 @@ def rescore_from_cricsheet():
         logger.error("Cricsheet re-score error: %s", e)
 
 
+def _deferred_startup():
+    """Runs once after app starts serving — avoids blocking Render health check."""
+    try:
+        _rescore_existing_espn()
+    except Exception as e:
+        logger.error("ESPN re-score error: %s", e)
+
+    try:
+        fetch_and_store_matches()
+    except Exception as e:
+        logger.error("Startup fetch error (will retry via poller): %s", e)
+
+    db.backup_to_remote()
+    logger.info("Deferred startup complete: %d matches in DB", db.get_match_count())
+
+
 # ------------------------------------------------------------------
 # App lifecycle
 # ------------------------------------------------------------------
@@ -418,20 +434,7 @@ async def lifespan(app: FastAPI):
             db.load_seed_data()
         logger.info("After restore: %d matches in DB", db.get_match_count())
 
-    # Re-score existing matches from ESPN (free) — fixes economy/dots in backup data
-    try:
-        _rescore_existing_espn()
-    except Exception as e:
-        logger.error("ESPN re-score error: %s", e)
-
-    # CricketData primary — discovers ALL matches (not just recent)
-    try:
-        fetch_and_store_matches()
-    except Exception as e:
-        logger.error("Startup fetch error (will retry via poller): %s", e)
-
-    db.backup_to_remote()
-    logger.info("DB has %d matches", db.get_match_count())
+    logger.info("DB has %d matches after restore", db.get_match_count())
 
     # Start background scheduler
     from apscheduler.triggers.cron import CronTrigger
@@ -485,6 +488,13 @@ async def lifespan(app: FastAPI):
         _keep_alive_ping, "interval",
         minutes=10, id="keep_alive",
     )
+
+    # Deferred startup: run after app is serving (avoids Render health check timeout)
+    scheduler.add_job(
+        _deferred_startup, "date",
+        id="deferred_startup",
+    )
+
     scheduler.start()
     if CRICKETDATA_API_KEY:
         logger.info("Scheduler started: 6 discovery, 7 weekday CD, 8 weekend CD, ESPN 1m, keep-alive 10m")
