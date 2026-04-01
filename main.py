@@ -151,13 +151,12 @@ def fetch_and_store_matches():
 
 
 def discover_matches():
-    """Scheduled every 30 min: call series_info to find new/completed matches.
+    """Cron-scheduled around known IPL start times (3:30 PM, 7:30 PM IST).
 
+    Runs at: 3:15, 3:45, 7:15, 7:45, 9:00, 10:30 IST
     Costs 1 API call (series_info) + 1 per new match found (match_scorecard).
+    ~6 calls/day — leaves budget for 5-min live refresh.
     """
-    now_ist = datetime.now(IST)
-    if not (14 <= now_ist.hour < 24):
-        return
     if not CRICKETDATA_API_KEY:
         return
 
@@ -168,7 +167,7 @@ def discover_matches():
 
 
 def refresh_live_scores():
-    """Scheduled every 10 min: update scores for in_progress matches.
+    """Scheduled every 5 min: update scores for in_progress matches.
 
     Only calls match_scorecard for matches already tracked as in_progress in DB.
     Costs 0 API calls if no live matches, 1 per live match otherwise.
@@ -311,16 +310,27 @@ async def lifespan(app: FastAPI):
 
     # Start background scheduler
     if CRICKETDATA_API_KEY:
-        # Discovery: series_info every 30 min (1 API call each)
-        scheduler.add_job(
-            discover_matches, "interval",
-            minutes=30, id="discover",
-        )
+        from apscheduler.triggers.cron import CronTrigger
 
-        # Live refresh: scorecard-only every 10 min (0 calls if no live match)
+        # Discovery: cron at known IPL start windows (~6 calls/day)
+        # 3:15, 3:45 IST (afternoon match) → 9:45, 10:15 UTC
+        # 7:15, 7:45 IST (evening match)   → 13:45, 14:15 UTC
+        # 9:00, 10:30 IST (mid/late game)  → 15:30, 17:00 UTC
+        discovery_times_ist = [(15, 15), (15, 45), (19, 15), (19, 45), (21, 0), (22, 30)]
+        for hour, minute in discovery_times_ist:
+            utc_total = hour * 60 + minute - 330  # IST offset = 5h30m
+            utc_h, utc_m = utc_total // 60, utc_total % 60
+            scheduler.add_job(
+                discover_matches,
+                CronTrigger(hour=utc_h, minute=utc_m),
+                id=f"discover_{hour:02d}{minute:02d}",
+            )
+            logger.info("Discovery at %02d:%02d IST (UTC %02d:%02d)", hour, minute, utc_h, utc_m)
+
+        # Live refresh: scorecard-only every 5 min (0 calls if no live match)
         scheduler.add_job(
             refresh_live_scores, "interval",
-            minutes=10, id="live_refresh",
+            minutes=5, id="live_refresh",
         )
 
         # Keep-alive self-ping (prevents Render free tier sleep during match hours)
@@ -329,7 +339,7 @@ async def lifespan(app: FastAPI):
             minutes=10, id="keep_alive",
         )
         scheduler.start()
-        logger.info("Scheduler started: discover 30m, live refresh 10m, keep-alive 10m")
+        logger.info("Scheduler started: 6 discovery crons, live refresh 5m, keep-alive 10m")
     else:
         logger.info("No CRICKETDATA_API_KEY set — scheduled fetching disabled")
 
