@@ -59,18 +59,18 @@ def _keep_alive_ping():
 # Data fetching — CricketData.org primary
 # ------------------------------------------------------------------
 
-def _get_stored_match_keys() -> set[tuple[str, tuple]]:
-    """Return set of (date, sorted_teams) for all stored complete/abandoned matches."""
+def _get_stored_match_map() -> dict[tuple[str, tuple], str]:
+    """Return {(date, sorted_teams): match_id} for all stored complete/abandoned matches."""
     conn = db.get_db()
     rows = conn.execute(
-        "SELECT date, teams_json FROM matches WHERE status IN ('complete', 'abandoned')"
+        "SELECT match_id, date, teams_json FROM matches WHERE status IN ('complete', 'abandoned')"
     ).fetchall()
     conn.close()
-    keys = set()
+    result = {}
     for row in rows:
         teams = tuple(sorted(json.loads(row["teams_json"]))) if row["teams_json"] else ()
-        keys.add((row["date"], teams))
-    return keys
+        result[(row["date"], teams)] = row["match_id"]
+    return result
 
 
 def fetch_and_store_matches():
@@ -93,8 +93,8 @@ def fetch_and_store_matches():
     if not actionable:
         return
 
-    # Dedup by date + sorted teams (handles existing Cricbuzz-ID matches in DB)
-    stored_keys = _get_stored_match_keys()
+    # Map (date, sorted_teams) → existing match_id for dedup across sources
+    stored_map = _get_stored_match_map()
 
     # Also check by match_id for status-based decisions
     conn = db.get_db()
@@ -108,28 +108,29 @@ def fetch_and_store_matches():
     stored_count = 0
 
     for match in actionable:
-        # Skip if already finalized by ID
         stored_status = stored_statuses.get(match["match_id"])
-        if stored_status in ("complete", "abandoned"):
-            continue
-
-        # Skip by date+teams dedup (cross-source matching)
         key = (match["date"][:10], tuple(sorted(match["teams"])))
-        if key in stored_keys:
-            continue
+        existing_id = stored_map.get(key)
 
-        # Already tracked as in_progress — refresh job handles updates
+        # Use existing match_id if this match is already in DB under a different source ID
+        # (e.g. Cricbuzz ID vs CricketData UUID for the same real match)
+        match_id = existing_id or match["match_id"]
+
+        # Skip abandoned that are already stored
+        if stored_status == "abandoned" or (existing_id and match["status"] == "abandoned"):
+            continue
+        # in_progress already tracked — refresh job handles live updates
         if stored_status == "in_progress" and match["status"] == "in_progress":
             continue
 
         if match["status"] == "abandoned":
             db.upsert_match(
-                match["match_id"], match["date"], match["teams"],
+                match_id, match["date"], match["teams"],
                 match["venue"], "abandoned",
             )
-            db.insert_washout_zeroes(match["match_id"], match["teams"], captain_vc)
-            logger.info("Stored abandoned match %s: %s", match["match_id"], match.get("name", ""))
-            stored_keys.add(key)
+            db.insert_washout_zeroes(match_id, match["teams"], captain_vc)
+            logger.info("Stored abandoned match %s: %s", match_id, match.get("name", ""))
+            stored_map[key] = match_id
             stored_count += 1
             continue
 
@@ -141,34 +142,35 @@ def fetch_and_store_matches():
                 enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
             else:
                 # CD failed (rate limit etc.) — fall back to ESPN (free)
-                logger.warning("CD scorecard failed for %s, falling back to ESPN", match.get("name", match["match_id"]))
+                logger.warning("CD scorecard failed for %s, falling back to ESPN", match.get("name", match_id))
                 scorecard = get_espn_scorecard(match["date"][:10], match["teams"])
                 if not scorecard:
-                    logger.warning("ESPN also failed for %s — skipping", match.get("name", match["match_id"]))
+                    logger.warning("ESPN also failed for %s — skipping", match.get("name", match_id))
                     continue
-                scorecard.match_id = match["match_id"]
+                scorecard.match_id = match_id
         else:
             # in_progress — use ESPN (free) for initial scoring
             scorecard = get_espn_scorecard(match["date"][:10], match["teams"])
             if not scorecard:
                 # ESPN failed — register match so live refresh can pick it up
                 db.upsert_match(
-                    match["match_id"], match["date"], match["teams"],
+                    match_id, match["date"], match["teams"],
                     match["venue"], "in_progress",
                 )
                 stored_count += 1
                 continue
-            scorecard.match_id = match["match_id"]
+            scorecard.match_id = match_id
 
         points = calculate_fantasy_points(scorecard)
         db.upsert_match(
-            match["match_id"], match["date"], match["teams"],
+            match_id, match["date"], match["teams"],
             match["venue"], match["status"],
         )
-        db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
-        stored_keys.add(key)
+        # force=True: ensures scoring fixes apply even if corrected points are lower
+        db.bulk_upsert_player_points(match_id, points, captain_vc, force=True)
+        stored_map[key] = match_id
         stored_count += 1
-        logger.info("Stored match %s: %s (status=%s)", match["match_id"], match.get("name", ""), match["status"])
+        logger.info("Stored match %s: %s (status=%s)", match_id, match.get("name", ""), match["status"])
 
         if match["status"] == "complete":
             db.backup_to_remote()
