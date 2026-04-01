@@ -188,8 +188,17 @@ class CricketDataAdapter(DataSourceAdapter):
                 total_balls = full_overs * 6 + extra_balls
 
                 maidens = bw.get("m", 0)
-                runs = bw.get("r", 0)
                 wickets = bw.get("w", 0)
+
+                # "r" excludes extras (wides/no-balls), but economy must
+                # include them. Use "eco" field to derive total conceded.
+                # Note: overs_float uses cricket notation (3.1 = 3 overs + 1 ball),
+                # so convert to mathematical overs for the multiplication.
+                eco = bw.get("eco", 0)
+                if eco and total_balls:
+                    runs = round(eco * total_balls / 6)
+                else:
+                    runs = bw.get("r", 0)
 
                 # Build overs_detail for maiden detection
                 # The API gives us total maidens directly via "m" field
