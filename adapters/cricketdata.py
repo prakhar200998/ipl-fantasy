@@ -1,14 +1,41 @@
 """Adapter for CricketData.org API (live + historical match data)."""
 import httpx
 import logging
+from datetime import datetime, timezone
 from adapters.base import DataSourceAdapter
 from models import MatchScorecard, BattingEntry, BowlingEntry, FieldingEntry
-from config import CRICKETDATA_API_KEY, IPL_2026_SERIES_ID
+from config import CRICKETDATA_API_KEY, CRICKETDATA_DAILY_LIMIT, IPL_2026_SERIES_ID
 from name_mapping import get_display_name
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.cricapi.com/v1"
+
+# --- Daily API call tracking (in-memory, resets on redeploy) ---
+_daily_call_log: dict = {"date": "", "calls": 0}
+
+
+def _check_daily_limit() -> bool:
+    """Check and increment daily call counter. Returns False if limit reached."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if _daily_call_log["date"] != today:
+        _daily_call_log["date"] = today
+        _daily_call_log["calls"] = 0
+    if _daily_call_log["calls"] >= CRICKETDATA_DAILY_LIMIT:
+        logger.warning(
+            "CricketData daily limit reached (%d/%d) — skipping API call",
+            _daily_call_log["calls"], CRICKETDATA_DAILY_LIMIT,
+        )
+        return False
+    _daily_call_log["calls"] += 1
+    return True
+
+
+def get_daily_usage() -> dict:
+    """Return current daily API usage stats for UI display."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    calls = _daily_call_log["calls"] if _daily_call_log["date"] == today else 0
+    return {"date": today, "calls_used": calls, "limit": CRICKETDATA_DAILY_LIMIT}
 
 
 class CricketDataAdapter(DataSourceAdapter):
@@ -16,6 +43,8 @@ class CricketDataAdapter(DataSourceAdapter):
         self.api_key = api_key or CRICKETDATA_API_KEY
 
     def _get(self, endpoint: str, params: dict = None) -> dict | None:
+        if not _check_daily_limit():
+            return None
         params = params or {}
         params["apikey"] = self.api_key
         try:

@@ -68,10 +68,12 @@ def _get_stored_match_keys() -> set[tuple[str, tuple]]:
 
 
 def fetch_and_store_matches():
-    """Fetch ALL completed/abandoned IPL 2026 matches from CricketData.org and store points.
+    """Fetch ALL IPL 2026 matches from CricketData.org and store/update them.
 
     Uses series_info which returns every match in the series (not just recent),
     so it recovers matches that would otherwise be lost across Render redeploys.
+    Handles complete, abandoned, AND in_progress matches.
+    Costs: 1 series_info call + 1 match_scorecard per new match.
     """
     if not CRICKETDATA_API_KEY:
         logger.warning("No CRICKETDATA_API_KEY set — skipping fetch")
@@ -79,21 +81,39 @@ def fetch_and_store_matches():
 
     cd = CricketDataAdapter()
     all_matches = cd.get_match_list(SEASON)
-    completed = [m for m in all_matches if m["status"] in ("complete", "abandoned")]
-    logger.info("CricketData: found %d completed/abandoned IPL 2026 matches", len(completed))
+    actionable = [m for m in all_matches if m["status"] in ("complete", "abandoned", "in_progress")]
+    logger.info("CricketData: found %d actionable IPL 2026 matches", len(actionable))
 
-    if not completed:
+    if not actionable:
         return
 
     # Dedup by date + sorted teams (handles existing Cricbuzz-ID matches in DB)
     stored_keys = _get_stored_match_keys()
 
+    # Also check by match_id for status-based decisions
+    conn = db.get_db()
+    stored_statuses = {
+        row["match_id"]: row["status"]
+        for row in conn.execute("SELECT match_id, status FROM matches").fetchall()
+    }
+    conn.close()
+
     captain_vc = get_captain_vc()
     stored_count = 0
 
-    for match in completed:
+    for match in actionable:
+        # Skip if already finalized by ID
+        stored_status = stored_statuses.get(match["match_id"])
+        if stored_status in ("complete", "abandoned"):
+            continue
+
+        # Skip by date+teams dedup (cross-source matching)
         key = (match["date"][:10], tuple(sorted(match["teams"])))
         if key in stored_keys:
+            continue
+
+        # Already tracked as in_progress — refresh job handles updates
+        if stored_status == "in_progress" and match["status"] == "in_progress":
             continue
 
         if match["status"] == "abandoned":
@@ -107,6 +127,7 @@ def fetch_and_store_matches():
             stored_count += 1
             continue
 
+        # complete or in_progress — fetch scorecard
         scorecard = cd.get_scorecard(match["match_id"])
         if not scorecard:
             logger.warning("No scorecard for match %s", match.get("name", match["match_id"]))
@@ -115,87 +136,84 @@ def fetch_and_store_matches():
         points = calculate_fantasy_points(scorecard)
         db.upsert_match(
             match["match_id"], match["date"], match["teams"],
-            match["venue"], "complete",
+            match["venue"], match["status"],
         )
         db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
         stored_keys.add(key)
         stored_count += 1
-        logger.info("Stored match %s: %s (with ESPN dots)", match["match_id"], match.get("name", ""))
+        logger.info("Stored match %s: %s (status=%s)", match["match_id"], match.get("name", ""), match["status"])
+
+        if match["status"] == "complete":
+            db.backup_to_remote()
 
     if stored_count == 0:
-        logger.info("All completed matches already stored")
+        logger.info("All matches already stored")
 
 
-def poll_live_matches():
-    """Background job: discover in-progress + newly completed matches via CricketData.org."""
+def discover_matches():
+    """Scheduled every 30 min: call series_info to find new/completed matches.
+
+    Costs 1 API call (series_info) + 1 per new match found (match_scorecard).
+    """
     now_ist = datetime.now(IST)
     if not (14 <= now_ist.hour < 24):
         return
-
     if not CRICKETDATA_API_KEY:
         return
 
     try:
+        fetch_and_store_matches()
+    except Exception as e:
+        logger.error("Discovery error: %s", e)
+
+
+def refresh_live_scores():
+    """Scheduled every 10 min: update scores for in_progress matches.
+
+    Only calls match_scorecard for matches already tracked as in_progress in DB.
+    Costs 0 API calls if no live matches, 1 per live match otherwise.
+    No series_info call — discovery job handles that.
+    """
+    now_ist = datetime.now(IST)
+    if not (14 <= now_ist.hour < 24):
+        return
+    if not CRICKETDATA_API_KEY:
+        return
+
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT match_id, date, teams_json FROM matches WHERE status = 'in_progress'"
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return
+
+    try:
         cd = CricketDataAdapter()
-        all_matches = cd.get_match_list(SEASON)
-        active = [m for m in all_matches if m["status"] in ("in_progress", "complete", "abandoned")]
-
-        if not active:
-            return
-
-        # Skip matches already stored as complete or abandoned
-        conn = db.get_db()
-        stored = {
-            row["match_id"]: row["status"]
-            for row in conn.execute("SELECT match_id, status FROM matches").fetchall()
-        }
-        conn.close()
-
-        # Also build dedup keys for cross-source matching
-        stored_keys = _get_stored_match_keys()
-
         captain_vc = get_captain_vc()
 
-        for match in active:
-            # Skip by direct ID match
-            stored_status = stored.get(match["match_id"])
-            if stored_status in ("complete", "abandoned"):
-                continue
-
-            # Skip by date+teams dedup (handles Cricbuzz-ID matches)
-            key = (match["date"][:10], tuple(sorted(match["teams"])))
-            if key in stored_keys:
-                continue
-
-            if match["status"] == "abandoned":
-                db.upsert_match(
-                    match["match_id"], match["date"], match["teams"],
-                    match["venue"], "abandoned",
-                )
-                db.insert_washout_zeroes(match["match_id"], match["teams"], captain_vc)
-                logger.info("Stored abandoned match %s", match["match_id"])
-                db.backup_to_remote()
-                continue
-
-            scorecard = cd.get_scorecard(match["match_id"])
+        for row in rows:
+            scorecard = cd.get_scorecard(row["match_id"])
             if not scorecard:
                 continue
-            enrich_bowling_dots(scorecard, match["date"][:10], match["teams"])
+            teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+            enrich_bowling_dots(scorecard, row["date"][:10] if row["date"] else "", teams)
             points = calculate_fantasy_points(scorecard)
             db.upsert_match(
-                match["match_id"], match["date"], match["teams"],
-                match["venue"], match["status"],
+                row["match_id"], row["date"], teams,
+                scorecard.venue or "", scorecard.status,
             )
-            db.bulk_upsert_player_points(match["match_id"], points, captain_vc)
-            logger.info(
-                "Updated match %s (status=%s, source=cricketdata)",
-                match["match_id"], match["status"],
-            )
-            if match["status"] == "complete":
+            db.bulk_upsert_player_points(row["match_id"], points, captain_vc)
+
+            if scorecard.status == "complete":
                 db.backup_to_remote()
+                logger.info("Match %s completed (detected by refresh)", row["match_id"])
+            else:
+                logger.info("Refreshed live match %s", row["match_id"])
 
     except Exception as e:
-        logger.error("Poll error: %s", e)
+        logger.error("Live refresh error: %s", e)
 
 
 # ------------------------------------------------------------------
@@ -293,10 +311,16 @@ async def lifespan(app: FastAPI):
 
     # Start background scheduler
     if CRICKETDATA_API_KEY:
-        # Single interval job: poll every 15 min during match hours
+        # Discovery: series_info every 30 min (1 API call each)
         scheduler.add_job(
-            poll_live_matches, "interval",
-            minutes=15, id="live_poll",
+            discover_matches, "interval",
+            minutes=30, id="discover",
+        )
+
+        # Live refresh: scorecard-only every 10 min (0 calls if no live match)
+        scheduler.add_job(
+            refresh_live_scores, "interval",
+            minutes=10, id="live_refresh",
         )
 
         # Keep-alive self-ping (prevents Render free tier sleep during match hours)
@@ -305,7 +329,7 @@ async def lifespan(app: FastAPI):
             minutes=10, id="keep_alive",
         )
         scheduler.start()
-        logger.info("Scheduler started: poll every 15m, keep-alive 10m")
+        logger.info("Scheduler started: discover 30m, live refresh 10m, keep-alive 10m")
     else:
         logger.info("No CRICKETDATA_API_KEY set — scheduled fetching disabled")
 
@@ -466,7 +490,8 @@ async def force_refresh(request: Request):
     body = await request.json()
     if body.get("secret") != ADMIN_SECRET:
         raise HTTPException(403, "Invalid secret")
-    poll_live_matches()
+    fetch_and_store_matches()
+    refresh_live_scores()
     return {"status": "refreshed"}
 
 
@@ -515,6 +540,7 @@ async def force_rescore(request: Request):
 @app.get("/api/status")
 async def status():
     """Health check — shows DB state and API usage."""
+    from adapters.cricketdata import get_daily_usage
     from adapters.cricbuzz import get_api_usage
 
     conn = db.get_db()
@@ -545,5 +571,6 @@ async def status():
         "cricketdata_key_set": bool(CRICKETDATA_API_KEY),
         "cricbuzz_key_set": bool(CRICBUZZ_API_KEY),
         "poller_running": scheduler.running,
-        "cricbuzz_api_usage": get_api_usage(),
+        "cricketdata_daily_usage": get_daily_usage(),
+        "cricbuzz_monthly_usage": get_api_usage(),
     }

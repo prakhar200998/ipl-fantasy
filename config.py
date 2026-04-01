@@ -13,6 +13,9 @@ CRICBUZZ_API_KEY = os.environ.get("CRICBUZZ_API_KEY", "")
 # Cricsheet data directory for ball-by-ball rescoring
 CRICSHEET_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cricsheet")
 
+# CricketData.org daily call limit (free tier: 100/day, we cap at 90 for safety)
+CRICKETDATA_DAILY_LIMIT = int(os.environ.get("CRICKETDATA_DAILY_LIMIT", "90"))
+
 # Cricbuzz RapidAPI monthly call limit (free tier: 200/month)
 CRICBUZZ_MONTHLY_LIMIT = int(os.environ.get("CRICBUZZ_MONTHLY_LIMIT", "200"))
 
