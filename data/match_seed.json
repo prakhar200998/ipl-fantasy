@@ -1306,10 +1306,10 @@
       "player_name": "Ishan Kishan",
       "batting_pts": 26,
       "bowling_pts": 0,
-      "fielding_pts": 8,
-      "raw_pts": 38,
-      "total_pts": 76,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 14, \"balls\": 9, \"fours\": 3, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "fielding_pts": 16,
+      "raw_pts": 46,
+      "total_pts": 92,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 14, \"balls\": 9, \"fours\": 3, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1396,10 +1396,10 @@
       "player_name": "Nitish Kumar Reddy",
       "batting_pts": 69,
       "bowling_pts": 70,
-      "fielding_pts": 8,
-      "raw_pts": 151,
-      "total_pts": 151,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 39, \"balls\": 24, \"fours\": 4, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 2, \"dots\": 5, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "fielding_pts": 0,
+      "raw_pts": 143,
+      "total_pts": 143,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 39, \"balls\": 24, \"fours\": 4, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 2, \"dots\": 5, \"maidens\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
