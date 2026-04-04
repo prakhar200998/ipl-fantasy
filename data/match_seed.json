@@ -1760,10 +1760,10 @@
       "player_name": "Jasprit Bumrah",
       "batting_pts": 0,
       "bowling_pts": 32,
-      "fielding_pts": 10,
-      "raw_pts": 46,
-      "total_pts": 46,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 0, \"dots\": 13, \"maidens\": 0}, \"fielding\": {\"catches\": 0, \"runouts\": 1, \"stumpings\": 0}}"
+      "fielding_pts": 0,
+      "raw_pts": 36,
+      "total_pts": 36,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 0, \"dots\": 13, \"maidens\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1789,11 +1789,11 @@
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
       "player_name": "Corbin Bosch",
       "batting_pts": 19,
-      "bowling_pts": 38,
+      "bowling_pts": 36,
       "fielding_pts": 0,
-      "raw_pts": 61,
-      "total_pts": 61,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 4, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 35, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}}"
+      "raw_pts": 59,
+      "total_pts": 59,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 4, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 19, \"runs\": 39, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1868,12 +1868,12 @@
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
       "player_name": "David Miller",
-      "batting_pts": 27,
+      "batting_pts": 37,
       "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 31,
-      "total_pts": 31,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 17, \"balls\": 17, \"fours\": 3, \"sixes\": 0, \"dismissed\": false}}"
+      "raw_pts": 41,
+      "total_pts": 41,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 21, \"balls\": 18, \"fours\": 4, \"sixes\": 0, \"dismissed\": false}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1939,10 +1939,10 @@
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
       "player_name": "Lungi Ngidi",
       "batting_pts": 0,
-      "bowling_pts": 54,
+      "bowling_pts": 46,
       "fielding_pts": 0,
-      "raw_pts": 58,
-      "total_pts": 58,
+      "raw_pts": 50,
+      "total_pts": 50,
       "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 1, \"dots\": 8, \"maidens\": 0}}"
     },
     {
@@ -1959,10 +1959,10 @@
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
       "player_name": "Mukesh Kumar",
       "batting_pts": 0,
-      "bowling_pts": 88,
+      "bowling_pts": 80,
       "fielding_pts": 16,
-      "raw_pts": 108,
-      "total_pts": 108,
+      "raw_pts": 100,
+      "total_pts": 100,
       "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 26, \"wickets\": 2, \"dots\": 10, \"maidens\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
