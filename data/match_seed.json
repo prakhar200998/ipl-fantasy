@@ -2283,10 +2283,10 @@
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
       "player_name": "Avesh Khan",
       "batting_pts": 0,
-      "bowling_pts": 82,
+      "bowling_pts": 74,
       "fielding_pts": 0,
-      "raw_pts": 86,
-      "total_pts": 86,
+      "raw_pts": 78,
+      "total_pts": 78,
       "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 36, \"wickets\": 2, \"dots\": 7, \"maidens\": 0}}"
     },
     {
@@ -2327,16 +2327,16 @@
       "fielding_pts": 0,
       "raw_pts": 10,
       "total_pts": 10,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 22, \"runs\": 46, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 23, \"runs\": 50, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
       "player_name": "Prince Yadav",
       "batting_pts": 0,
-      "bowling_pts": 98,
+      "bowling_pts": 82,
       "fielding_pts": 8,
-      "raw_pts": 110,
-      "total_pts": 110,
+      "raw_pts": 94,
+      "total_pts": 94,
       "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 2, \"dots\": 11, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
@@ -2384,10 +2384,10 @@
       "player_name": "Ishan Kishan",
       "batting_pts": 1,
       "bowling_pts": 0,
-      "fielding_pts": 22,
-      "raw_pts": 27,
-      "total_pts": 54,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 4, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 0, \"runouts\": 1, \"stumpings\": 1}}"
+      "fielding_pts": 12,
+      "raw_pts": 17,
+      "total_pts": 34,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 4, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 0, \"runouts\": 0, \"stumpings\": 1}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2432,12 +2432,12 @@
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
       "player_name": "Rishabh Pant",
-      "batting_pts": 106,
+      "batting_pts": 114,
       "bowling_pts": 0,
-      "fielding_pts": 26,
-      "raw_pts": 136,
-      "total_pts": 136,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 64, \"balls\": 49, \"fours\": 8, \"sixes\": 0, \"dismissed\": false}, \"fielding\": {\"catches\": 2, \"runouts\": 1, \"stumpings\": 0}}"
+      "fielding_pts": 16,
+      "raw_pts": 134,
+      "total_pts": 134,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 68, \"balls\": 50, \"fours\": 9, \"sixes\": 0, \"dismissed\": false}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2453,11 +2453,11 @@
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
       "player_name": "Digvesh Rathi",
       "batting_pts": 0,
-      "bowling_pts": 0,
+      "bowling_pts": 36,
       "fielding_pts": 0,
-      "raw_pts": 4,
-      "total_pts": 4,
-      "breakdown_json": "{\"playing_xi\": 4}"
+      "raw_pts": 40,
+      "total_pts": 40,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 1, \"dots\": 5, \"maidens\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
