@@ -186,6 +186,48 @@ def fetch_and_store_matches():
         logger.info("All matches already stored")
 
 
+def _get_existing_enrichment(match_id: str) -> dict:
+    """Read lbw_bowled and runouts from existing breakdown_json in DB.
+
+    Returns {"lbw_bowled": {player: count}, "runouts": {player: count}}.
+    """
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT player_name, breakdown_json FROM player_match_points WHERE match_id = ?",
+        (match_id,),
+    ).fetchall()
+    conn.close()
+
+    lbw_bowled: dict[str, int] = {}
+    runouts: dict[str, int] = {}
+    for row in rows:
+        if not row["breakdown_json"]:
+            continue
+        bd = json.loads(row["breakdown_json"])
+        bowl = bd.get("bowling", {})
+        if bowl.get("lbw_bowled", 0) > 0:
+            lbw_bowled[row["player_name"]] = bowl["lbw_bowled"]
+        fld = bd.get("fielding", {})
+        if fld.get("runouts", 0) > 0:
+            runouts[row["player_name"]] = fld["runouts"]
+    return {"lbw_bowled": lbw_bowled, "runouts": runouts}
+
+
+def _inject_enrichment(scorecard: "MatchScorecard", enrichment: dict) -> None:
+    """Inject lbw_bowled and runouts into a scorecard from prior enrichment data."""
+    from models import FieldingEntry
+
+    for player, count in enrichment["lbw_bowled"].items():
+        if player in scorecard.bowling:
+            scorecard.bowling[player].lbw_bowled = count
+
+    for player, count in enrichment["runouts"].items():
+        if player in scorecard.fielding:
+            scorecard.fielding[player].runouts = count
+        else:
+            scorecard.fielding[player] = FieldingEntry(player=player, runouts=count)
+
+
 def _rescore_existing_espn():
     """Re-score all complete matches from ESPN (free, 0 credits).
 
@@ -211,6 +253,7 @@ def _rescore_existing_espn():
         if not scorecard:
             continue
         scorecard.match_id = row["match_id"]
+        _inject_enrichment(scorecard, _get_existing_enrichment(row["match_id"]))
         points = calculate_fantasy_points(scorecard)
         db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
         rescored += 1
@@ -270,6 +313,7 @@ def refresh_live_espn():
             if not scorecard:
                 continue
             scorecard.match_id = row["match_id"]
+            _inject_enrichment(scorecard, _get_existing_enrichment(row["match_id"]))
             points = calculate_fantasy_points(scorecard)
             # force=True: live scores can go up/down (SR penalties etc.)
             db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
@@ -409,6 +453,88 @@ def rescore_from_cricsheet():
         logger.error("Cricsheet re-score error: %s", e)
 
 
+def _needs_cricsheet_backfill() -> bool:
+    """Check if any bowler has wickets but no lbw_bowled key in breakdown_json."""
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT breakdown_json FROM player_match_points WHERE bowling_pts > 0 LIMIT 50"
+    ).fetchall()
+    conn.close()
+    for row in rows:
+        if not row["breakdown_json"]:
+            continue
+        bd = json.loads(row["breakdown_json"])
+        bowl = bd.get("bowling", {})
+        if bowl.get("wickets", 0) > 0 and "lbw_bowled" not in bowl:
+            return True
+    return False
+
+
+def _backfill_from_cricsheet():
+    """One-time Cricsheet backfill for lbw_bowled and runouts.
+
+    Detects if backfill is needed (bowlers with wickets but missing lbw_bowled key).
+    Downloads Cricsheet ZIP (~5MB), extracts lbw_bowled/runouts, combines with
+    ESPN scorecard (for dots), re-scores. Skips instantly on subsequent deploys.
+    """
+    if not _needs_cricsheet_backfill():
+        logger.info("Cricsheet backfill: not needed (lbw_bowled key already present)")
+        return
+
+    logger.info("Cricsheet backfill: lbw_bowled missing — downloading Cricsheet data")
+
+    if not download_cricsheet_ipl(CRICSHEET_DATA_DIR):
+        logger.error("Cricsheet backfill: download failed")
+        return
+
+    cs_adapter = CricsheetAdapter(CRICSHEET_DATA_DIR)
+    captain_vc = get_captain_vc()
+
+    conn = db.get_db()
+    db_matches = conn.execute(
+        "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
+    ).fetchall()
+    conn.close()
+
+    if not db_matches:
+        return
+
+    backfilled = 0
+    for row in db_matches:
+        teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+        date = row["date"] or ""
+
+        cs_match_id = find_cricsheet_match_id(cs_adapter, SEASON, date[:10], teams)
+        if not cs_match_id:
+            continue
+
+        cs_scorecard = cs_adapter.get_scorecard(cs_match_id)
+        if not cs_scorecard:
+            continue
+
+        # Extract lbw_bowled and runouts from Cricsheet
+        enrichment: dict = {"lbw_bowled": {}, "runouts": {}}
+        for player, bw in cs_scorecard.bowling.items():
+            if bw.lbw_bowled > 0:
+                enrichment["lbw_bowled"][player] = bw.lbw_bowled
+        for player, fl in cs_scorecard.fielding.items():
+            if fl.runouts > 0:
+                enrichment["runouts"][player] = fl.runouts
+
+        # Build ESPN scorecard (for dots/economy) and inject Cricsheet enrichment
+        espn_scorecard = get_espn_scorecard(date[:10], teams)
+        if not espn_scorecard:
+            continue
+        espn_scorecard.match_id = row["match_id"]
+        _inject_enrichment(espn_scorecard, enrichment)
+
+        points = calculate_fantasy_points(espn_scorecard)
+        db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
+        backfilled += 1
+
+    logger.info("Cricsheet backfill complete: %d matches updated", backfilled)
+
+
 def _deferred_startup():
     """Runs once after app starts serving — avoids blocking Render health check."""
     try:
@@ -420,6 +546,11 @@ def _deferred_startup():
         fetch_and_store_matches()
     except Exception as e:
         logger.error("Startup fetch error (will retry via poller): %s", e)
+
+    try:
+        _backfill_from_cricsheet()
+    except Exception as e:
+        logger.error("Cricsheet backfill error: %s", e)
 
     db.backup_to_remote()
     logger.info("Deferred startup complete: %d matches in DB", db.get_match_count())

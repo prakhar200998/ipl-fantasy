@@ -118,7 +118,7 @@ def calculate_fantasy_points(scorecard: MatchScorecard) -> dict[str, dict]:
 
             breakdown["bowling"] = {
                 "balls": bw.balls, "runs": bw.runs, "wickets": bw.wickets,
-                "dots": bw.dots, "maidens": maidens,
+                "dots": bw.dots, "maidens": maidens, "lbw_bowled": bw.lbw_bowled,
             }
 
         # --- FIELDING ---
