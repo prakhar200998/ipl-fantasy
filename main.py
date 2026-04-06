@@ -357,6 +357,7 @@ def _finalize_match_cd(match_id: str, date: str, teams: list, captain_vc: dict):
             points = calculate_fantasy_points(scorecard)
             db.upsert_match(match_id, date, teams, scorecard.venue or "", "complete")
             db.bulk_upsert_player_points(match_id, points, captain_vc, force=True)
+            db.set_enrichment_version(match_id, "cd_v2")
         else:
             db.upsert_match(match_id, date, teams, "", "complete")
         db.backup_to_remote()
@@ -404,6 +405,7 @@ def refresh_live_cd():
             db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
 
             if scorecard.status == "complete":
+                db.set_enrichment_version(row["match_id"], "cd_v2")
                 db.backup_to_remote()
                 logger.info("Match %s completed (detected by CD refresh)", row["match_id"])
             else:
@@ -489,90 +491,22 @@ def _needs_cricsheet_backfill() -> bool:
     return False
 
 
-def _needs_cd_enrichment(match_id: str) -> bool:
-    """Check if a match needs CricketData enrichment for runouts.
-
-    Returns True if any fielding breakdown has old "runouts" key or missing "direct_runouts".
-    """
-    conn = db.get_db()
-    rows = conn.execute(
-        "SELECT breakdown_json FROM player_match_points WHERE match_id = ? AND fielding_pts > 0",
-        (match_id,),
-    ).fetchall()
-    conn.close()
-    for row in rows:
-        if not row["breakdown_json"]:
-            continue
-        fld = json.loads(row["breakdown_json"]).get("fielding", {})
-        if "runouts" in fld and "direct_runouts" not in fld:
-            return True
-    # Also enrich if NO fielding rows have direct_runouts at all (ESPN-only matches with 0 runouts)
-    conn = db.get_db()
-    rows = conn.execute(
-        "SELECT breakdown_json FROM player_match_points WHERE match_id = ? LIMIT 1",
-        (match_id,),
-    ).fetchall()
-    conn.close()
-    if rows:
-        bd = json.loads(rows[0]["breakdown_json"]) if rows[0]["breakdown_json"] else {}
-        fld = bd.get("fielding", {})
-        # If there's a fielding breakdown but it uses old format, enrich
-        if fld and "runouts" in fld and "direct_runouts" not in fld:
-            return True
-        # If no fielding breakdown at all, check if any row has the old format
-        if not fld:
-            conn = db.get_db()
-            all_rows = conn.execute(
-                "SELECT breakdown_json FROM player_match_points WHERE match_id = ?",
-                (match_id,),
-            ).fetchall()
-            conn.close()
-            for r in all_rows:
-                if not r["breakdown_json"]:
-                    continue
-                bd2 = json.loads(r["breakdown_json"])
-                f2 = bd2.get("fielding", {})
-                if "runouts" in f2 and "direct_runouts" not in f2:
-                    return True
-            # ESPN-only match with no CD enrichment yet — needs enrichment
-            # Check if any breakdown has direct_runouts already set
-            has_direct = False
-            for r in all_rows:
-                if not r["breakdown_json"]:
-                    continue
-                bd2 = json.loads(r["breakdown_json"])
-                if "direct_runouts" in bd2.get("fielding", {}):
-                    has_direct = True
-                    break
-            if not has_direct:
-                return True
-    return False
-
-
 def _enrich_from_cricketdata():
-    """Re-fetch CricketData for completed matches missing runout enrichment.
+    """Re-fetch CricketData for completed matches missing enrichment.
 
-    Detects matches with old "runouts" format or missing "direct_runouts",
-    fetches CricketData scorecard, enriches with lbw_bowled + direct/assisted runouts + ESPN dots,
+    Uses enrichment_version column to detect unenriched matches.
+    Fetches CricketData scorecard, enriches with lbw_bowled + direct/assisted runouts + ESPN dots,
     re-scores and saves. Gated behind CRICKETDATA_API_KEY and respects daily limit.
     """
     if not CRICKETDATA_API_KEY:
         return
 
     conn = db.get_db()
-    matches = conn.execute(
-        "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
+    to_enrich = conn.execute(
+        "SELECT match_id, date, teams_json FROM matches "
+        "WHERE status = 'complete' AND (enrichment_version IS NULL OR enrichment_version != 'cd_v2')"
     ).fetchall()
     conn.close()
-
-    if not matches:
-        return
-
-    # Find matches needing enrichment
-    to_enrich = []
-    for row in matches:
-        if _needs_cd_enrichment(row["match_id"]):
-            to_enrich.append(row)
 
     if not to_enrich:
         logger.info("CricketData enrichment: all matches already enriched")
@@ -603,6 +537,7 @@ def _enrich_from_cricketdata():
 
         points = calculate_fantasy_points(cd_scorecard)
         db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
+        db.set_enrichment_version(row["match_id"], "cd_v2")
         enriched += 1
         logger.info("CricketData enriched match %s (direct/assisted runouts + lbw_bowled)", row["match_id"])
 

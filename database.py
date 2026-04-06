@@ -28,7 +28,8 @@ def init_db():
             teams_json TEXT,
             venue TEXT,
             status TEXT DEFAULT 'upcoming',
-            last_updated TEXT DEFAULT (datetime('now'))
+            last_updated TEXT DEFAULT (datetime('now')),
+            enrichment_version TEXT DEFAULT NULL
         );
 
         CREATE TABLE IF NOT EXISTS player_match_points (
@@ -64,6 +65,11 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_pmp_match ON player_match_points(match_id);
         CREATE INDEX IF NOT EXISTS idx_roster_team ON roster(team_id);
     """)
+    # Migration: add enrichment_version column to existing DBs
+    try:
+        conn.execute("ALTER TABLE matches ADD COLUMN enrichment_version TEXT DEFAULT NULL")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
     conn.commit()
     conn.close()
 
@@ -109,6 +115,17 @@ def upsert_match(match_id: str, date: str, teams: list, venue: str, status: str)
                 ELSE excluded.status END,
             last_updated = datetime('now')
     """, (match_id, date, json.dumps(teams), venue, status))
+    conn.commit()
+    conn.close()
+
+
+def set_enrichment_version(match_id: str, version: str):
+    """Mark a match as enriched by a specific source (e.g., 'cd_v2', 'cricsheet')."""
+    conn = get_db()
+    conn.execute(
+        "UPDATE matches SET enrichment_version = ? WHERE match_id = ?",
+        (version, match_id),
+    )
     conn.commit()
     conn.close()
 
@@ -238,9 +255,10 @@ def load_seed_data():
         conn = get_db()
         for m in seed.get("matches", []):
             conn.execute("""
-                INSERT OR IGNORE INTO matches (match_id, date, teams_json, venue, status, last_updated)
-                VALUES (?, ?, ?, ?, ?, datetime('now'))
-            """, (m["match_id"], m["date"], m["teams_json"], m["venue"], m["status"]))
+                INSERT OR IGNORE INTO matches (match_id, date, teams_json, venue, status, last_updated, enrichment_version)
+                VALUES (?, ?, ?, ?, ?, datetime('now'), ?)
+            """, (m["match_id"], m["date"], m["teams_json"], m["venue"], m["status"],
+                  m.get("enrichment_version")))
 
         for pp in seed.get("player_points", []):
             conn.execute("""
@@ -263,7 +281,7 @@ def load_seed_data():
 def export_seed_data():
     """Export current match data to data/match_seed.json for persistence across deploys."""
     conn = get_db()
-    matches = conn.execute("SELECT match_id, date, teams_json, venue, status FROM matches").fetchall()
+    matches = conn.execute("SELECT match_id, date, teams_json, venue, status, enrichment_version FROM matches").fetchall()
     player_pts = conn.execute(
         "SELECT match_id, player_name, batting_pts, bowling_pts, fielding_pts, raw_pts, total_pts, breakdown_json FROM player_match_points"
     ).fetchall()
@@ -293,7 +311,7 @@ def backup_to_remote():
 
     conn = get_db()
     matches = [dict(m) for m in conn.execute(
-        "SELECT match_id, date, teams_json, venue, status FROM matches"
+        "SELECT match_id, date, teams_json, venue, status, enrichment_version FROM matches"
     ).fetchall()]
     points = [dict(p) for p in conn.execute(
         "SELECT match_id, player_name, batting_pts, bowling_pts, fielding_pts, "
@@ -381,9 +399,10 @@ def restore_from_remote() -> bool:
         conn = get_db()
         for m in seed.get("matches", []):
             conn.execute("""
-                INSERT OR IGNORE INTO matches (match_id, date, teams_json, venue, status, last_updated)
-                VALUES (?, ?, ?, ?, ?, datetime('now'))
-            """, (m["match_id"], m["date"], m["teams_json"], m["venue"], m["status"]))
+                INSERT OR IGNORE INTO matches (match_id, date, teams_json, venue, status, last_updated, enrichment_version)
+                VALUES (?, ?, ?, ?, ?, datetime('now'), ?)
+            """, (m["match_id"], m["date"], m["teams_json"], m["venue"], m["status"],
+                  m.get("enrichment_version")))
 
         for pp in seed.get("player_points", []):
             conn.execute("""
