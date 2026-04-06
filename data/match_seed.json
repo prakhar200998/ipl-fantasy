@@ -87,6 +87,14 @@
       "venue": "M.Chinnaswamy Stadium, Bengaluru",
       "status": "complete",
       "enrichment_version": null
+    },
+    {
+      "match_id": "espn_1527685",
+      "date": "2026-04-06",
+      "teams_json": "[\"Kolkata Knight Riders\", \"Punjab Kings\"]",
+      "venue": "",
+      "status": "abandoned",
+      "enrichment_version": null
     }
   ],
   "player_points": [
@@ -2464,11 +2472,11 @@
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
       "player_name": "Digvesh Rathi",
       "batting_pts": 0,
-      "bowling_pts": 0,
+      "bowling_pts": 36,
       "fielding_pts": 0,
-      "raw_pts": 4,
-      "total_pts": 4,
-      "breakdown_json": "{\"playing_xi\": 4}"
+      "raw_pts": 40,
+      "total_pts": 40,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 1, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2749,6 +2757,236 @@
       "raw_pts": 12,
       "total_pts": 12,
       "breakdown_json": "{\"playing_xi\": 4, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Cameron Green",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Nehal Wadhera",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Kartik Tyagi",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Shashank Singh",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Rinku Singh",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Marco Jansen",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Prabhsimran Singh",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Finn Allen",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Vaibhav Arora",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Sunil Narine",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Shreyas Iyer",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Matheesha Pathirana",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Rovman Powell",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Mitchell Owen",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Arshdeep Singh",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Marcus Stoinis",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Azmatullah Omarzai",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Ajinkya Rahane",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Manish Pandey",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Angkrish Raghuvanshi",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Priyansh Arya",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Varun Chakravarthy",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
+    },
+    {
+      "match_id": "espn_1527685",
+      "player_name": "Yuzvendra Chahal",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{}"
     }
   ]
 }
