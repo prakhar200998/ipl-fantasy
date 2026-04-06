@@ -87,7 +87,7 @@
       "fielding_pts": 0,
       "raw_pts": 76,
       "total_pts": 76,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 6, \"balls\": 5, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 35, \"wickets\": 2, \"dots\": 5, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 6, \"balls\": 5, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 35, \"wickets\": 2, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -97,7 +97,7 @@
       "fielding_pts": 0,
       "raw_pts": 0,
       "total_pts": 0,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 26, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 26, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -107,7 +107,7 @@
       "fielding_pts": 0,
       "raw_pts": 4,
       "total_pts": 4,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 35, \"wickets\": 0, \"dots\": 3, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 35, \"wickets\": 0, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -147,7 +147,7 @@
       "fielding_pts": 8,
       "raw_pts": 50,
       "total_pts": 50,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 38, \"wickets\": 1, \"dots\": 7, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 38, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "149618",
@@ -167,7 +167,7 @@
       "fielding_pts": 8,
       "raw_pts": 58,
       "total_pts": 58,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 29, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 29, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "149618",
@@ -187,7 +187,7 @@
       "fielding_pts": 0,
       "raw_pts": 106,
       "total_pts": 106,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 54, \"wickets\": 3, \"dots\": 5, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 54, \"wickets\": 3, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -197,7 +197,7 @@
       "fielding_pts": 0,
       "raw_pts": 2,
       "total_pts": 2,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 16, \"runs\": 39, \"wickets\": 0, \"dots\": 3, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 16, \"runs\": 39, \"wickets\": 0, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -207,7 +207,7 @@
       "fielding_pts": 8,
       "raw_pts": 49,
       "total_pts": 49,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 35, \"wickets\": 1, \"dots\": 4, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 35, \"wickets\": 1, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "149618",
@@ -247,7 +247,7 @@
       "fielding_pts": 0,
       "raw_pts": 46,
       "total_pts": 46,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 28, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 28, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -257,7 +257,7 @@
       "fielding_pts": 0,
       "raw_pts": 15,
       "total_pts": 15,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 6, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 19, \"wickets\": 0, \"dots\": 5, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 6, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 19, \"wickets\": 0, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -267,7 +267,7 @@
       "fielding_pts": 0,
       "raw_pts": 134,
       "total_pts": 134,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 22, \"wickets\": 3, \"dots\": 13, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 22, \"wickets\": 3, \"dots\": 13, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -307,7 +307,7 @@
       "fielding_pts": 0,
       "raw_pts": 54,
       "total_pts": 54,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 31, \"wickets\": 1, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 31, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149618",
@@ -337,7 +337,7 @@
       "fielding_pts": 0,
       "raw_pts": 6,
       "total_pts": 6,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 6, \"runs\": 16, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 6, \"runs\": 16, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -347,7 +347,7 @@
       "fielding_pts": 0,
       "raw_pts": 50,
       "total_pts": 50,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 43, \"wickets\": 1, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 43, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -357,7 +357,7 @@
       "fielding_pts": 8,
       "raw_pts": 14,
       "total_pts": 14,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 7, \"runs\": 15, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 7, \"runs\": 15, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "149629",
@@ -377,7 +377,7 @@
       "fielding_pts": 0,
       "raw_pts": 116,
       "total_pts": 116,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 39, \"wickets\": 3, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 39, \"wickets\": 3, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -387,7 +387,7 @@
       "fielding_pts": 8,
       "raw_pts": 84,
       "total_pts": 168,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 11, \"fours\": 3, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 39, \"wickets\": 1, \"dots\": 7, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 11, \"fours\": 3, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 39, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "149629",
@@ -407,7 +407,7 @@
       "fielding_pts": 0,
       "raw_pts": 12,
       "total_pts": 12,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 34, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 34, \"wickets\": 0, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -417,7 +417,7 @@
       "fielding_pts": 0,
       "raw_pts": 12,
       "total_pts": 12,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 35, \"wickets\": 0, \"dots\": 4, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 35, \"wickets\": 0, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -437,7 +437,7 @@
       "fielding_pts": 0,
       "raw_pts": 10,
       "total_pts": 10,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 51, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 51, \"wickets\": 0, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -457,7 +457,7 @@
       "fielding_pts": 0,
       "raw_pts": 44,
       "total_pts": 44,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 52, \"wickets\": 1, \"dots\": 8, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 52, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -537,7 +537,7 @@
       "fielding_pts": 0,
       "raw_pts": 18,
       "total_pts": 18,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 0, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 0, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -557,7 +557,7 @@
       "fielding_pts": 0,
       "raw_pts": 44,
       "total_pts": 44,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 30, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 30, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "149629",
@@ -567,7 +567,7 @@
       "fielding_pts": 0,
       "raw_pts": 10,
       "total_pts": 10,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 48, \"wickets\": 0, \"dots\": 5, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 48, \"wickets\": 0, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -597,7 +597,7 @@
       "fielding_pts": 0,
       "raw_pts": 89,
       "total_pts": 89,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 7, \"balls\": 10, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 27, \"wickets\": 2, \"dots\": 8, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 7, \"balls\": 10, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 27, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -607,7 +607,7 @@
       "fielding_pts": 0,
       "raw_pts": 90,
       "total_pts": 90,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 18, \"wickets\": 2, \"dots\": 11, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 18, \"wickets\": 2, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -647,7 +647,7 @@
       "fielding_pts": 0,
       "raw_pts": 96,
       "total_pts": 96,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 26, \"wickets\": 2, \"dots\": 14, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 26, \"wickets\": 2, \"dots\": 14, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -657,7 +657,7 @@
       "fielding_pts": 16,
       "raw_pts": 72,
       "total_pts": 72,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 16, \"wickets\": 1, \"dots\": 8, \"maidens\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 16, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -667,7 +667,7 @@
       "fielding_pts": 0,
       "raw_pts": 6,
       "total_pts": 6,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 2, \"balls\": 7, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 1, \"runs\": 1, \"wickets\": 0, \"dots\": 0, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 2, \"balls\": 7, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 1, \"runs\": 1, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -727,7 +727,7 @@
       "fielding_pts": 0,
       "raw_pts": 11,
       "total_pts": 11,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 7, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 40, \"wickets\": 0, \"dots\": 2, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 7, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 40, \"wickets\": 0, \"dots\": 2, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -747,7 +747,7 @@
       "fielding_pts": 0,
       "raw_pts": 40,
       "total_pts": 40,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 16, \"runs\": 22, \"wickets\": 1, \"dots\": 3, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 16, \"runs\": 22, \"wickets\": 1, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -757,7 +757,7 @@
       "fielding_pts": 0,
       "raw_pts": 30,
       "total_pts": 30,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 0, \"dots\": 10, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 0, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -767,7 +767,7 @@
       "fielding_pts": 0,
       "raw_pts": 106,
       "total_pts": 106,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 19, \"wickets\": 2, \"dots\": 17, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 19, \"wickets\": 2, \"dots\": 17, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -777,7 +777,7 @@
       "fielding_pts": 0,
       "raw_pts": 9,
       "total_pts": 9,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 9, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 24, \"wickets\": 0, \"dots\": 4, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 9, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 24, \"wickets\": 0, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -787,7 +787,7 @@
       "fielding_pts": 0,
       "raw_pts": 73,
       "total_pts": 73,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 43, \"balls\": 36, \"fours\": 2, \"sixes\": 2, \"dismissed\": false}, \"bowling\": {\"balls\": 6, \"runs\": 14, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 43, \"balls\": 36, \"fours\": 2, \"sixes\": 2, \"dismissed\": false}, \"bowling\": {\"balls\": 6, \"runs\": 14, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527676",
@@ -797,7 +797,7 @@
       "fielding_pts": 0,
       "raw_pts": 60,
       "total_pts": 60,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 1, \"dots\": 10, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 1, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -807,7 +807,7 @@
       "fielding_pts": 0,
       "raw_pts": 44,
       "total_pts": 44,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 34, \"wickets\": 1, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 34, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -847,7 +847,7 @@
       "fielding_pts": 0,
       "raw_pts": 18,
       "total_pts": 18,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 15, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 15, \"wickets\": 0, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -857,7 +857,7 @@
       "fielding_pts": 8,
       "raw_pts": 56,
       "total_pts": 56,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 31, \"wickets\": 1, \"dots\": 8, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 31, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -867,7 +867,7 @@
       "fielding_pts": 8,
       "raw_pts": 77,
       "total_pts": 115,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 9, \"balls\": 10, \"fours\": 0, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 20, \"wickets\": 1, \"dots\": 8, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 9, \"balls\": 10, \"fours\": 0, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 20, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -887,7 +887,7 @@
       "fielding_pts": 0,
       "raw_pts": 118,
       "total_pts": 118,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 3, \"dots\": 8, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 3, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -917,7 +917,7 @@
       "fielding_pts": 8,
       "raw_pts": 80,
       "total_pts": 80,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 16, \"fours\": 2, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 19, \"runs\": 27, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 16, \"fours\": 2, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 19, \"runs\": 27, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -957,7 +957,7 @@
       "fielding_pts": 8,
       "raw_pts": 64,
       "total_pts": 64,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 29, \"wickets\": 1, \"dots\": 10, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 29, \"wickets\": 1, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -987,7 +987,7 @@
       "fielding_pts": 8,
       "raw_pts": 47,
       "total_pts": 47,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 5, \"fours\": 0, \"sixes\": 1, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 36, \"wickets\": 0, \"dots\": 9, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 5, \"fours\": 0, \"sixes\": 1, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 36, \"wickets\": 0, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -997,7 +997,7 @@
       "fielding_pts": 0,
       "raw_pts": 86,
       "total_pts": 86,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 28, \"wickets\": 2, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 28, \"wickets\": 2, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -1017,7 +1017,7 @@
       "fielding_pts": 8,
       "raw_pts": 134,
       "total_pts": 134,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 29, \"wickets\": 3, \"dots\": 11, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 29, \"wickets\": 3, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527677",
@@ -1037,7 +1037,7 @@
       "fielding_pts": 16,
       "raw_pts": 36,
       "total_pts": 36,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 0, \"dots\": 9, \"maidens\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 0, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1067,7 +1067,7 @@
       "fielding_pts": 0,
       "raw_pts": 8,
       "total_pts": 8,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 6, \"runs\": 8, \"wickets\": 0, \"dots\": 2, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 6, \"runs\": 8, \"wickets\": 0, \"dots\": 2, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1107,7 +1107,7 @@
       "fielding_pts": 16,
       "raw_pts": 98,
       "total_pts": 98,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 31, \"wickets\": 2, \"dots\": 8, \"maidens\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 31, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1117,7 +1117,7 @@
       "fielding_pts": 8,
       "raw_pts": 72,
       "total_pts": 72,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 36, \"balls\": 25, \"fours\": 3, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 1, \"runs\": 6, \"wickets\": 0, \"dots\": 0, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 36, \"balls\": 25, \"fours\": 3, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 1, \"runs\": 6, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1127,7 +1127,7 @@
       "fielding_pts": 8,
       "raw_pts": 90,
       "total_pts": 90,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 19, \"wickets\": 1, \"dots\": 15, \"maidens\": 1}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 19, \"wickets\": 1, \"dots\": 15, \"maidens\": 1, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1137,7 +1137,7 @@
       "fielding_pts": 0,
       "raw_pts": 88,
       "total_pts": 88,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 20, \"wickets\": 2, \"dots\": 10, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 20, \"wickets\": 2, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1147,7 +1147,7 @@
       "fielding_pts": 0,
       "raw_pts": 56,
       "total_pts": 56,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 1, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1177,7 +1177,7 @@
       "fielding_pts": 0,
       "raw_pts": 122,
       "total_pts": 122,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 22, \"runs\": 27, \"wickets\": 3, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 22, \"runs\": 27, \"wickets\": 3, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1197,7 +1197,7 @@
       "fielding_pts": 0,
       "raw_pts": 16,
       "total_pts": 16,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 39, \"wickets\": 0, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 39, \"wickets\": 0, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1207,7 +1207,7 @@
       "fielding_pts": 8,
       "raw_pts": 40,
       "total_pts": 40,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 0, \"dots\": 11, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 0, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1217,7 +1217,7 @@
       "fielding_pts": 0,
       "raw_pts": 29,
       "total_pts": 58,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 8, \"fours\": 1, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 13, \"wickets\": 0, \"dots\": 2, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 8, \"fours\": 1, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 13, \"wickets\": 0, \"dots\": 2, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1247,7 +1247,7 @@
       "fielding_pts": 0,
       "raw_pts": 63,
       "total_pts": 63,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 28, \"wickets\": 1, \"dots\": 12, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 28, \"wickets\": 1, \"dots\": 12, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1257,7 +1257,7 @@
       "fielding_pts": 0,
       "raw_pts": 120,
       "total_pts": 120,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 29, \"wickets\": 3, \"dots\": 8, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 29, \"wickets\": 3, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1267,7 +1267,7 @@
       "fielding_pts": 0,
       "raw_pts": 21,
       "total_pts": 21,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 15, \"balls\": 16, \"fours\": 1, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 6, \"runs\": 16, \"wickets\": 0, \"dots\": 0, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 15, \"balls\": 16, \"fours\": 1, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 6, \"runs\": 16, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1527678",
@@ -1287,7 +1287,7 @@
       "fielding_pts": 0,
       "raw_pts": 42,
       "total_pts": 42,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 16, \"wickets\": 1, \"dots\": 4, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 16, \"wickets\": 1, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1297,7 +1297,7 @@
       "fielding_pts": 16,
       "raw_pts": 136,
       "total_pts": 136,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 21, \"wickets\": 3, \"dots\": 7, \"maidens\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 21, \"wickets\": 3, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1347,7 +1347,7 @@
       "fielding_pts": 8,
       "raw_pts": 65,
       "total_pts": 65,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 9, \"balls\": 3, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 1, \"dots\": 3, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 9, \"balls\": 3, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 1, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1367,7 +1367,7 @@
       "fielding_pts": 0,
       "raw_pts": 79,
       "total_pts": 79,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 47, \"wickets\": 2, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 47, \"wickets\": 2, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1417,7 +1417,7 @@
       "fielding_pts": 0,
       "raw_pts": 148,
       "total_pts": 148,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 4, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 4, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1427,7 +1427,7 @@
       "fielding_pts": 0,
       "raw_pts": 143,
       "total_pts": 143,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 39, \"balls\": 24, \"fours\": 4, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 2, \"dots\": 5, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 39, \"balls\": 24, \"fours\": 4, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 2, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1437,7 +1437,7 @@
       "fielding_pts": 0,
       "raw_pts": 26,
       "total_pts": 26,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 2, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 0, \"dots\": 8, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 2, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 0, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1447,7 +1447,7 @@
       "fielding_pts": 0,
       "raw_pts": -2,
       "total_pts": -2,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 35, \"wickets\": 0, \"dots\": 0, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 35, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1457,7 +1457,7 @@
       "fielding_pts": 16,
       "raw_pts": 14,
       "total_pts": 14,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 31, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 31, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1477,7 +1477,7 @@
       "fielding_pts": 0,
       "raw_pts": 40,
       "total_pts": 40,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 12, \"balls\": 4, \"fours\": 0, \"sixes\": 2, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 39, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 12, \"balls\": 4, \"fours\": 0, \"sixes\": 2, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 39, \"wickets\": 0, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1487,7 +1487,7 @@
       "fielding_pts": 0,
       "raw_pts": 106,
       "total_pts": 212,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 48, \"balls\": 21, \"fours\": 4, \"sixes\": 4, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 15, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 48, \"balls\": 21, \"fours\": 4, \"sixes\": 4, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 15, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1497,7 +1497,7 @@
       "fielding_pts": 0,
       "raw_pts": 51,
       "total_pts": 51,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 5, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 48, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 5, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 48, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1507,7 +1507,7 @@
       "fielding_pts": 8,
       "raw_pts": 88,
       "total_pts": 88,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 14, \"wickets\": 2, \"dots\": 6, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 14, \"wickets\": 2, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "fd010e39-2255-4460-b0e0-962a26b67b70",
@@ -1527,7 +1527,7 @@
       "fielding_pts": 0,
       "raw_pts": 44,
       "total_pts": 44,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 48, \"wickets\": 1, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 48, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1537,7 +1537,7 @@
       "fielding_pts": 0,
       "raw_pts": 20,
       "total_pts": 20,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 0, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 0, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1567,7 +1567,7 @@
       "fielding_pts": 0,
       "raw_pts": 23,
       "total_pts": 23,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 9, \"balls\": 3, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 6, \"runs\": 17, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 9, \"balls\": 3, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 6, \"runs\": 17, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1577,7 +1577,7 @@
       "fielding_pts": 8,
       "raw_pts": 78,
       "total_pts": 78,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 54, \"wickets\": 2, \"dots\": 6, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 54, \"wickets\": 2, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1627,7 +1627,7 @@
       "fielding_pts": 8,
       "raw_pts": 24,
       "total_pts": 24,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 0, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1647,7 +1647,7 @@
       "fielding_pts": 0,
       "raw_pts": 22,
       "total_pts": 22,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 28, \"wickets\": 0, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 28, \"wickets\": 0, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1677,7 +1677,7 @@
       "fielding_pts": 0,
       "raw_pts": 78,
       "total_pts": 78,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 22, \"runs\": 43, \"wickets\": 2, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 22, \"runs\": 43, \"wickets\": 2, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1687,7 +1687,7 @@
       "fielding_pts": 8,
       "raw_pts": 54,
       "total_pts": 54,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 21, \"wickets\": 1, \"dots\": 4, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 21, \"wickets\": 1, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1707,7 +1707,7 @@
       "fielding_pts": 0,
       "raw_pts": 54,
       "total_pts": 81,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 43, \"wickets\": 1, \"dots\": 11, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 43, \"wickets\": 1, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1717,7 +1717,7 @@
       "fielding_pts": 0,
       "raw_pts": 80,
       "total_pts": 80,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 2, \"dots\": 8, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "96d2aa6b-ea40-4da4-b4cf-eb996de24ef7",
@@ -1757,7 +1757,7 @@
       "fielding_pts": 8,
       "raw_pts": 16,
       "total_pts": 16,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 0, \"dots\": 4, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 0, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1777,7 +1777,7 @@
       "fielding_pts": 0,
       "raw_pts": 36,
       "total_pts": 36,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 0, \"dots\": 13, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 0, \"dots\": 13, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1787,7 +1787,7 @@
       "fielding_pts": 0,
       "raw_pts": 50,
       "total_pts": 50,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 24, \"wickets\": 1, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 24, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1797,7 +1797,7 @@
       "fielding_pts": 8,
       "raw_pts": 64,
       "total_pts": 64,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 22, \"wickets\": 1, \"dots\": 8, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 22, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1807,7 +1807,7 @@
       "fielding_pts": 0,
       "raw_pts": 59,
       "total_pts": 59,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 4, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 19, \"runs\": 39, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 4, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 19, \"runs\": 39, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1877,7 +1877,7 @@
       "fielding_pts": 0,
       "raw_pts": 10,
       "total_pts": 10,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 31, \"wickets\": 0, \"dots\": 4, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 31, \"wickets\": 0, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1897,7 +1897,7 @@
       "fielding_pts": 0,
       "raw_pts": 58,
       "total_pts": 58,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 20, \"wickets\": 1, \"dots\": 10, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 20, \"wickets\": 1, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1937,7 +1937,7 @@
       "fielding_pts": 0,
       "raw_pts": 44,
       "total_pts": 44,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 24, \"wickets\": 1, \"dots\": 4, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 24, \"wickets\": 1, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1947,7 +1947,7 @@
       "fielding_pts": 0,
       "raw_pts": 80,
       "total_pts": 80,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 13, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 22, \"wickets\": 1, \"dots\": 8, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 13, \"fours\": 2, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 22, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1957,7 +1957,7 @@
       "fielding_pts": 0,
       "raw_pts": 50,
       "total_pts": 50,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 1, \"dots\": 8, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1967,7 +1967,7 @@
       "fielding_pts": 0,
       "raw_pts": 4,
       "total_pts": 4,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 41, \"wickets\": 0, \"dots\": 3, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 41, \"wickets\": 0, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1977,7 +1977,7 @@
       "fielding_pts": 16,
       "raw_pts": 100,
       "total_pts": 100,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 26, \"wickets\": 2, \"dots\": 10, \"maidens\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 26, \"wickets\": 2, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "736f3e02-212a-49bc-8b3b-08a106312702",
@@ -1997,7 +1997,7 @@
       "fielding_pts": 8,
       "raw_pts": 16,
       "total_pts": 16,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 20, \"wickets\": 0, \"dots\": 3, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 20, \"wickets\": 0, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2017,7 +2017,7 @@
       "fielding_pts": 16,
       "raw_pts": 41,
       "total_pts": 41,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 0, \"dots\": 10, \"maidens\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 0, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2037,7 +2037,7 @@
       "fielding_pts": 8,
       "raw_pts": 19,
       "total_pts": 19,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 7, \"balls\": 7, \"fours\": 1, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 12, \"runs\": 25, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 7, \"balls\": 7, \"fours\": 1, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 12, \"runs\": 25, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2057,7 +2057,7 @@
       "fielding_pts": 0,
       "raw_pts": 48,
       "total_pts": 48,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 29, \"wickets\": 1, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 29, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2067,7 +2067,7 @@
       "fielding_pts": 8,
       "raw_pts": 58,
       "total_pts": 58,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 24, \"wickets\": 1, \"dots\": 7, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 24, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2107,7 +2107,7 @@
       "fielding_pts": 0,
       "raw_pts": 50,
       "total_pts": 50,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 43, \"wickets\": 1, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 43, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2117,7 +2117,7 @@
       "fielding_pts": 0,
       "raw_pts": 54,
       "total_pts": 108,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 8, \"balls\": 4, \"fours\": 0, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 11, \"wickets\": 1, \"dots\": 3, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 8, \"balls\": 4, \"fours\": 0, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 11, \"wickets\": 1, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2147,7 +2147,7 @@
       "fielding_pts": 0,
       "raw_pts": 125,
       "total_pts": 125,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 23, \"balls\": 16, \"fours\": 1, \"sixes\": 2, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 2, \"dots\": 11, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 23, \"balls\": 16, \"fours\": 1, \"sixes\": 2, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 2, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2157,7 +2157,7 @@
       "fielding_pts": 8,
       "raw_pts": 60,
       "total_pts": 60,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 48, \"wickets\": 1, \"dots\": 11, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 48, \"wickets\": 1, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2177,7 +2177,7 @@
       "fielding_pts": 0,
       "raw_pts": 80,
       "total_pts": 80,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 24, \"balls\": 16, \"fours\": 3, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 39, \"wickets\": 1, \"dots\": 4, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 24, \"balls\": 16, \"fours\": 3, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 39, \"wickets\": 1, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2207,7 +2207,7 @@
       "fielding_pts": 0,
       "raw_pts": 54,
       "total_pts": 54,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 37, \"wickets\": 1, \"dots\": 10, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 37, \"wickets\": 1, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2217,7 +2217,7 @@
       "fielding_pts": 8,
       "raw_pts": 16,
       "total_pts": 16,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 34, \"wickets\": 0, \"dots\": 4, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 34, \"wickets\": 0, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2227,7 +2227,7 @@
       "fielding_pts": 0,
       "raw_pts": 152,
       "total_pts": 152,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 4, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 4, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "ea4d01bf-bf47-4f7d-a4f8-32eade678141",
@@ -2257,7 +2257,7 @@
       "fielding_pts": 8,
       "raw_pts": 64,
       "total_pts": 64,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 29, \"wickets\": 1, \"dots\": 10, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 29, \"wickets\": 1, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2287,7 +2287,7 @@
       "fielding_pts": 0,
       "raw_pts": 78,
       "total_pts": 78,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 36, \"wickets\": 2, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 36, \"wickets\": 2, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2307,7 +2307,7 @@
       "fielding_pts": 0,
       "raw_pts": 55,
       "total_pts": 55,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 4, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 30, \"wickets\": 1, \"dots\": 5, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 4, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 30, \"wickets\": 1, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2327,7 +2327,7 @@
       "fielding_pts": 0,
       "raw_pts": 10,
       "total_pts": 10,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 23, \"runs\": 50, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 23, \"runs\": 50, \"wickets\": 0, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2337,7 +2337,7 @@
       "fielding_pts": 8,
       "raw_pts": 94,
       "total_pts": 94,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 2, \"dots\": 11, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 2, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2347,7 +2347,7 @@
       "fielding_pts": 0,
       "raw_pts": 30,
       "total_pts": 30,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 2, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 16, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 2, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 16, \"wickets\": 0, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2357,7 +2357,7 @@
       "fielding_pts": 0,
       "raw_pts": 108,
       "total_pts": 108,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 9, \"wickets\": 2, \"dots\": 18, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 9, \"wickets\": 2, \"dots\": 18, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2417,7 +2417,7 @@
       "fielding_pts": 0,
       "raw_pts": 94,
       "total_pts": 94,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 18, \"wickets\": 2, \"dots\": 12, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 18, \"wickets\": 2, \"dots\": 12, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2447,7 +2447,7 @@
       "fielding_pts": 8,
       "raw_pts": 124,
       "total_pts": 124,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 56, \"balls\": 33, \"fours\": 3, \"sixes\": 5, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 14, \"wickets\": 0, \"dots\": 1, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 56, \"balls\": 33, \"fours\": 3, \"sixes\": 5, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 14, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2457,7 +2457,7 @@
       "fielding_pts": 0,
       "raw_pts": 40,
       "total_pts": 40,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 1, \"dots\": 5, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 1, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e43dd29e-c60e-40c9-a6c4-6c1bd69dd671",
@@ -2487,7 +2487,7 @@
       "fielding_pts": 0,
       "raw_pts": 54,
       "total_pts": 54,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 30, \"wickets\": 1, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 30, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2507,7 +2507,7 @@
       "fielding_pts": 8,
       "raw_pts": 32,
       "total_pts": 32,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 8, \"balls\": 8, \"fours\": 0, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 49, \"wickets\": 0, \"dots\": 6, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 8, \"balls\": 8, \"fours\": 0, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 49, \"wickets\": 0, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2527,7 +2527,7 @@
       "fielding_pts": 0,
       "raw_pts": 72,
       "total_pts": 72,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 58, \"wickets\": 2, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 58, \"wickets\": 2, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2547,7 +2547,7 @@
       "fielding_pts": 0,
       "raw_pts": 6,
       "total_pts": 6,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 2, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 36, \"wickets\": 0, \"dots\": 2, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 2, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 36, \"wickets\": 0, \"dots\": 2, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2567,7 +2567,7 @@
       "fielding_pts": 0,
       "raw_pts": 4,
       "total_pts": 4,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 6, \"runs\": 19, \"wickets\": 0, \"dots\": 0, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 6, \"runs\": 19, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2597,7 +2597,7 @@
       "fielding_pts": 0,
       "raw_pts": 115,
       "total_pts": 115,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 37, \"balls\": 16, \"fours\": 4, \"sixes\": 2, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 42, \"wickets\": 1, \"dots\": 5, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 37, \"balls\": 16, \"fours\": 4, \"sixes\": 2, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 42, \"wickets\": 1, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2607,7 +2607,7 @@
       "fielding_pts": 8,
       "raw_pts": 74,
       "total_pts": 74,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 13, \"fours\": 2, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 30, \"wickets\": 1, \"dots\": 2, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 13, \"fours\": 2, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 30, \"wickets\": 1, \"dots\": 2, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2627,7 +2627,7 @@
       "fielding_pts": 0,
       "raw_pts": 73,
       "total_pts": 73,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 19, \"balls\": 12, \"fours\": 1, \"sixes\": 1, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 52, \"wickets\": 1, \"dots\": 6, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 19, \"balls\": 12, \"fours\": 1, \"sixes\": 1, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 52, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2637,7 +2637,7 @@
       "fielding_pts": 0,
       "raw_pts": 74,
       "total_pts": 74,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 36, \"wickets\": 2, \"dots\": 7, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 36, \"wickets\": 2, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2667,7 +2667,7 @@
       "fielding_pts": 0,
       "raw_pts": 22,
       "total_pts": 22,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 37, \"wickets\": 0, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 37, \"wickets\": 0, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2687,7 +2687,7 @@
       "fielding_pts": 8,
       "raw_pts": 84,
       "total_pts": 84,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 22, \"runs\": 30, \"wickets\": 2, \"dots\": 6, \"maidens\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 22, \"runs\": 30, \"wickets\": 2, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2707,7 +2707,7 @@
       "fielding_pts": 0,
       "raw_pts": 122,
       "total_pts": 122,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 3, \"dots\": 11, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 41, \"wickets\": 3, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
@@ -2727,7 +2727,7 @@
       "fielding_pts": 0,
       "raw_pts": 58,
       "total_pts": 58,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 1, \"dots\": 9, \"maidens\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "e92727d0-61fc-4c6f-82ed-cde4789745a2",
