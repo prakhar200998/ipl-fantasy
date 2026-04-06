@@ -127,12 +127,13 @@ def calculate_fantasy_points(scorecard: MatchScorecard) -> dict[str, dict]:
             fielding_pts += fl.catches * 8
             if fl.catches >= 3:
                 fielding_pts += 4
-            fielding_pts += fl.runouts * 10
+            fielding_pts += fl.direct_runouts * 10
+            fielding_pts += fl.assisted_runouts * 5
             fielding_pts += fl.stumpings * 12
 
             breakdown["fielding"] = {
-                "catches": fl.catches, "runouts": fl.runouts,
-                "stumpings": fl.stumpings,
+                "catches": fl.catches, "direct_runouts": fl.direct_runouts,
+                "assisted_runouts": fl.assisted_runouts, "stumpings": fl.stumpings,
             }
 
         total = base + batting_pts + bowling_pts + fielding_pts

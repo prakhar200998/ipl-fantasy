@@ -154,11 +154,15 @@ class CricsheetAdapter(DataSourceAdapter):
                                 fielding[name] = FieldingEntry(player=name)
                             fielding[name].stumpings += 1
                         elif kind == "run out" and fielders_list:
+                            is_direct = len(fielders_list) == 1
                             for fielder in fielders_list:
                                 name = fielder["name"]
                                 if name not in fielding:
                                     fielding[name] = FieldingEntry(player=name)
-                                fielding[name].runouts += 1
+                                if is_direct:
+                                    fielding[name].direct_runouts += 1
+                                else:
+                                    fielding[name].assisted_runouts += 1
 
         # Normalize all player names to display names
         playing_xi = {get_display_name(n) for n in playing_xi}

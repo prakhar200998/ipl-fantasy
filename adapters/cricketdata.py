@@ -11,6 +11,25 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.cricapi.com/v1"
 
+
+def _parse_runout_fielders(dismissal_text: str) -> list[str]:
+    """Extract fielder names from a run-out dismissal-text.
+
+    Examples:
+        "run out (Jurel)" → ["Jurel"]
+        "run out (Jurel/Buttler)" → ["Jurel", "Buttler"]
+        "run out (sub)" → ["sub"]
+    Returns empty list if unparseable.
+    """
+    import re
+    match = re.search(r"run out\s*\(([^)]+)\)", dismissal_text)
+    if not match:
+        return []
+    inner = match.group(1).strip()
+    # Split on "/" for shared runouts
+    fielders = [f.strip() for f in inner.split("/") if f.strip()]
+    return fielders
+
 # --- Daily API call tracking (in-memory, resets on redeploy) ---
 _daily_call_log: dict = {"date": "", "calls": 0}
 
@@ -135,6 +154,10 @@ class CricketDataAdapter(DataSourceAdapter):
         fielding = {}
         batters_who_batted = set()
 
+        # Collect runout events from dismissal-text across all innings
+        # Each event: list of fielder names involved
+        runout_events: list[list[str]] = []
+
         for innings_data in scorecard:
             # --- Parse batting ---
             for b in innings_data.get("batting", []):
@@ -174,6 +197,15 @@ class CricketDataAdapter(DataSourceAdapter):
 
                 if balls > 0 or runs > 0 or is_dismissed:
                     batters_who_batted.add(name)
+
+                # Parse runout fielders from dismissal-text
+                # e.g. "run out (Jurel)" → 1 fielder (direct)
+                # e.g. "run out (Jurel/Buttler)" → 2 fielders (shared)
+                if dismissal_type == "run out":
+                    dismissal_text = b.get("dismissal-text", "")
+                    fielders = _parse_runout_fielders(dismissal_text)
+                    if fielders:
+                        runout_events.append(fielders)
 
             # --- Parse bowling ---
             for bw in innings_data.get("bowling", []):
@@ -225,8 +257,8 @@ class CricketDataAdapter(DataSourceAdapter):
                     )
 
             # --- Parse catching/fielding ---
-            # The catching array includes ALL fielding contributions:
-            # catches, stumpings, runouts, AND bowler's lbw/bowled credits
+            # The catching array includes catches, stumpings, AND bowler's lbw/bowled credits.
+            # Runouts are parsed from dismissal-text above (direct vs shared distinction).
             for c in innings_data.get("catching", []):
                 name = c.get("catcher", {}).get("name", "")
                 if not name:
@@ -235,7 +267,6 @@ class CricketDataAdapter(DataSourceAdapter):
 
                 catches = c.get("catch", 0)
                 stumpings = c.get("stumped", 0)
-                runouts = c.get("runout", 0)
                 cb = c.get("cb", 0)  # caught and bowled
                 lbw_count = c.get("lbw", 0)
                 bowled_count = c.get("bowled", 0)
@@ -243,24 +274,48 @@ class CricketDataAdapter(DataSourceAdapter):
                 # Caught-and-bowled counts as a catch for the bowler
                 total_catches = catches + cb
 
-                # Add fielding credit for catches, stumpings, runouts
-                if total_catches > 0 or stumpings > 0 or runouts > 0:
+                # Add fielding credit for catches, stumpings (runouts handled below)
+                if total_catches > 0 or stumpings > 0:
                     if name in fielding:
                         fielding[name].catches += total_catches
                         fielding[name].stumpings += stumpings
-                        fielding[name].runouts += runouts
                     else:
                         fielding[name] = FieldingEntry(
                             player=name,
                             catches=total_catches,
                             stumpings=stumpings,
-                            runouts=runouts,
                         )
 
                 # Add lbw/bowled bonus for bowlers
                 lbw_bowled_total = lbw_count + bowled_count + cb
                 if lbw_bowled_total > 0 and name in bowling:
                     bowling[name].lbw_bowled += lbw_bowled_total
+
+        # --- Process runout events (parsed from dismissal-text) ---
+        _runout_fallback_used = False
+        if not runout_events:
+            # Fallback: if dismissal-text parsing yielded nothing, use catching array runout counts
+            for innings_data in scorecard:
+                for c in innings_data.get("catching", []):
+                    name = c.get("catcher", {}).get("name", "")
+                    runout_count = c.get("runout", 0)
+                    if name and runout_count > 0:
+                        _runout_fallback_used = True
+                        if name not in fielding:
+                            fielding[name] = FieldingEntry(player=name)
+                        fielding[name].direct_runouts += runout_count
+            if _runout_fallback_used:
+                logger.info("Match %s: used catching-array fallback for runouts (no dismissal-text)", match_id)
+        else:
+            for fielder_names in runout_events:
+                is_direct = len(fielder_names) == 1
+                for fname in fielder_names:
+                    if fname not in fielding:
+                        fielding[fname] = FieldingEntry(player=fname)
+                    if is_direct:
+                        fielding[fname].direct_runouts += 1
+                    else:
+                        fielding[fname].assisted_runouts += 1
 
         # Extract full playing XI from teamInfo (catches players with zero
         # involvement who don't appear in batting/bowling/catching arrays)

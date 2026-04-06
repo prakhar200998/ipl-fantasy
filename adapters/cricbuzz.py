@@ -417,10 +417,10 @@ def _parse_dismissal(
     m = re.match(r"^run\s+out\s*\(([^)]+)\)", text, re.IGNORECASE)
     if m:
         fielders_str = m.group(1).strip()
-        for name in fielders_str.split("/"):
-            name = name.strip()
-            if name:
-                _add_runout(fielding, name)
+        names = [n.strip() for n in fielders_str.split("/") if n.strip()]
+        is_direct = len(names) == 1
+        for name in names:
+            _add_runout(fielding, name, direct=is_direct)
         return
 
     # hit wicket, retired hurt, etc. — no fielding credit
@@ -439,10 +439,13 @@ def _add_stumping(fielding: dict[str, FieldingEntry], name: str) -> None:
     fielding[name].stumpings += 1
 
 
-def _add_runout(fielding: dict[str, FieldingEntry], name: str) -> None:
+def _add_runout(fielding: dict[str, FieldingEntry], name: str, direct: bool = True) -> None:
     if name not in fielding:
         fielding[name] = FieldingEntry(player=name)
-    fielding[name].runouts += 1
+    if direct:
+        fielding[name].direct_runouts += 1
+    else:
+        fielding[name].assisted_runouts += 1
 
 
 def _add_lbw_bowled(bowling: dict[str, BowlingEntry], bowler: str) -> None:

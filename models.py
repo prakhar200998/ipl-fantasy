@@ -28,7 +28,8 @@ class BowlingEntry:
 class FieldingEntry:
     player: str
     catches: int = 0
-    runouts: int = 0
+    direct_runouts: int = 0
+    assisted_runouts: int = 0
     stumpings: int = 0
 
 

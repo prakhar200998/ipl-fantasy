@@ -187,9 +187,11 @@ def fetch_and_store_matches():
 
 
 def _get_existing_enrichment(match_id: str) -> dict:
-    """Read lbw_bowled and runouts from existing breakdown_json in DB.
+    """Read lbw_bowled, direct_runouts, and assisted_runouts from existing breakdown_json.
 
-    Returns {"lbw_bowled": {player: count}, "runouts": {player: count}}.
+    Returns {"lbw_bowled": {player: count}, "direct_runouts": {player: count},
+             "assisted_runouts": {player: count}}.
+    Backward compat: old "runouts" key maps to direct_runouts.
     """
     conn = db.get_db()
     rows = conn.execute(
@@ -199,7 +201,8 @@ def _get_existing_enrichment(match_id: str) -> dict:
     conn.close()
 
     lbw_bowled: dict[str, int] = {}
-    runouts: dict[str, int] = {}
+    direct_runouts: dict[str, int] = {}
+    assisted_runouts: dict[str, int] = {}
     for row in rows:
         if not row["breakdown_json"]:
             continue
@@ -208,24 +211,37 @@ def _get_existing_enrichment(match_id: str) -> dict:
         if bowl.get("lbw_bowled", 0) > 0:
             lbw_bowled[row["player_name"]] = bowl["lbw_bowled"]
         fld = bd.get("fielding", {})
-        if fld.get("runouts", 0) > 0:
-            runouts[row["player_name"]] = fld["runouts"]
-    return {"lbw_bowled": lbw_bowled, "runouts": runouts}
+        if fld.get("direct_runouts", 0) > 0:
+            direct_runouts[row["player_name"]] = fld["direct_runouts"]
+        if fld.get("assisted_runouts", 0) > 0:
+            assisted_runouts[row["player_name"]] = fld["assisted_runouts"]
+        # Backward compat: old "runouts" key (pre-migration) → direct_runouts
+        if "runouts" in fld and "direct_runouts" not in fld:
+            if fld["runouts"] > 0:
+                direct_runouts[row["player_name"]] = fld["runouts"]
+    return {"lbw_bowled": lbw_bowled, "direct_runouts": direct_runouts,
+            "assisted_runouts": assisted_runouts}
 
 
 def _inject_enrichment(scorecard: "MatchScorecard", enrichment: dict) -> None:
-    """Inject lbw_bowled and runouts into a scorecard from prior enrichment data."""
+    """Inject lbw_bowled, direct_runouts, and assisted_runouts into a scorecard."""
     from models import FieldingEntry
 
     for player, count in enrichment["lbw_bowled"].items():
         if player in scorecard.bowling:
             scorecard.bowling[player].lbw_bowled = count
 
-    for player, count in enrichment["runouts"].items():
+    for player, count in enrichment.get("direct_runouts", {}).items():
         if player in scorecard.fielding:
-            scorecard.fielding[player].runouts = count
+            scorecard.fielding[player].direct_runouts = count
         else:
-            scorecard.fielding[player] = FieldingEntry(player=player, runouts=count)
+            scorecard.fielding[player] = FieldingEntry(player=player, direct_runouts=count)
+
+    for player, count in enrichment.get("assisted_runouts", {}).items():
+        if player in scorecard.fielding:
+            scorecard.fielding[player].assisted_runouts = count
+        else:
+            scorecard.fielding[player] = FieldingEntry(player=player, assisted_runouts=count)
 
 
 def _rescore_existing_espn():
@@ -454,10 +470,10 @@ def rescore_from_cricsheet():
 
 
 def _needs_cricsheet_backfill() -> bool:
-    """Check if any bowler has wickets but no lbw_bowled key in breakdown_json."""
+    """Check if any bowler has wickets but no lbw_bowled key, or old runouts format."""
     conn = db.get_db()
     rows = conn.execute(
-        "SELECT breakdown_json FROM player_match_points WHERE bowling_pts > 0 LIMIT 50"
+        "SELECT breakdown_json FROM player_match_points WHERE bowling_pts > 0 OR fielding_pts > 0 LIMIT 100"
     ).fetchall()
     conn.close()
     for row in rows:
@@ -467,7 +483,131 @@ def _needs_cricsheet_backfill() -> bool:
         bowl = bd.get("bowling", {})
         if bowl.get("wickets", 0) > 0 and "lbw_bowled" not in bowl:
             return True
+        fld = bd.get("fielding", {})
+        if "runouts" in fld and "direct_runouts" not in fld:
+            return True
     return False
+
+
+def _needs_cd_enrichment(match_id: str) -> bool:
+    """Check if a match needs CricketData enrichment for runouts.
+
+    Returns True if any fielding breakdown has old "runouts" key or missing "direct_runouts".
+    """
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT breakdown_json FROM player_match_points WHERE match_id = ? AND fielding_pts > 0",
+        (match_id,),
+    ).fetchall()
+    conn.close()
+    for row in rows:
+        if not row["breakdown_json"]:
+            continue
+        fld = json.loads(row["breakdown_json"]).get("fielding", {})
+        if "runouts" in fld and "direct_runouts" not in fld:
+            return True
+    # Also enrich if NO fielding rows have direct_runouts at all (ESPN-only matches with 0 runouts)
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT breakdown_json FROM player_match_points WHERE match_id = ? LIMIT 1",
+        (match_id,),
+    ).fetchall()
+    conn.close()
+    if rows:
+        bd = json.loads(rows[0]["breakdown_json"]) if rows[0]["breakdown_json"] else {}
+        fld = bd.get("fielding", {})
+        # If there's a fielding breakdown but it uses old format, enrich
+        if fld and "runouts" in fld and "direct_runouts" not in fld:
+            return True
+        # If no fielding breakdown at all, check if any row has the old format
+        if not fld:
+            conn = db.get_db()
+            all_rows = conn.execute(
+                "SELECT breakdown_json FROM player_match_points WHERE match_id = ?",
+                (match_id,),
+            ).fetchall()
+            conn.close()
+            for r in all_rows:
+                if not r["breakdown_json"]:
+                    continue
+                bd2 = json.loads(r["breakdown_json"])
+                f2 = bd2.get("fielding", {})
+                if "runouts" in f2 and "direct_runouts" not in f2:
+                    return True
+            # ESPN-only match with no CD enrichment yet — needs enrichment
+            # Check if any breakdown has direct_runouts already set
+            has_direct = False
+            for r in all_rows:
+                if not r["breakdown_json"]:
+                    continue
+                bd2 = json.loads(r["breakdown_json"])
+                if "direct_runouts" in bd2.get("fielding", {}):
+                    has_direct = True
+                    break
+            if not has_direct:
+                return True
+    return False
+
+
+def _enrich_from_cricketdata():
+    """Re-fetch CricketData for completed matches missing runout enrichment.
+
+    Detects matches with old "runouts" format or missing "direct_runouts",
+    fetches CricketData scorecard, enriches with lbw_bowled + direct/assisted runouts + ESPN dots,
+    re-scores and saves. Gated behind CRICKETDATA_API_KEY and respects daily limit.
+    """
+    if not CRICKETDATA_API_KEY:
+        return
+
+    conn = db.get_db()
+    matches = conn.execute(
+        "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
+    ).fetchall()
+    conn.close()
+
+    if not matches:
+        return
+
+    # Find matches needing enrichment
+    to_enrich = []
+    for row in matches:
+        if _needs_cd_enrichment(row["match_id"]):
+            to_enrich.append(row)
+
+    if not to_enrich:
+        logger.info("CricketData enrichment: all matches already enriched")
+        return
+
+    logger.info("CricketData enrichment: %d matches need runout enrichment", len(to_enrich))
+
+    cd = CricketDataAdapter()
+    captain_vc = get_captain_vc()
+    enriched = 0
+
+    for row in to_enrich:
+        # Check daily limit before each call (get_scorecard costs 10 credits)
+        from adapters.cricketdata import _daily_call_log, CRICKETDATA_DAILY_LIMIT
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        if _daily_call_log["date"] == today and _daily_call_log["calls"] >= CRICKETDATA_DAILY_LIMIT:
+            logger.warning("CricketData enrichment: daily limit reached, %d/%d enriched",
+                           enriched, len(to_enrich))
+            break
+
+        cd_scorecard = cd.get_scorecard(row["match_id"])
+        if not cd_scorecard:
+            continue
+
+        # Enrich with ESPN dots (CricketData doesn't have dot balls)
+        teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+        enrich_bowling_dots(cd_scorecard, row["date"][:10] if row["date"] else "", teams)
+
+        points = calculate_fantasy_points(cd_scorecard)
+        db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
+        enriched += 1
+        logger.info("CricketData enriched match %s (direct/assisted runouts + lbw_bowled)", row["match_id"])
+
+    if enriched:
+        logger.info("CricketData enrichment complete: %d matches updated", enriched)
 
 
 def _backfill_from_cricsheet():
@@ -513,13 +653,15 @@ def _backfill_from_cricsheet():
             continue
 
         # Extract lbw_bowled and runouts from Cricsheet
-        enrichment: dict = {"lbw_bowled": {}, "runouts": {}}
+        enrichment: dict = {"lbw_bowled": {}, "direct_runouts": {}, "assisted_runouts": {}}
         for player, bw in cs_scorecard.bowling.items():
             if bw.lbw_bowled > 0:
                 enrichment["lbw_bowled"][player] = bw.lbw_bowled
         for player, fl in cs_scorecard.fielding.items():
-            if fl.runouts > 0:
-                enrichment["runouts"][player] = fl.runouts
+            if fl.direct_runouts > 0:
+                enrichment["direct_runouts"][player] = fl.direct_runouts
+            if fl.assisted_runouts > 0:
+                enrichment["assisted_runouts"][player] = fl.assisted_runouts
 
         # Build ESPN scorecard (for dots/economy) and inject Cricsheet enrichment
         espn_scorecard = get_espn_scorecard(date[:10], teams)
@@ -546,6 +688,11 @@ def _deferred_startup():
         fetch_and_store_matches()
     except Exception as e:
         logger.error("Startup fetch error (will retry via poller): %s", e)
+
+    try:
+        _enrich_from_cricketdata()
+    except Exception as e:
+        logger.error("CricketData enrichment error: %s", e)
 
     try:
         _backfill_from_cricsheet()
