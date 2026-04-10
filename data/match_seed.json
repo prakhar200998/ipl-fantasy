@@ -126,7 +126,7 @@
       "teams_json": "[\"Rajasthan Royals\", \"Royal Challengers Bengaluru\"]",
       "venue": "Barsapara Cricket Stadium, Guwahati",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cd_v2"
     }
   ],
   "player_points": [
@@ -3764,11 +3764,11 @@
       "match_id": "3ec1f721-7f79-49e3-bbc1-69e88b9cf4a3",
       "player_name": "Brijesh Sharma",
       "batting_pts": 0,
-      "bowling_pts": 68,
+      "bowling_pts": 76,
       "fielding_pts": 8,
-      "raw_pts": 80,
-      "total_pts": 80,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 37, \"wickets\": 2, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 88,
+      "total_pts": 88,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 37, \"wickets\": 2, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "3ec1f721-7f79-49e3-bbc1-69e88b9cf4a3",
@@ -3844,11 +3844,11 @@
       "match_id": "3ec1f721-7f79-49e3-bbc1-69e88b9cf4a3",
       "player_name": "Ravi Bishnoi",
       "batting_pts": 0,
-      "bowling_pts": 78,
+      "bowling_pts": 86,
       "fielding_pts": 0,
-      "raw_pts": 82,
-      "total_pts": 82,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 32, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 90,
+      "total_pts": 90,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 32, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "3ec1f721-7f79-49e3-bbc1-69e88b9cf4a3",
