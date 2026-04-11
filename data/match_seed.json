@@ -4349,12 +4349,12 @@
     {
       "match_id": "d8d0937a-8bd7-47b0-acbc-00d381578f85",
       "player_name": "Auqib Nabi",
-      "batting_pts": 0,
-      "bowling_pts": 0,
+      "batting_pts": 8,
+      "bowling_pts": 8,
       "fielding_pts": 0,
-      "raw_pts": 4,
-      "total_pts": 4,
-      "breakdown_json": "{\"playing_xi\": 4}"
+      "raw_pts": 20,
+      "total_pts": 20,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 2, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 0, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "d8d0937a-8bd7-47b0-acbc-00d381578f85",
