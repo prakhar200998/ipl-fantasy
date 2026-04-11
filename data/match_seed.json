@@ -142,7 +142,7 @@
       "teams_json": "[\"Chennai Super Kings\", \"Delhi Capitals\"]",
       "venue": "MA Chidambaram Stadium, Chennai",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cd_v2"
     }
   ],
   "player_points": [
@@ -4349,12 +4349,12 @@
     {
       "match_id": "d8d0937a-8bd7-47b0-acbc-00d381578f85",
       "player_name": "Auqib Nabi",
-      "batting_pts": 8,
-      "bowling_pts": 8,
+      "batting_pts": 0,
+      "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 20,
-      "total_pts": 20,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 2, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 0, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "d8d0937a-8bd7-47b0-acbc-00d381578f85",
@@ -4410,11 +4410,11 @@
       "match_id": "d8d0937a-8bd7-47b0-acbc-00d381578f85",
       "player_name": "Jamie Overton",
       "batting_pts": 0,
-      "bowling_pts": 166,
+      "bowling_pts": 174,
       "fielding_pts": 8,
-      "raw_pts": 178,
-      "total_pts": 178,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 18, \"wickets\": 4, \"dots\": 13, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 186,
+      "total_pts": 186,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 18, \"wickets\": 4, \"dots\": 13, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "d8d0937a-8bd7-47b0-acbc-00d381578f85",
@@ -4475,6 +4475,16 @@
       "raw_pts": 227,
       "total_pts": 454,
       "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 115, \"balls\": 56, \"fours\": 15, \"sixes\": 4, \"dismissed\": false}}"
+    },
+    {
+      "match_id": "d8d0937a-8bd7-47b0-acbc-00d381578f85",
+      "player_name": "Auqib Nabi Dar",
+      "batting_pts": 8,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 12,
+      "total_pts": 12,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 2, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 12, \"runs\": 17, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
     }
   ]
 }
