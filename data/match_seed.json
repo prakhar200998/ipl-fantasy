@@ -4790,7 +4790,7 @@
       "fielding_pts": 8,
       "raw_pts": 18,
       "total_pts": 18,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 2, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 3, \"runs\": 9, \"wickets\": 0, \"dots\": 2, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 2, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 7, \"runs\": 28, \"wickets\": 0, \"dots\": 2, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "b85f1b39-5766-46c7-9cea-14a64e0750b3",
@@ -4820,7 +4820,7 @@
       "fielding_pts": 0,
       "raw_pts": 39,
       "total_pts": 39,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 19, \"balls\": 13, \"fours\": 2, \"sixes\": 1, \"dismissed\": true}}"
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 19, \"balls\": 13, \"fours\": 2, \"sixes\": 1, \"dismissed\": false}}"
     },
     {
       "match_id": "b85f1b39-5766-46c7-9cea-14a64e0750b3",
@@ -4926,11 +4926,11 @@
       "match_id": "b85f1b39-5766-46c7-9cea-14a64e0750b3",
       "player_name": "Rasikh Salam",
       "batting_pts": 0,
-      "bowling_pts": 0,
-      "fielding_pts": 0,
-      "raw_pts": 4,
-      "total_pts": 4,
-      "breakdown_json": "{\"playing_xi\": 4}"
+      "bowling_pts": 46,
+      "fielding_pts": 8,
+      "raw_pts": 58,
+      "total_pts": 58,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 17, \"runs\": 23, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "b85f1b39-5766-46c7-9cea-14a64e0750b3",
@@ -4955,12 +4955,12 @@
     {
       "match_id": "b85f1b39-5766-46c7-9cea-14a64e0750b3",
       "player_name": "Sherfane Rutherford",
-      "batting_pts": 109,
+      "batting_pts": 145,
       "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 113,
-      "total_pts": 113,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 53, \"balls\": 27, \"fours\": 1, \"sixes\": 6, \"dismissed\": false}}"
+      "raw_pts": 149,
+      "total_pts": 149,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 71, \"balls\": 31, \"fours\": 1, \"sixes\": 9, \"dismissed\": false}}"
     },
     {
       "match_id": "b85f1b39-5766-46c7-9cea-14a64e0750b3",
