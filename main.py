@@ -471,28 +471,191 @@ def rescore_from_cricsheet():
         logger.error("Cricsheet re-score error: %s", e)
 
 
-def _needs_cricsheet_backfill() -> bool:
-    """Check if any bowler has wickets but no lbw_bowled key, or old runouts format."""
+def _resolve_cricsheet_name(cs_name: str, pool: set[str]) -> str | None:
+    """Resolve a Cricsheet initial-style name (e.g. 'JC Archer') to a display
+    name from a given pool (e.g. 'Jofra Archer').
+
+    Exact match wins. Otherwise match by last name + first-initial; only
+    accepted if the pool has a single candidate. Returns None if unresolvable.
+    """
+    if cs_name in pool:
+        return cs_name
+    parts = cs_name.split()
+    if len(parts) < 2:
+        return None
+    last = parts[-1]
+    first_initial = parts[0][0].upper()
+    candidates = [
+        d for d in pool
+        if d.split() and d.split()[-1] == last
+        and d.split()[0][:1].upper() == first_initial
+    ]
+    if len(candidates) == 1:
+        return candidates[0]
+    return None
+
+
+def _backfill_enrichment_from_cricsheet():
+    """Surgical Cricsheet backfill — only updates LBW/bowled and runout fields.
+
+    For each complete match with enrichment_version IS NULL:
+      1. Find Cricsheet match by date+teams.
+      2. Extract lbw_bowled (per bowler) + direct/assisted_runouts (per fielder).
+      3. For each existing player_match_points row, adjust breakdown values and
+         apply the DELTA to bowling_pts / fielding_pts / raw_pts / total_pts.
+         All other scoring (batting, dots, economy, milestones, catches, stumpings)
+         is left untouched.
+      4. Mark match as enrichment_version='cricsheet'.
+
+    Free — single ZIP download, no API credits. Safe to re-run.
+    """
     conn = db.get_db()
-    rows = conn.execute(
-        "SELECT breakdown_json FROM player_match_points WHERE bowling_pts > 0 OR fielding_pts > 0 LIMIT 100"
+    to_enrich = conn.execute(
+        "SELECT match_id, date, teams_json FROM matches "
+        "WHERE status = 'complete' "
+        "AND (enrichment_version IS NULL OR enrichment_version != 'cricsheet')"
     ).fetchall()
     conn.close()
-    for row in rows:
-        if not row["breakdown_json"]:
+
+    if not to_enrich:
+        logger.info("Cricsheet enrichment: all complete matches already cricsheet-enriched")
+        return
+
+    logger.info("Cricsheet enrichment: %d matches need LBW/runout backfill", len(to_enrich))
+
+    if not download_cricsheet_ipl(CRICSHEET_DATA_DIR):
+        logger.error("Cricsheet enrichment: download failed")
+        return
+
+    cs_adapter = CricsheetAdapter(CRICSHEET_DATA_DIR)
+    captain_vc = get_captain_vc()
+
+    for row in to_enrich:
+        teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+        date = (row["date"] or "")[:10]
+        cs_match_id = find_cricsheet_match_id(cs_adapter, SEASON, date, teams)
+        if not cs_match_id:
+            logger.warning("Cricsheet enrichment: no match for %s %s", date, teams)
             continue
-        bd = json.loads(row["breakdown_json"])
-        bowl = bd.get("bowling", {})
-        if bowl.get("wickets", 0) > 0 and "lbw_bowled" not in bowl:
-            return True
-        fld = bd.get("fielding", {})
-        if "runouts" in fld and "direct_runouts" not in fld:
-            return True
-    return False
+
+        cs_scorecard = cs_adapter.get_scorecard(cs_match_id)
+        if not cs_scorecard:
+            continue
+
+        # Build display-name pool for THIS match from the stored player_match_points
+        conn = db.get_db()
+        xi_display = {r["player_name"] for r in conn.execute(
+            "SELECT player_name FROM player_match_points WHERE match_id = ?",
+            (row["match_id"],),
+        ).fetchall()}
+        conn.close()
+
+        def _norm(cs_dict):
+            out = {}
+            for cs_name, count in cs_dict.items():
+                disp = _resolve_cricsheet_name(cs_name, xi_display)
+                if disp is not None:
+                    out[disp] = out.get(disp, 0) + count
+            return out
+
+        lbw_bowled = _norm({p: bw.lbw_bowled for p, bw in cs_scorecard.bowling.items()
+                            if bw.lbw_bowled > 0})
+        direct_ro = _norm({p: fl.direct_runouts for p, fl in cs_scorecard.fielding.items()
+                           if fl.direct_runouts > 0})
+        assisted_ro = _norm({p: fl.assisted_runouts for p, fl in cs_scorecard.fielding.items()
+                             if fl.assisted_runouts > 0})
+
+        _apply_enrichment_delta(
+            row["match_id"], lbw_bowled, direct_ro, assisted_ro, captain_vc,
+        )
+        db.set_enrichment_version(row["match_id"], "cricsheet")
+        logger.info(
+            "Cricsheet enriched match %s (lbw=%d, direct=%d, assisted=%d)",
+            row["match_id"],
+            sum(lbw_bowled.values()), sum(direct_ro.values()), sum(assisted_ro.values()),
+        )
+
+    db.backup_to_remote()
+
+
+def _apply_enrichment_delta(match_id: str,
+                            lbw_bowled: dict, direct_ro: dict, assisted_ro: dict,
+                            captain_vc: dict[str, str]):
+    """Apply Cricsheet-authoritative LBW/runout values to every player in the match.
+
+    Cricsheet is the source of truth: any player absent from its dicts gets 0
+    for that field (corrects any CD miscredit). Batting, dots, economy,
+    milestones, catches, stumpings are left untouched — only bowling.lbw_bowled,
+    fielding.direct_runouts and fielding.assisted_runouts move, and
+    bowling_pts / fielding_pts / raw_pts / total_pts are adjusted by the exact
+    delta (with C/VC multiplier).
+    """
+    conn = db.get_db()
+    rows = conn.execute(
+        "SELECT player_name, bowling_pts, fielding_pts, raw_pts, breakdown_json "
+        "FROM player_match_points WHERE match_id = ?",
+        (match_id,),
+    ).fetchall()
+
+    # Cricsheet-credited players not in our XI (e.g., sub fielders) are implicitly
+    # skipped — we only iterate players with existing rows.
+
+    for row in rows:
+        player = row["player_name"]
+        bd = json.loads(row["breakdown_json"]) if row["breakdown_json"] else {"playing_xi": 4}
+
+        old_lbw = bd.get("bowling", {}).get("lbw_bowled", 0)
+        old_direct = bd.get("fielding", {}).get("direct_runouts", 0)
+        old_assisted = bd.get("fielding", {}).get("assisted_runouts", 0)
+
+        # Cricsheet = source of truth; absent → 0
+        new_lbw = lbw_bowled.get(player, 0)
+        new_direct = direct_ro.get(player, 0)
+        new_assisted = assisted_ro.get(player, 0)
+
+        # Deltas
+        d_bowling = (new_lbw - old_lbw) * 8
+        d_fielding = (new_direct - old_direct) * 10 + (new_assisted - old_assisted) * 5
+        d_raw = d_bowling + d_fielding
+
+        if d_raw == 0:
+            continue
+
+        # Update breakdown in place — write fields whenever value changes
+        if new_lbw != old_lbw:
+            bd.setdefault("bowling", {})["lbw_bowled"] = new_lbw
+        if new_direct != old_direct or new_assisted != old_assisted:
+            fld = bd.setdefault("fielding", {
+                "catches": 0, "direct_runouts": 0, "assisted_runouts": 0, "stumpings": 0,
+            })
+            fld["direct_runouts"] = new_direct
+            fld["assisted_runouts"] = new_assisted
+
+        new_bowling_pts = row["bowling_pts"] + d_bowling
+        new_fielding_pts = row["fielding_pts"] + d_fielding
+        new_raw_pts = row["raw_pts"] + d_raw
+
+        designation = captain_vc.get(player, "")
+        if designation == "C":
+            new_total = new_raw_pts * 2
+        elif designation == "VC":
+            new_total = int(new_raw_pts * 1.5)
+        else:
+            new_total = new_raw_pts
+
+        conn.execute(
+            "UPDATE player_match_points SET bowling_pts = ?, fielding_pts = ?, "
+            "raw_pts = ?, total_pts = ?, breakdown_json = ? "
+            "WHERE match_id = ? AND player_name = ?",
+            (new_bowling_pts, new_fielding_pts, new_raw_pts, new_total,
+             json.dumps(bd), match_id, player),
+        )
+    conn.commit()
+    conn.close()
 
 
 def _enrich_from_cricketdata():
-    """Re-fetch CricketData for completed matches missing enrichment.
+    """Fallback CricketData enrichment for matches Cricsheet couldn't cover.
 
     Uses enrichment_version column to detect unenriched matches.
     Fetches CricketData scorecard, enriches with lbw_bowled + direct/assisted runouts + ESPN dots,
@@ -545,73 +708,6 @@ def _enrich_from_cricketdata():
         logger.info("CricketData enrichment complete: %d matches updated", enriched)
 
 
-def _backfill_from_cricsheet():
-    """One-time Cricsheet backfill for lbw_bowled and runouts.
-
-    Detects if backfill is needed (bowlers with wickets but missing lbw_bowled key).
-    Downloads Cricsheet ZIP (~5MB), extracts lbw_bowled/runouts, combines with
-    ESPN scorecard (for dots), re-scores. Skips instantly on subsequent deploys.
-    """
-    if not _needs_cricsheet_backfill():
-        logger.info("Cricsheet backfill: not needed (lbw_bowled key already present)")
-        return
-
-    logger.info("Cricsheet backfill: lbw_bowled missing — downloading Cricsheet data")
-
-    if not download_cricsheet_ipl(CRICSHEET_DATA_DIR):
-        logger.error("Cricsheet backfill: download failed")
-        return
-
-    cs_adapter = CricsheetAdapter(CRICSHEET_DATA_DIR)
-    captain_vc = get_captain_vc()
-
-    conn = db.get_db()
-    db_matches = conn.execute(
-        "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
-    ).fetchall()
-    conn.close()
-
-    if not db_matches:
-        return
-
-    backfilled = 0
-    for row in db_matches:
-        teams = json.loads(row["teams_json"]) if row["teams_json"] else []
-        date = row["date"] or ""
-
-        cs_match_id = find_cricsheet_match_id(cs_adapter, SEASON, date[:10], teams)
-        if not cs_match_id:
-            continue
-
-        cs_scorecard = cs_adapter.get_scorecard(cs_match_id)
-        if not cs_scorecard:
-            continue
-
-        # Extract lbw_bowled and runouts from Cricsheet
-        enrichment: dict = {"lbw_bowled": {}, "direct_runouts": {}, "assisted_runouts": {}}
-        for player, bw in cs_scorecard.bowling.items():
-            if bw.lbw_bowled > 0:
-                enrichment["lbw_bowled"][player] = bw.lbw_bowled
-        for player, fl in cs_scorecard.fielding.items():
-            if fl.direct_runouts > 0:
-                enrichment["direct_runouts"][player] = fl.direct_runouts
-            if fl.assisted_runouts > 0:
-                enrichment["assisted_runouts"][player] = fl.assisted_runouts
-
-        # Build ESPN scorecard (for dots/economy) and inject Cricsheet enrichment
-        espn_scorecard = get_espn_scorecard(date[:10], teams)
-        if not espn_scorecard:
-            continue
-        espn_scorecard.match_id = row["match_id"]
-        _inject_enrichment(espn_scorecard, enrichment)
-
-        points = calculate_fantasy_points(espn_scorecard)
-        db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
-        backfilled += 1
-
-    logger.info("Cricsheet backfill complete: %d matches updated", backfilled)
-
-
 def _deferred_startup():
     """Runs once after app starts serving — avoids blocking Render health check."""
     try:
@@ -624,15 +720,17 @@ def _deferred_startup():
     except Exception as e:
         logger.error("Startup fetch error (will retry via poller): %s", e)
 
+    # Cricsheet first (free) — covers LBW/bowled + runouts without touching other scoring.
+    try:
+        _backfill_enrichment_from_cricsheet()
+    except Exception as e:
+        logger.error("Cricsheet enrichment error: %s", e)
+
+    # CricketData fallback only for matches Cricsheet couldn't find (rare).
     try:
         _enrich_from_cricketdata()
     except Exception as e:
         logger.error("CricketData enrichment error: %s", e)
-
-    try:
-        _backfill_from_cricsheet()
-    except Exception as e:
-        logger.error("Cricsheet backfill error: %s", e)
 
     db.backup_to_remote()
     logger.info("Deferred startup complete: %d matches in DB", db.get_match_count())
@@ -713,6 +811,16 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(
         refresh_live_espn, "interval",
         minutes=1, id="espn_live",
+    )
+
+    # Daily Cricsheet enrichment: 2 AM IST = 20:30 UTC previous day.
+    # Free (single ZIP download). Applies LBW/bowled + direct/assisted runout
+    # deltas to any match not yet marked 'cricsheet' — corrects CD values
+    # once Cricsheet publishes the ball-by-ball file (usually within hours).
+    scheduler.add_job(
+        _backfill_enrichment_from_cricsheet,
+        CronTrigger(hour=20, minute=30),
+        id="cricsheet_daily",
     )
 
     # Keep-alive self-ping (prevents Render free tier sleep during match hours)

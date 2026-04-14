@@ -595,18 +595,22 @@ def get_team_detail(team_name: str) -> dict | None:
         ORDER BY total_pts DESC
     """, (team["team_id"],)).fetchall()
 
-    # Get all matches in chronological order
+    # Get all matches in chronological order (exclude upcoming so labels track IPL match number)
     matches = conn.execute("""
         SELECT match_id, date, teams_json, status
         FROM matches
+        WHERE status IN ('complete', 'in_progress')
         ORDER BY date ASC, match_id ASC
     """).fetchall()
 
     match_list = []
+    mid_to_label = {}
     for i, m in enumerate(matches):
+        label = f"Match {i + 1}"
+        mid_to_label[m["match_id"]] = label
         match_list.append({
             "match_id": m["match_id"],
-            "label": f"M{i + 1}",
+            "label": label,
             "date": m["date"],
             "teams": json.loads(m["teams_json"]),
         })
@@ -640,14 +644,14 @@ def get_team_detail(team_name: str) -> dict | None:
         sorted_matches = sorted(scores.items(), key=lambda x: mid_to_date.get(x[0], ""))
         pd["match_scores"] = [
             {
-                "label": f"M{i + 1}",
+                "label": mid_to_label[mid],
                 "pts": data["pts"],
                 "raw_pts": data["raw_pts"],
                 "breakdown": data["breakdown"],
                 "teams": mid_to_teams.get(mid, []),
             }
-            for i, (mid, data) in enumerate(sorted_matches)
-            if mid in mid_to_date
+            for mid, data in sorted_matches
+            if mid in mid_to_label
         ]
         player_list.append(pd)
 

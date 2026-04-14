@@ -1354,18 +1354,28 @@
                                                                 </template>
                                                             </template>
                                                         </tr>
-                                                        <!-- Breakdown expansion row -->
+                                                        <!-- Breakdown expansion row — per-match -->
                                                         <tr x-show="expandedPlayer === player.player_name" x-cloak style="border-top: none;">
-                                                            <td :colspan="5 + (teamDetail.matches?.length || 0)" style="padding: 4px 12px 10px; background: rgba(255,255,255,0.02);">
-                                                                <div style="display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
-                                                                    <template x-for="chip in getPlayerBreakdown(player)" :key="chip.l">
-                                                                        <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 500;"
-                                                                              :style="chip.p >= 0 ? 'background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.2);' : 'background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.2);'">
-                                                                            <span x-text="chip.l"></span>
-                                                                            <span style="font-weight: 700;" x-text="(chip.p >= 0 ? '+' : '') + chip.p"></span>
-                                                                        </span>
-                                                                    </template>
-                                                                </div>
+                                                            <td :colspan="5 + (teamDetail.matches?.length || 0)" style="padding: 4px 12px 12px; background: rgba(255,255,255,0.02);">
+                                                                <template x-if="!player.match_scores?.length">
+                                                                    <div style="font-size: 0.72rem; color: var(--text-dimmed); padding: 6px 0;">No matches played yet</div>
+                                                                </template>
+                                                                <template x-for="ms in player.match_scores" :key="ms.label">
+                                                                    <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
+                                                                        <span style="font-weight: 700; font-size: 0.72rem; color: var(--text-secondary); min-width: 72px;" x-text="ms.label"></span>
+                                                                        <span style="font-size: 0.65rem; color: var(--text-dimmed); margin-right: 4px;" x-text="ms.teams ? ms.teams.join(' v ') : ''"></span>
+                                                                        <span style="font-weight: 800; font-size: 0.78rem; margin-right: 6px;"
+                                                                              :style="ms.pts >= 0 ? 'color: var(--gold);' : 'color: #ef4444;'"
+                                                                              x-text="(ms.pts >= 0 ? '+' : '') + ms.pts + ' pts'"></span>
+                                                                        <template x-for="chip in getMatchChips(ms.breakdown)" :key="ms.label + chip.l">
+                                                                            <span style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 12px; font-size: 0.68rem; font-weight: 500;"
+                                                                                  :style="chip.p >= 0 ? 'background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.2);' : 'background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.2);'">
+                                                                                <span x-text="chip.l"></span>
+                                                                                <span style="font-weight: 700;" x-text="(chip.p >= 0 ? '+' : '') + chip.p"></span>
+                                                                            </span>
+                                                                        </template>
+                                                                    </div>
+                                                                </template>
                                                             </td>
                                                         </tr>
                                                         </tbody>
@@ -2387,60 +2397,60 @@
                 return found ? found.pts : null;
             },
 
-            getPlayerBreakdown(player) {
-                if (!player.match_scores?.length) return [];
-                let runs=0, balls=0, fours=0, sixes=0, ducks=0, mp=0;
-                let milePts=0, srPts=0;
-                let wkts=0, dots=0, maidens=0, bBalls=0, bRuns=0;
-                let wMilePts=0, ecoPts=0;
-                let catches=0, runouts=0, stumpings=0, catch3Bonus=0;
-                for (const ms of player.match_scores) {
-                    if (!ms.breakdown) continue;
-                    let b; try { b = JSON.parse(ms.breakdown); } catch(e) { continue; }
-                    if (b.playing_xi) mp++;
-                    if (b.batting) {
-                        const r = b.batting.runs||0, bl = b.batting.balls||0;
-                        runs += r; balls += bl; fours += b.batting.fours||0; sixes += b.batting.sixes||0;
-                        if (b.batting.dismissed && r === 0) ducks++;
-                        if (r >= 100) milePts += 16; else if (r >= 75) milePts += 12; else if (r >= 50) milePts += 8; else if (r >= 25) milePts += 4;
-                        if ((bl >= 10 || r >= 20) && bl > 0) {
-                            const sr = (r/bl)*100;
-                            if (sr>190) srPts+=8; else if (sr>170) srPts+=6; else if (sr>150) srPts+=4; else if (sr>=130) srPts+=2;
-                            else if (sr>=70&&sr<=100) srPts-=2; else if (sr>=60&&sr<70) srPts-=4; else if (sr>=50&&sr<60) srPts-=6;
-                        }
-                    }
-                    if (b.bowling) {
-                        const w=b.bowling.wickets||0; wkts+=w; dots+=b.bowling.dots||0; maidens+=b.bowling.maidens||0;
-                        bBalls+=b.bowling.balls||0; bRuns+=b.bowling.runs||0;
-                        if (w>=5) wMilePts+=16; else if (w>=4) wMilePts+=12; else if (w>=3) wMilePts+=8;
-                        if (b.bowling.balls>=12) {
-                            const eco=b.bowling.runs/(b.bowling.balls/6);
-                            if (eco<5) ecoPts+=8; else if (eco<6) ecoPts+=6; else if (eco<=7) ecoPts+=4; else if (eco<=8) ecoPts+=2;
-                            else if (eco>=10&&eco<=11) ecoPts-=2; else if (eco>11&&eco<=12) ecoPts-=4; else if (eco>12) ecoPts-=6;
-                        }
-                    }
-                    if (b.fielding) {
-                        const c=b.fielding.catches||0; catches+=c; runouts+=b.fielding.runouts||0; stumpings+=b.fielding.stumpings||0;
-                        if (c>=3) catch3Bonus+=4;
+            getMatchChips(breakdownStr) {
+                if (!breakdownStr) return [];
+                let b; try { b = JSON.parse(breakdownStr); } catch(e) { return []; }
+                const chips = [];
+                if (b.playing_xi) chips.push({l:'XI', p:4});
+                if (b.batting) {
+                    const r = b.batting.runs||0, bl = b.batting.balls||0;
+                    const fours = b.batting.fours||0, sixes = b.batting.sixes||0;
+                    if (r) chips.push({l:`${r} runs`, p:r});
+                    if (fours) chips.push({l:`${fours}×4s`, p:fours*4});
+                    if (sixes) chips.push({l:`${sixes}×6s`, p:sixes*6});
+                    if (b.batting.dismissed && r === 0) chips.push({l:'Duck', p:-2});
+                    let milePts = 0;
+                    if (r >= 100) milePts = 16; else if (r >= 75) milePts = 12;
+                    else if (r >= 50) milePts = 8; else if (r >= 25) milePts = 4;
+                    if (milePts) chips.push({l:`${r >= 100 ? '100' : r >= 75 ? '75' : r >= 50 ? '50' : '25'}+ milestone`, p:milePts});
+                    if ((bl >= 10 || r >= 20) && bl > 0) {
+                        const sr = (r/bl)*100;
+                        let srPts = 0;
+                        if (sr>190) srPts=8; else if (sr>170) srPts=6; else if (sr>150) srPts=4; else if (sr>=130) srPts=2;
+                        else if (sr>=70&&sr<=100) srPts=-2; else if (sr>=60&&sr<70) srPts=-4; else if (sr>=50&&sr<60) srPts=-6;
+                        if (srPts) chips.push({l:`SR ${sr.toFixed(0)}`, p:srPts});
                     }
                 }
-                const chips = [];
-                if (mp) chips.push({l:`${mp}× XI`, p:mp*4});
-                if (runs) chips.push({l:`${runs} runs`, p:runs});
-                if (fours) chips.push({l:`${fours}×4s`, p:fours*4});
-                if (sixes) chips.push({l:`${sixes}×6s`, p:sixes*6});
-                if (ducks) chips.push({l:`${ducks} duck`, p:ducks*-2});
-                if (milePts) chips.push({l:'Milestones', p:milePts});
-                if (srPts) chips.push({l:'SR bonus', p:srPts});
-                if (wkts) chips.push({l:`${wkts}W`, p:wkts*30});
-                if (dots) chips.push({l:`${dots} dots`, p:dots*2});
-                if (maidens) chips.push({l:`${maidens} maiden`, p:maidens*12});
-                if (wMilePts) chips.push({l:'W milestone', p:wMilePts});
-                if (ecoPts) chips.push({l:'Economy', p:ecoPts});
-                if (catches) chips.push({l:`${catches} catch`, p:catches*8});
-                if (catch3Bonus) chips.push({l:'3+ catches', p:catch3Bonus});
-                if (runouts) chips.push({l:`${runouts} runout`, p:runouts*10});
-                if (stumpings) chips.push({l:`${stumpings} stumping`, p:stumpings*12});
+                if (b.bowling) {
+                    const w = b.bowling.wickets||0;
+                    const dots = b.bowling.dots||0, maidens = b.bowling.maidens||0;
+                    const lbwBowled = b.bowling.lbw_bowled||0;
+                    if (w) chips.push({l:`${w}W`, p:w*30});
+                    if (lbwBowled) chips.push({l:`${lbwBowled} LBW/bowled`, p:lbwBowled*8});
+                    if (dots) chips.push({l:`${dots} dots`, p:dots*2});
+                    if (maidens) chips.push({l:`${maidens} maiden`, p:maidens*12});
+                    let wMile = 0;
+                    if (w>=5) wMile=16; else if (w>=4) wMile=12; else if (w>=3) wMile=8;
+                    if (wMile) chips.push({l:`${w}W milestone`, p:wMile});
+                    if ((b.bowling.balls||0) >= 12) {
+                        const eco = b.bowling.runs / (b.bowling.balls / 6);
+                        let ecoPts = 0;
+                        if (eco<5) ecoPts=8; else if (eco<6) ecoPts=6; else if (eco<=7) ecoPts=4; else if (eco<=8) ecoPts=2;
+                        else if (eco>=10&&eco<=11) ecoPts=-2; else if (eco>11&&eco<=12) ecoPts=-4; else if (eco>12) ecoPts=-6;
+                        if (ecoPts) chips.push({l:`Eco ${eco.toFixed(1)}`, p:ecoPts});
+                    }
+                }
+                if (b.fielding) {
+                    const c = b.fielding.catches||0;
+                    const direct = b.fielding.direct_runouts||0;
+                    const assisted = b.fielding.assisted_runouts||0;
+                    const stump = b.fielding.stumpings||0;
+                    if (c) chips.push({l:`${c} catch`, p:c*8});
+                    if (c>=3) chips.push({l:'3+ catches', p:4});
+                    if (direct) chips.push({l:`${direct} direct RO`, p:direct*10});
+                    if (assisted) chips.push({l:`${assisted} assist RO`, p:assisted*5});
+                    if (stump) chips.push({l:`${stump} stumping`, p:stump*12});
+                }
                 return chips;
             },
 
