@@ -102,7 +102,7 @@
       "teams_json": "[\"Rajasthan Royals\", \"Mumbai Indians\"]",
       "venue": "Barsapara Cricket Stadium, Guwahati",
       "status": "complete",
-      "enrichment_version": "cd_v2"
+      "enrichment_version": "cricsheet"
     },
     {
       "match_id": "5945bbf4-b6b5-45b6-abac-db03e8a39130",
@@ -110,7 +110,7 @@
       "teams_json": "[\"Delhi Capitals\", \"Gujarat Titans\"]",
       "venue": "Arun Jaitley Stadium, Delhi",
       "status": "complete",
-      "enrichment_version": "cd_v2"
+      "enrichment_version": "cricsheet"
     },
     {
       "match_id": "espn_1527688",
@@ -126,7 +126,7 @@
       "teams_json": "[\"Rajasthan Royals\", \"Royal Challengers Bengaluru\"]",
       "venue": "Barsapara Cricket Stadium, Guwahati",
       "status": "complete",
-      "enrichment_version": "cd_v2"
+      "enrichment_version": "cricsheet"
     },
     {
       "match_id": "espn_1527690",
@@ -174,7 +174,7 @@
       "teams_json": "[\"Chennai Super Kings\", \"Kolkata Knight Riders\"]",
       "venue": "MA Chidambaram Stadium, Chennai",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cricsheet"
     }
   ],
   "player_points": [
@@ -3533,10 +3533,10 @@
       "player_name": "Sai Sudharsan",
       "batting_pts": 20,
       "bowling_pts": 0,
-      "fielding_pts": 18,
-      "raw_pts": 42,
-      "total_pts": 63,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 12, \"balls\": 7, \"fours\": 2, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 1, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "fielding_pts": 8,
+      "raw_pts": 32,
+      "total_pts": 48,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 12, \"balls\": 7, \"fours\": 2, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "5945bbf4-b6b5-45b6-abac-db03e8a39130",
@@ -5362,21 +5362,21 @@
       "match_id": "8b691738-66b3-4774-a7fd-5a2113a54ca5",
       "player_name": "Kartik Tyagi",
       "batting_pts": 0,
-      "bowling_pts": 78,
+      "bowling_pts": 86,
       "fielding_pts": 0,
-      "raw_pts": 82,
-      "total_pts": 82,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 35, \"wickets\": 2, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 90,
+      "total_pts": 90,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 35, \"wickets\": 2, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "8b691738-66b3-4774-a7fd-5a2113a54ca5",
       "player_name": "Sunil Narine",
       "batting_pts": 46,
-      "bowling_pts": 58,
+      "bowling_pts": 66,
       "fielding_pts": 0,
-      "raw_pts": 108,
-      "total_pts": 108,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 24, \"balls\": 17, \"fours\": 2, \"sixes\": 2, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 1, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 116,
+      "total_pts": 116,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 24, \"balls\": 17, \"fours\": 2, \"sixes\": 2, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 1, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "8b691738-66b3-4774-a7fd-5a2113a54ca5",
@@ -5442,11 +5442,11 @@
       "match_id": "8b691738-66b3-4774-a7fd-5a2113a54ca5",
       "player_name": "Noor Ahmad",
       "batting_pts": 0,
-      "bowling_pts": 120,
+      "bowling_pts": 128,
       "fielding_pts": 0,
-      "raw_pts": 124,
-      "total_pts": 124,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 3, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 132,
+      "total_pts": 132,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 21, \"wickets\": 3, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "8b691738-66b3-4774-a7fd-5a2113a54ca5",
