@@ -102,7 +102,7 @@
       "teams_json": "[\"Rajasthan Royals\", \"Mumbai Indians\"]",
       "venue": "Barsapara Cricket Stadium, Guwahati",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "5945bbf4-b6b5-45b6-abac-db03e8a39130",
@@ -110,7 +110,7 @@
       "teams_json": "[\"Delhi Capitals\", \"Gujarat Titans\"]",
       "venue": "Arun Jaitley Stadium, Delhi",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "espn_1527688",
@@ -126,7 +126,7 @@
       "teams_json": "[\"Rajasthan Royals\", \"Royal Challengers Bengaluru\"]",
       "venue": "Barsapara Cricket Stadium, Guwahati",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "espn_1527690",
@@ -3549,10 +3549,10 @@
       "player_name": "Sai Sudharsan",
       "batting_pts": 20,
       "bowling_pts": 0,
-      "fielding_pts": 8,
-      "raw_pts": 32,
-      "total_pts": 48,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 12, \"balls\": 7, \"fours\": 2, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "fielding_pts": 18,
+      "raw_pts": 42,
+      "total_pts": 63,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 12, \"balls\": 7, \"fours\": 2, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 1, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "5945bbf4-b6b5-45b6-abac-db03e8a39130",
