@@ -1215,6 +1215,15 @@
                                         <span x-text="team.total_pts"></span>
                                         <span style="font-size: 0.6rem; font-weight: 500; color: var(--text-muted); margin-left: 1px;">pts</span>
                                     </div>
+                                    <template x-if="team.frozen_pts !== undefined && team.frozen_pts > 0">
+                                        <div style="font-size: 0.55rem; color: var(--text-dimmed); margin-top: 1px; white-space: nowrap;"
+                                             :title="'Phase 1 frozen ' + team.frozen_pts + ' + Phase 2 live ' + team.live_pts + ' (mid-season auction Apr 25)'">
+                                            <span style="color: var(--text-muted);">❄</span>
+                                            <span x-text="team.frozen_pts"></span>
+                                            <span style="opacity: 0.5;">+</span>
+                                            <span style="color: var(--accent-light);" x-text="team.live_pts"></span>
+                                        </div>
+                                    </template>
                                     <template x-if="idx > 0">
                                         <div style="font-size: 0.6rem; color: var(--text-dimmed); margin-top: 1px; white-space: nowrap;">
                                             <span x-text="(team.total_pts - standings[0].total_pts) + ' from #1'"></span>
@@ -1249,20 +1258,29 @@
                                     <div>
                                         <!-- Summary stats row -->
                                         <div style="padding: 0 20px 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-                                            <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;" title="Sum of the 11 highest-scoring players on the roster">
-                                                <span style="color: var(--text-muted);">Top 11 Scoring</span>
+                                            <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;" title="Phase 1 frozen + Phase 2 live (top-11)">
+                                                <span style="color: var(--text-muted);">Total</span>
                                                 <span style="font-weight: 700; margin-left: 6px;" x-text="team.total_pts + ' pts'"></span>
                                             </div>
+                                            <template x-if="team.frozen_pts !== undefined && team.frozen_pts > 0">
+                                                <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; border: 1px solid var(--border-subtle);" title="Mid-season auction freeze: Phase 1 top-11 total locked at Apr 25">
+                                                    <span style="color: var(--text-muted);">❄ Frozen P1</span>
+                                                    <span style="font-weight: 700; margin-left: 6px;" x-text="team.frozen_pts"></span>
+                                                    <span style="color: var(--text-dimmed); margin: 0 4px;">+</span>
+                                                    <span style="color: var(--text-muted);">Live P2</span>
+                                                    <span style="font-weight: 700; margin-left: 6px; color: var(--accent-light);" x-text="team.live_pts"></span>
+                                                </div>
+                                            </template>
                                             <template x-if="teamDetail.matches?.length">
                                                 <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;">
-                                                    <span style="color: var(--text-muted);">Matches</span>
+                                                    <span style="color: var(--text-muted);">Phase 2 Matches</span>
                                                     <span style="font-weight: 700; margin-left: 6px;" x-text="teamDetail.matches.length"></span>
                                                 </div>
                                             </template>
-                                            <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;" title="Average team points per match (top 11 total / matches played)">
-                                                <span style="color: var(--text-muted);">Avg Score</span>
+                                            <div style="background: var(--bg-surface); padding: 6px 12px; border-radius: 8px; font-size: 0.7rem;" title="Average Phase 2 points per match (live top-11 / phase-2 matches)">
+                                                <span style="color: var(--text-muted);">P2 Avg</span>
                                                 <span style="font-weight: 700; margin-left: 6px;"
-                                                      x-text="teamDetail.matches?.length ? Math.round(team.total_pts / teamDetail.matches.length) + ' pts/match' : 'N/A'"></span>
+                                                      x-text="teamDetail.matches?.length ? Math.round((team.live_pts || 0) / teamDetail.matches.length) + ' pts/match' : 'N/A'"></span>
                                             </div>
                                         </div>
 
@@ -1391,6 +1409,35 @@
                                                 <div style="flex: 1; height: 1px; background: var(--border-subtle);"></div>
                                             </div>
                                         </template>
+
+                                        <!-- Phase 1 Archive (frozen pre-auction roster) -->
+                                        <template x-if="teamDetail.phase1_archive?.frozen_top11?.length">
+                                            <div style="padding: 0 20px 16px;">
+                                                <div @click="phase1Open = !phase1Open"
+                                                     style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg-surface); border-radius: 8px; cursor: pointer; user-select: none; border: 1px solid var(--border-subtle);">
+                                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">❄ Phase 1 Archive</span>
+                                                    <span style="font-size: 0.65rem; color: var(--text-dimmed);">(pre-auction · frozen <span x-text="teamDetail.phase1_archive.frozen_pts"></span> pts)</span>
+                                                    <div style="flex: 1;"></div>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"
+                                                         :style="phase1Open ? 'transform: rotate(180deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'">
+                                                        <polyline points="6 9 12 15 18 9"/>
+                                                    </svg>
+                                                </div>
+                                                <div x-show="phase1Open" x-transition style="margin-top: 8px; background: var(--bg-input); border-radius: 8px; padding: 10px 14px; border: 1px solid var(--border-subtle);">
+                                                    <div style="font-size: 0.6rem; color: var(--text-dimmed); margin-bottom: 8px;">Top 11 players from your old roster (final standing before mid-season auction). These points are locked in your team total.</div>
+                                                    <template x-for="(p, pi) in teamDetail.phase1_archive.frozen_top11" :key="'p1-' + p.player_name">
+                                                        <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 0.7rem; border-bottom: 1px solid var(--border-subtle);">
+                                                            <span style="color: var(--text-dimmed); min-width: 16px;" x-text="pi + 1"></span>
+                                                            <span style="flex: 1; color: var(--text-secondary);" x-text="p.player_name"></span>
+                                                            <template x-if="p.designation === 'C'"><span class="badge-c">C</span></template>
+                                                            <template x-if="p.designation === 'VC'"><span class="badge-vc">VC</span></template>
+                                                            <span style="color: var(--text-muted); font-size: 0.6rem;" x-text="p.role"></span>
+                                                            <span style="font-weight: 700; color: var(--text-primary); min-width: 40px; text-align: right;" x-text="p.total_pts + ' pts'"></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
                                     </div>
                                 </template>
                             </div>
@@ -1481,6 +1528,14 @@
 
             <template x-if="awards">
                 <div>
+                    <!-- Phase 2 scope chip -->
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.25); border-radius: 999px; font-size: 0.65rem; font-weight: 700; color: var(--accent-light); letter-spacing: 0.04em;">
+                            <span>🔄 PHASE 2 · MATCH 35+</span>
+                        </span>
+                        <span style="font-size: 0.65rem; color: var(--text-dimmed);">All season awards reset at the mid-season auction</span>
+                    </div>
+
                     <!-- ===== BEST XI THIS MATCH ===== -->
                     <template x-if="awards.best_xi_week && awards.best_xi_week.length > 0">
                         <div style="margin-bottom: 32px;">
@@ -1716,13 +1771,44 @@
                         </div>
                     </template>
 
-                    <!-- No data state -->
+                    <!-- No data state (Phase 2 specifically) -->
                     <template x-if="!awards.best_xi_week?.length && !awards.top_batter_season && !awards.best_match_performance">
-                        <div class="error-container">
+                        <div class="error-container" style="margin-bottom: 24px;">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin: 0 auto 16px;">
                                 <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
                             </svg>
-                            <p style="color: var(--text-secondary);">No match data yet. Awards will appear once matches are played.</p>
+                            <p style="color: var(--text-secondary);">No Phase 2 matches yet. Awards will appear once Match 35 begins.</p>
+                        </div>
+                    </template>
+
+                    <!-- ===== PHASE 1 ARCHIVE (Hall of Fame) ===== -->
+                    <template x-if="awards.phase1_archive && (awards.phase1_archive.top_teams?.length || awards.phase1_archive.top_scorer)">
+                        <div style="margin-top: 32px; padding: 18px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                                <span style="font-size: 1rem;">❄</span>
+                                <div>
+                                    <h3 style="font-size: 0.9rem; font-weight: 700; margin: 0; color: var(--text-secondary);">Phase 1 Hall of Fame</h3>
+                                    <p style="font-size: 0.6rem; color: var(--text-dimmed); margin: 2px 0 0;">Frozen at the mid-season auction (Apr 25)</p>
+                                </div>
+                            </div>
+                            <template x-if="awards.phase1_archive.top_teams?.length">
+                                <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+                                    <template x-for="(t, ti) in awards.phase1_archive.top_teams" :key="'p1t-' + t.team_name">
+                                        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg-input); border-radius: 8px; font-size: 0.75rem;">
+                                            <span style="color: var(--text-muted); min-width: 18px;" x-text="'#' + (ti + 1)"></span>
+                                            <span style="flex: 1; font-weight: 600;" x-text="t.team_name"></span>
+                                            <span style="font-weight: 700; color: var(--gold);" x-text="t.frozen_pts + ' pts'"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template x-if="awards.phase1_archive.top_scorer">
+                                <div style="padding: 8px 12px; background: var(--bg-input); border-radius: 8px; font-size: 0.7rem; color: var(--text-secondary);">
+                                    <span style="color: var(--text-muted);">Top scorer (raw pts):</span>
+                                    <span style="font-weight: 700; margin-left: 6px;" x-text="awards.phase1_archive.top_scorer.player_name"></span>
+                                    <span style="color: var(--text-dimmed); margin-left: 6px;" x-text="'· ' + awards.phase1_archive.top_scorer.total_raw_pts + ' pts'"></span>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -1982,6 +2068,7 @@
             teamDetail: null,
             loadingDetail: false,
             expandedPlayer: null,
+            phase1Open: false,
 
             awards: null,
             loadingAwards: false,

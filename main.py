@@ -37,8 +37,22 @@ from name_mapping import get_display_name
 from teams import get_captain_vc
 from config import (
     CRICBUZZ_API_KEY, CRICKETDATA_API_KEY, CRICSHEET_DATA_DIR, SEASON,
-    ADMIN_SECRET,
+    ADMIN_SECRET, PHASE2_CUTOFF_DATE,
 )
+
+
+# Rename map: old team_name in DB -> new Phase 2 team_name (matches keys in TEAMS_PHASE2)
+TEAM_RENAME_MAP = {
+    "Dark horse 11": "Dark Horse 11",
+    "Rihen's Team": "Rihen",
+    "Prakhar's Team": "Prakhar's Team",
+    "Ee Sala Cup Namde FC": "ESALACUPNAMDE",
+    "Shvetank's Team": "Shvetank's 11",
+    "Ishan Jindal's Team": "Ary-ish 11",
+    "Amal's Team": "Amal's Team",
+    "Prasheel super 11": "Prasheel's Team",
+    "Dhinchak Dudes": "Dhinchak Dudes",
+}
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -125,7 +139,6 @@ def fetch_and_store_matches():
     }
     conn.close()
 
-    captain_vc = get_captain_vc()
     stored_count = 0
 
     for match in actionable:
@@ -133,6 +146,7 @@ def fetch_and_store_matches():
         key = (match["date"][:10], tuple(sorted(match["teams"])))
         existing_id = stored_map.get(key)
         match_id = existing_id or match["match_id"]
+        captain_vc = get_captain_vc(match["date"][:10])
 
         # Skip already-finalized matches (by ID or by dedup)
         if stored_status in ("complete", "abandoned"):
@@ -245,23 +259,23 @@ def _inject_enrichment(scorecard: "MatchScorecard", enrichment: dict) -> None:
 
 
 def _rescore_existing_espn():
-    """Re-score all complete matches from ESPN (free, 0 credits).
+    """Re-score Phase 2 complete matches from ESPN (free, 0 credits).
 
-    Fixes economy/dots for matches restored from backup.
-    Runs once on startup.
+    Phase 1 matches (date < PHASE2_CUTOFF_DATE) are intentionally skipped —
+    their stored total_pts is the frozen snapshot baseline and must not move.
     """
     conn = db.get_db()
     rows = conn.execute(
-        "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
+        "SELECT match_id, date, teams_json FROM matches "
+        "WHERE status = 'complete' AND date >= ?",
+        (PHASE2_CUTOFF_DATE,),
     ).fetchall()
     conn.close()
 
     if not rows:
         return
 
-    captain_vc = get_captain_vc()
     rescored = 0
-
     for row in rows:
         teams = json.loads(row["teams_json"]) if row["teams_json"] else []
         date = row["date"][:10] if row["date"] else ""
@@ -271,11 +285,12 @@ def _rescore_existing_espn():
         scorecard.match_id = row["match_id"]
         _inject_enrichment(scorecard, _get_existing_enrichment(row["match_id"]))
         points = calculate_fantasy_points(scorecard)
+        captain_vc = get_captain_vc(date)
         db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
         rescored += 1
 
     if rescored:
-        logger.info("ESPN re-scored %d existing matches (free)", rescored)
+        logger.info("ESPN re-scored %d Phase 2 matches (free)", rescored)
 
 
 def discover_matches():
@@ -319,12 +334,11 @@ def refresh_live_espn():
     if not rows:
         return
 
-    captain_vc = get_captain_vc()
-
     for row in rows:
         try:
             teams = json.loads(row["teams_json"]) if row["teams_json"] else []
             date = row["date"][:10] if row["date"] else ""
+            captain_vc = get_captain_vc(date)
             scorecard = get_espn_scorecard(date, teams)
             if not scorecard:
                 continue
@@ -389,14 +403,15 @@ def refresh_live_cd():
 
     try:
         cd = CricketDataAdapter()
-        captain_vc = get_captain_vc()
 
         for row in rows:
             scorecard = cd.get_scorecard(row["match_id"])
             if not scorecard:
                 continue
             teams = json.loads(row["teams_json"]) if row["teams_json"] else []
-            enrich_bowling_dots(scorecard, row["date"][:10] if row["date"] else "", teams)
+            date = row["date"][:10] if row["date"] else ""
+            captain_vc = get_captain_vc(date)
+            enrich_bowling_dots(scorecard, date, teams)
             points = calculate_fantasy_points(scorecard)
             db.upsert_match(
                 row["match_id"], row["date"], teams,
@@ -430,22 +445,24 @@ def rescore_from_cricsheet():
             return
 
         cs_adapter = CricsheetAdapter(CRICSHEET_DATA_DIR)
-        captain_vc = get_captain_vc()
 
         conn = db.get_db()
         db_matches = conn.execute(
-            "SELECT match_id, date, teams_json FROM matches WHERE status = 'complete'"
+            "SELECT match_id, date, teams_json FROM matches "
+            "WHERE status = 'complete' AND date >= ?",
+            (PHASE2_CUTOFF_DATE,),
         ).fetchall()
         conn.close()
 
         if not db_matches:
-            logger.info("No completed matches to re-score from Cricsheet")
+            logger.info("No Phase 2 matches to re-score from Cricsheet")
             return
 
         rescored = 0
         for row in db_matches:
             teams = json.loads(row["teams_json"]) if row["teams_json"] else []
             date = row["date"] or ""
+            captain_vc = get_captain_vc(date[:10])
 
             cs_match_id = find_cricsheet_match_id(
                 cs_adapter, SEASON, date, teams,
@@ -512,27 +529,28 @@ def _backfill_enrichment_from_cricsheet():
     conn = db.get_db()
     to_enrich = conn.execute(
         "SELECT match_id, date, teams_json FROM matches "
-        "WHERE status = 'complete' "
-        "AND (enrichment_version IS NULL OR enrichment_version != 'cricsheet')"
+        "WHERE status = 'complete' AND date >= ? "
+        "AND (enrichment_version IS NULL OR enrichment_version != 'cricsheet')",
+        (PHASE2_CUTOFF_DATE,),
     ).fetchall()
     conn.close()
 
     if not to_enrich:
-        logger.info("Cricsheet enrichment: all complete matches already cricsheet-enriched")
+        logger.info("Cricsheet enrichment: all Phase 2 matches already cricsheet-enriched")
         return
 
-    logger.info("Cricsheet enrichment: %d matches need LBW/runout backfill", len(to_enrich))
+    logger.info("Cricsheet enrichment: %d Phase 2 matches need LBW/runout backfill", len(to_enrich))
 
     if not download_cricsheet_ipl(CRICSHEET_DATA_DIR):
         logger.error("Cricsheet enrichment: download failed")
         return
 
     cs_adapter = CricsheetAdapter(CRICSHEET_DATA_DIR)
-    captain_vc = get_captain_vc()
 
     for row in to_enrich:
         teams = json.loads(row["teams_json"]) if row["teams_json"] else []
         date = (row["date"] or "")[:10]
+        captain_vc = get_captain_vc(date)
         cs_match_id = find_cricsheet_match_id(cs_adapter, SEASON, date, teams)
         if not cs_match_id:
             logger.warning("Cricsheet enrichment: no match for %s %s", date, teams)
@@ -667,18 +685,19 @@ def _enrich_from_cricketdata():
     conn = db.get_db()
     to_enrich = conn.execute(
         "SELECT match_id, date, teams_json FROM matches "
-        "WHERE status = 'complete' AND (enrichment_version IS NULL OR enrichment_version != 'cd_v2')"
+        "WHERE status = 'complete' AND date >= ? "
+        "AND (enrichment_version IS NULL OR enrichment_version != 'cd_v2')",
+        (PHASE2_CUTOFF_DATE,),
     ).fetchall()
     conn.close()
 
     if not to_enrich:
-        logger.info("CricketData enrichment: all matches already enriched")
+        logger.info("CricketData enrichment: all Phase 2 matches already enriched")
         return
 
-    logger.info("CricketData enrichment: %d matches need runout enrichment", len(to_enrich))
+    logger.info("CricketData enrichment: %d Phase 2 matches need runout enrichment", len(to_enrich))
 
     cd = CricketDataAdapter()
-    captain_vc = get_captain_vc()
     enriched = 0
 
     for row in to_enrich:
@@ -696,8 +715,10 @@ def _enrich_from_cricketdata():
 
         # Enrich with ESPN dots (CricketData doesn't have dot balls)
         teams = json.loads(row["teams_json"]) if row["teams_json"] else []
-        enrich_bowling_dots(cd_scorecard, row["date"][:10] if row["date"] else "", teams)
+        date = row["date"][:10] if row["date"] else ""
+        enrich_bowling_dots(cd_scorecard, date, teams)
 
+        captain_vc = get_captain_vc(date)
         points = calculate_fantasy_points(cd_scorecard)
         db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
         db.set_enrichment_version(row["match_id"], "cd_v2")
@@ -749,14 +770,16 @@ async def lifespan(app: FastAPI):
     team_count = conn.execute("SELECT COUNT(*) as cnt FROM teams").fetchone()["cnt"]
     conn.close()
 
-    from teams import TEAMS
+    # First-time seed must use Phase 1 names so historical match data
+    # backfilled from remote attaches to the correct team_id, then we rename
+    # to the Phase 2 display name. After that, reseed Phase 2 rosters.
     if team_count == 0:
-        logger.info("No teams in DB — seeding teams...")
-        db.seed_teams(TEAMS)
-    else:
-        db.reseed_rosters(TEAMS)
+        logger.info("No teams in DB — seeding Phase 1 teams (will rename to Phase 2 names)...")
+        from teams_phase1 import TEAMS_PHASE1
+        db.seed_teams(TEAMS_PHASE1)
 
-    # Restore persisted data FIRST so we never lose matches across deploys
+    # Restore persisted data BEFORE the rename so old team_name → team_id
+    # binding can still be resolved by the snapshot/restore code.
     if db.get_match_count() == 0:
         logger.info("No matches in DB — restoring from remote backup")
         if not db.restore_from_remote():
@@ -765,6 +788,18 @@ async def lifespan(app: FastAPI):
         logger.info("After restore: %d matches in DB", db.get_match_count())
 
     logger.info("DB has %d matches after restore", db.get_match_count())
+
+    # Mid-season auction transition (idempotent across restarts):
+    # 1. Close Phase 1 rosters (set removed_date if not already)
+    # 2. Freeze Phase 1 top-11 totals if not already frozen
+    # 3. Rename teams to Phase 2 display names (preserves team_id)
+    # 4. Reseed Phase 2 rosters
+    db.close_phase1_rosters()
+    snapshot_summary = db.freeze_phase1_snapshot()
+    logger.info("Phase 1 frozen totals: %s", snapshot_summary)
+    db.rename_teams(TEAM_RENAME_MAP)
+    from teams import TEAMS
+    db.reseed_rosters(TEAMS, phase=2)
 
     # Start background scheduler
     from apscheduler.triggers.cron import CronTrigger
@@ -1033,6 +1068,16 @@ async def reseed_rosters(request: Request):
     from teams import TEAMS
     db.reseed_rosters(TEAMS)
     return {"status": "rosters reseeded"}
+
+
+@app.post("/api/admin/freeze-phase1")
+async def freeze_phase1(request: Request):
+    """Manually trigger the Phase 1 snapshot freeze (idempotent)."""
+    body = await request.json()
+    if body.get("secret") != ADMIN_SECRET:
+        raise HTTPException(403, "Invalid secret")
+    summary = db.freeze_phase1_snapshot()
+    return {"status": "frozen", "snapshot": summary}
 
 
 @app.post("/api/admin/rescore-cricsheet")

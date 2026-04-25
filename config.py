@@ -30,3 +30,7 @@ SEASON = os.environ.get("SEASON", "2026")
 
 # GitHub token for remote data backup (set via GITHUB_TOKEN env var on Render)
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+
+# Mid-season auction cutoff. Matches with date < cutoff = Phase 1 (frozen).
+# Matches with date >= cutoff = Phase 2 (live, attributed to new rosters).
+PHASE2_CUTOFF_DATE = "2026-04-25"
