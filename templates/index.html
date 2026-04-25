@@ -902,6 +902,12 @@
                         Standings
                     </span>
                 </button>
+                <button class="tab-btn" :class="{ active: tab === 'squads' }" @click="tab = 'squads'">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Squads
+                    </span>
+                </button>
                 <button class="tab-btn" :class="{ active: tab === 'awards' }" @click="tab = 'awards'; loadAwards()">
                     <span style="display: flex; align-items: center; gap: 6px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
@@ -1449,10 +1455,105 @@
 
 
         <!-- ========================================================
+             SQUADS TAB — all 9 Phase 2 teams in one view + player search
+             ======================================================== -->
+        <div x-show="tab === 'squads'" x-transition:enter="stagger-in" style="animation-delay: 0.05s;">
+            <!-- Search box -->
+            <div style="margin-bottom: 16px; position: relative;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"
+                     style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" x-model="squadSearch"
+                       placeholder="Search any player across all 9 teams…"
+                       style="width: 100%; padding: 11px 14px 11px 38px; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 12px; color: var(--text-primary); font-size: 0.85rem; font-family: inherit; outline: none;"
+                       @focus="$event.target.style.borderColor = 'var(--border-accent)'"
+                       @blur="$event.target.style.borderColor = 'var(--border-subtle)'">
+                <template x-if="squadSearch">
+                    <button @click="squadSearch = ''"
+                            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 4px 8px;">×</button>
+                </template>
+            </div>
+
+            <!-- Match-count summary when searching -->
+            <template x-if="squadSearch">
+                <div style="margin-bottom: 12px; font-size: 0.7rem; color: var(--text-muted);">
+                    <span x-text="squadMatchCount() + ' player' + (squadMatchCount() === 1 ? '' : 's')"></span> match
+                    "<span style="color: var(--text-secondary); font-weight: 600;" x-text="squadSearch"></span>"
+                </div>
+            </template>
+
+            <!-- Loading -->
+            <template x-if="loading && !standings.length">
+                <div>
+                    <template x-for="i in 3" :key="i">
+                        <div class="shimmer" style="height: 200px; border-radius: 14px; margin-bottom: 12px;"></div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Team cards grid -->
+            <template x-if="standings.length">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;">
+                    <template x-for="team in squadsFiltered()" :key="'sq-' + team.team_name">
+                        <div class="card" style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Team header -->
+                            <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle);">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div class="heading-md" style="font-size: 0.9rem;" x-text="team.team_name"></div>
+                                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 2px;">
+                                        <span x-text="team.players.length + ' players'"></span>
+                                        <span style="margin: 0 4px; opacity: 0.4;">·</span>
+                                        <span x-text="team.total_pts + ' pts'"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Players -->
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <template x-for="(p, pi) in team.players" :key="'sq-p-' + team.team_name + '-' + p.player_name">
+                                    <div :style="{
+                                            display: 'flex', alignItems: 'center', gap: '6px',
+                                            padding: '5px 8px', borderRadius: '6px', fontSize: '0.72rem',
+                                            background: squadSearch && playerMatchesSearch(p) ? 'rgba(249,115,22,0.10)' : 'transparent',
+                                            border: squadSearch && playerMatchesSearch(p) ? '1px solid rgba(249,115,22,0.3)' : '1px solid transparent',
+                                            opacity: squadSearch && !playerMatchesSearch(p) ? 0.35 : 1
+                                         }">
+                                        <span :class="'role-dot role-' + roleAbbr(p.role)" :style="'flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%; background: ' + roleColor(p.role) + ';'"></span>
+                                        <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;"
+                                              x-text="p.display_name || p.player_name"></span>
+                                        <template x-if="p.designation === 'C'">
+                                            <span class="badge-c" style="font-size: 0.55rem;">C</span>
+                                        </template>
+                                        <template x-if="p.designation === 'VC'">
+                                            <span class="badge-vc" style="font-size: 0.55rem;">VC</span>
+                                        </template>
+                                        <span style="font-size: 0.55rem; color: var(--text-dimmed); white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis;"
+                                              x-text="iplTeamShort(p.ipl_team)"></span>
+                                        <span style="font-weight: 700; color: var(--text-primary); min-width: 36px; text-align: right;"
+                                              x-text="p.total_pts"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- No-match state -->
+            <template x-if="standings.length && squadSearch && squadMatchCount() === 0">
+                <div class="card" style="padding: 30px 20px; text-align: center;">
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">No players match "<span x-text="squadSearch"></span>"</div>
+                </div>
+            </template>
+        </div>
+
+
+        <!-- ========================================================
              TRENDS TAB
              ======================================================== -->
         <div x-show="tab === 'trends'" x-transition:enter="stagger-in" style="animation-delay: 0.05s;">
-            <template x-if="standings.length && standings[0]?.pts_history?.length >= 1">
+            <template x-if="standings.length">
                 <div class="card" style="margin-bottom: 16px; padding: 16px 18px; overflow: visible;">
                     <!-- Chart Title -->
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
@@ -1460,6 +1561,7 @@
                             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                         </svg>
                         <span class="heading-md" style="font-size: 0.9rem;">Cumulative Points Progress</span>
+                        <span style="font-size: 0.6rem; color: var(--text-dimmed); margin-left: 8px;">Auction baseline + Phase 2 matches</span>
                     </div>
 
                     <!-- SVG Chart — built via innerHTML to avoid template-in-SVG issues -->
@@ -1489,13 +1591,13 @@
                 </div>
             </template>
 
-            <!-- Empty state when no history -->
-            <template x-if="!standings.length || !standings[0]?.pts_history?.length">
+            <!-- Empty state when no standings -->
+            <template x-if="!standings.length">
                 <div class="card" style="padding: 40px 20px; text-align: center;">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-dimmed)" stroke-width="1.5" stroke-linecap="round" style="margin: 0 auto 12px;">
                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                     </svg>
-                    <div style="color: var(--text-muted); font-size: 0.85rem;">Trends will appear after multiple matches are played</div>
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">Trends will appear once standings load</div>
                 </div>
             </template>
         </div>
@@ -2069,6 +2171,7 @@
             loadingDetail: false,
             expandedPlayer: null,
             phase1Open: false,
+            squadSearch: '',
 
             awards: null,
             loadingAwards: false,
@@ -2345,17 +2448,80 @@
             },
 
             // ===================================================================
+            // SQUADS TAB
+            // ===================================================================
+            squadsFiltered() {
+                // Always returns all teams (sorted by standing); search just dims
+                // non-matching players inside each card.
+                return this.standings;
+            },
+
+            playerMatchesSearch(p) {
+                const q = (this.squadSearch || '').trim().toLowerCase();
+                if (!q) return false;
+                const name = (p.display_name || p.player_name || '').toLowerCase();
+                const ipl = (p.ipl_team || '').toLowerCase();
+                const role = (p.role || '').toLowerCase();
+                return name.includes(q) || ipl.includes(q) || role.includes(q);
+            },
+
+            squadMatchCount() {
+                if (!this.squadSearch) return 0;
+                let n = 0;
+                for (const t of this.standings) {
+                    for (const p of (t.players || [])) {
+                        if (this.playerMatchesSearch(p)) n++;
+                    }
+                }
+                return n;
+            },
+
+            roleAbbr(role) {
+                const r = (role || '').toLowerCase();
+                if (r.includes('keeper')) return 'wk';
+                if (r.includes('all')) return 'ar';
+                if (r.includes('bowl')) return 'bowl';
+                return 'bat';
+            },
+
+            roleColor(role) {
+                const r = (role || '').toLowerCase();
+                if (r.includes('keeper')) return 'var(--role-wk)';
+                if (r.includes('all')) return 'var(--role-ar)';
+                if (r.includes('bowl')) return 'var(--role-bowl)';
+                return 'var(--role-bat)';
+            },
+
+            iplTeamShort(name) {
+                const map = {
+                    'Mumbai Indians': 'MI',
+                    'Chennai Super Kings': 'CSK',
+                    'Royal Challengers Bengaluru': 'RCB',
+                    'Kolkata Knight Riders': 'KKR',
+                    'Sunrisers Hyderabad': 'SRH',
+                    'Punjab Kings': 'PBKS',
+                    'Rajasthan Royals': 'RR',
+                    'Delhi Capitals': 'DC',
+                    'Gujarat Titans': 'GT',
+                    'Lucknow Super Giants': 'LSG',
+                };
+                return map[name] || name || '';
+            },
+
+            // ===================================================================
             // CHART HELPERS
             // ===================================================================
-            getCumulativeHistory(ptsHistory) {
-                if (!ptsHistory || !ptsHistory.length) return [];
-                let cumulative = [];
-                let sum = 0;
+            getCumulativeHistory(ptsHistory, baseline = 0) {
+                // Returns [baseline, baseline+m1, baseline+m1+m2, ...]
+                // The leading baseline = the "Auction" anchor (frozen Phase 1 total).
+                const out = [baseline];
+                if (!ptsHistory || !ptsHistory.length) return out;
+                let sum = baseline;
                 for (const pts of ptsHistory) {
                     sum += pts;
-                    cumulative.push(sum);
+                    out.push(sum);
                 }
-                return cumulative;
+                return out;
             },
 
             getChartWidth() {
@@ -2369,7 +2535,7 @@
             getChartYMax(standings) {
                 let max = 0;
                 for (const team of standings) {
-                    const cum = this.getCumulativeHistory(team.pts_history);
+                    const cum = this.getCumulativeHistory(team.pts_history, team.frozen_pts || 0);
                     for (const v of cum) {
                         if (v > max) max = v;
                     }
@@ -2387,8 +2553,8 @@
 
             getChartPoints(standings, teamIdx, chartW, chartH, padL, padB) {
                 const team = standings[teamIdx];
-                if (!team?.pts_history?.length) return '';
-                const cum = this.getCumulativeHistory(team.pts_history);
+                if (!team) return '';
+                const cum = this.getCumulativeHistory(team.pts_history, team.frozen_pts || 0);
                 const yMax = this.getChartYMax(standings);
                 const numPoints = cum.length;
                 const usableW = chartW - padL;
@@ -2402,12 +2568,13 @@
             },
 
             buildChartSVG(standings, highlightedTeam) {
-                if (!standings?.length || !standings[0]?.pts_history?.length) return '';
+                if (!standings?.length) return '';
                 const W = this.getChartWidth();
                 const H = this.getChartHeight();
                 const yMax = this.getChartYMax(standings);
                 const gridLines = this.getChartGridLines(yMax, 5);
-                const numMatches = standings[0].pts_history.length;
+                // numLabels = 1 (Auction) + N Phase 2 matches
+                const numLabels = 1 + (standings[0]?.pts_history?.length || 0);
 
                 let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;overflow:visible;">`;
 
@@ -2418,10 +2585,17 @@
                     svg += `<text x="36" y="${(parseFloat(y) + 3).toFixed(1)}" fill="#475569" font-size="9" text-anchor="end" font-family="Inter,sans-serif">${yVal}</text>`;
                 }
 
-                // X-axis labels
-                for (let mi = 0; mi < numMatches; mi++) {
-                    const x = (40 + (mi * ((W - 40) / Math.max(numMatches - 1, 1)))).toFixed(1);
-                    svg += `<text x="${x}" y="${H - 6}" fill="#475569" font-size="8" text-anchor="middle" font-family="Inter,sans-serif">M${mi + 1}</text>`;
+                // X-axis labels: Auction, M1, M2, ...
+                for (let mi = 0; mi < numLabels; mi++) {
+                    const x = (40 + (mi * ((W - 40) / Math.max(numLabels - 1, 1)))).toFixed(1);
+                    const label = mi === 0 ? 'Auction' : 'M' + mi;
+                    svg += `<text x="${x}" y="${H - 6}" fill="#475569" font-size="8" text-anchor="middle" font-family="Inter,sans-serif">${label}</text>`;
+                }
+
+                // Vertical separator after Auction
+                if (numLabels > 1) {
+                    const sepX = (40 + ((W - 40) / Math.max(numLabels - 1, 1))).toFixed(1);
+                    svg += `<line x1="${sepX}" y1="8" x2="${sepX}" y2="${H - 24}" stroke="rgba(249,115,22,0.25)" stroke-width="1" stroke-dasharray="2,3"/>`;
                 }
 
                 // Team lines + data point circles
@@ -2435,13 +2609,14 @@
                     svg += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" style="opacity:${opacity};transition:opacity 200ms,stroke-width 200ms;" data-team="${tIdx}"/>`;
 
                     // Data point circles with tooltip
-                    const cum = this.getCumulativeHistory(standings[tIdx].pts_history);
+                    const cum = this.getCumulativeHistory(standings[tIdx].pts_history, standings[tIdx].frozen_pts || 0);
                     const coords = pts.split(' ');
                     coords.forEach((coord, ci) => {
                         const [cx, cy] = coord.split(',');
                         const r = isHighlighted ? 4 : 3;
+                        const lbl = ci === 0 ? 'Auction' : 'M' + ci;
                         svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="#1e293b" stroke-width="1.5" style="opacity:${opacity};transition:opacity 200ms;" data-team="${tIdx}">`;
-                        svg += `<title>${standings[tIdx].team_name} — M${ci+1}: ${cum[ci]} pts</title>`;
+                        svg += `<title>${standings[tIdx].team_name} — ${lbl}: ${cum[ci]} pts</title>`;
                         svg += `</circle>`;
                     });
                 }
