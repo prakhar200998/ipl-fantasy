@@ -2511,12 +2511,11 @@
             // ===================================================================
             // CHART HELPERS
             // ===================================================================
-            getCumulativeHistory(ptsHistory, baseline = 0) {
-                // Returns [baseline, baseline+m1, baseline+m1+m2, ...]
-                // The leading baseline = the "Auction" anchor (frozen Phase 1 total).
-                const out = [baseline];
-                if (!ptsHistory || !ptsHistory.length) return out;
-                let sum = baseline;
+            getCumulativeHistory(ptsHistory) {
+                // Cumulative sum of per-match points: [m1, m1+m2, ...].
+                if (!ptsHistory || !ptsHistory.length) return [];
+                const out = [];
+                let sum = 0;
                 for (const pts of ptsHistory) {
                     sum += pts;
                     out.push(sum);
@@ -2535,7 +2534,7 @@
             getChartYMax(standings) {
                 let max = 0;
                 for (const team of standings) {
-                    const cum = this.getCumulativeHistory(team.pts_history, team.frozen_pts || 0);
+                    const cum = this.getCumulativeHistory(team.pts_history_full || team.pts_history);
                     for (const v of cum) {
                         if (v > max) max = v;
                     }
@@ -2554,7 +2553,8 @@
             getChartPoints(standings, teamIdx, chartW, chartH, padL, padB) {
                 const team = standings[teamIdx];
                 if (!team) return '';
-                const cum = this.getCumulativeHistory(team.pts_history, team.frozen_pts || 0);
+                const cum = this.getCumulativeHistory(team.pts_history_full || team.pts_history);
+                if (!cum.length) return '';
                 const yMax = this.getChartYMax(standings);
                 const numPoints = cum.length;
                 const usableW = chartW - padL;
@@ -2573,8 +2573,10 @@
                 const H = this.getChartHeight();
                 const yMax = this.getChartYMax(standings);
                 const gridLines = this.getChartGridLines(yMax, 5);
-                // numLabels = 1 (Auction) + N Phase 2 matches
-                const numLabels = 1 + (standings[0]?.pts_history?.length || 0);
+                const histRef = standings[0]?.pts_history_full || standings[0]?.pts_history || [];
+                const numMatches = histRef.length;
+                if (!numMatches) return '';
+                const cutoffIdx = standings[0]?.cutoff_match_idx ?? 0;
 
                 let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;overflow:visible;">`;
 
@@ -2585,17 +2587,20 @@
                     svg += `<text x="36" y="${(parseFloat(y) + 3).toFixed(1)}" fill="#475569" font-size="9" text-anchor="end" font-family="Inter,sans-serif">${yVal}</text>`;
                 }
 
-                // X-axis labels: Auction, M1, M2, ...
-                for (let mi = 0; mi < numLabels; mi++) {
-                    const x = (40 + (mi * ((W - 40) / Math.max(numLabels - 1, 1)))).toFixed(1);
-                    const label = mi === 0 ? 'Auction' : 'M' + mi;
-                    svg += `<text x="${x}" y="${H - 6}" fill="#475569" font-size="8" text-anchor="middle" font-family="Inter,sans-serif">${label}</text>`;
+                // X-axis: M1, M2, … (only label every Nth to avoid crowding)
+                const labelEvery = Math.max(1, Math.ceil(numMatches / 12));
+                for (let mi = 0; mi < numMatches; mi++) {
+                    const x = (40 + (mi * ((W - 40) / Math.max(numMatches - 1, 1)))).toFixed(1);
+                    if (mi === 0 || mi === numMatches - 1 || mi % labelEvery === 0 || mi === cutoffIdx) {
+                        svg += `<text x="${x}" y="${H - 6}" fill="#475569" font-size="8" text-anchor="middle" font-family="Inter,sans-serif">M${mi + 1}</text>`;
+                    }
                 }
 
-                // Vertical separator after Auction
-                if (numLabels > 1) {
-                    const sepX = (40 + ((W - 40) / Math.max(numLabels - 1, 1))).toFixed(1);
-                    svg += `<line x1="${sepX}" y1="8" x2="${sepX}" y2="${H - 24}" stroke="rgba(249,115,22,0.25)" stroke-width="1" stroke-dasharray="2,3"/>`;
+                // Vertical divider at the auction (between last Phase 1 and first Phase 2 match)
+                if (cutoffIdx > 0 && cutoffIdx < numMatches) {
+                    const sepX = (40 + ((cutoffIdx - 0.5) * ((W - 40) / Math.max(numMatches - 1, 1)))).toFixed(1);
+                    svg += `<line x1="${sepX}" y1="8" x2="${sepX}" y2="${H - 24}" stroke="rgba(249,115,22,0.35)" stroke-width="1" stroke-dasharray="3,3"/>`;
+                    svg += `<text x="${sepX}" y="14" fill="#fb923c" font-size="8" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700">↓ Auction</text>`;
                 }
 
                 // Team lines + data point circles
@@ -2608,17 +2613,17 @@
                     const sw = isHighlighted ? 3 : 2;
                     svg += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" style="opacity:${opacity};transition:opacity 200ms,stroke-width 200ms;" data-team="${tIdx}"/>`;
 
-                    // Data point circles with tooltip
-                    const cum = this.getCumulativeHistory(standings[tIdx].pts_history, standings[tIdx].frozen_pts || 0);
-                    const coords = pts.split(' ');
-                    coords.forEach((coord, ci) => {
-                        const [cx, cy] = coord.split(',');
-                        const r = isHighlighted ? 4 : 3;
-                        const lbl = ci === 0 ? 'Auction' : 'M' + ci;
-                        svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="#1e293b" stroke-width="1.5" style="opacity:${opacity};transition:opacity 200ms;" data-team="${tIdx}">`;
-                        svg += `<title>${standings[tIdx].team_name} — ${lbl}: ${cum[ci]} pts</title>`;
-                        svg += `</circle>`;
-                    });
+                    // Show data-point circles only when highlighted (otherwise lots of dots)
+                    if (isHighlighted) {
+                        const cum = this.getCumulativeHistory(standings[tIdx].pts_history_full || standings[tIdx].pts_history);
+                        const coords = pts.split(' ');
+                        coords.forEach((coord, ci) => {
+                            const [cx, cy] = coord.split(',');
+                            svg += `<circle cx="${cx}" cy="${cy}" r="3" fill="${color}" stroke="#1e293b" stroke-width="1.5" style="opacity:${opacity};" data-team="${tIdx}">`;
+                            svg += `<title>${standings[tIdx].team_name} — M${ci + 1}: ${cum[ci]} pts</title>`;
+                            svg += `</circle>`;
+                        });
+                    }
                 }
 
                 // Hit areas (transparent, wider for hover)

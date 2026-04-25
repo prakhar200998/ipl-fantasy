@@ -737,7 +737,7 @@ def get_standings() -> list[dict]:
         for team_data in standings:
             team_data["rank_change"] = None
 
-    # pts_history: per-match scores for Phase 2 matches only
+    # pts_history: per-match scores for Phase 2 matches only (small sparkline)
     match_ids = [m["match_id"] for m in matches]
     for team_data in standings:
         top11_names = [p["player_name"] for p in team_data["top11"]]
@@ -755,6 +755,81 @@ def get_standings() -> list[dict]:
             team_data["pts_history"] = [match_totals.get(mid, 0) for mid in match_ids]
         else:
             team_data["pts_history"] = []
+
+    # pts_history_full: per-match contribution across the WHOLE season,
+    # using Phase 1 frozen top-11 for pre-cutoff matches and Phase 2 top-11
+    # for post-cutoff matches. Cumulative sum equals frozen_pts + live_pts.
+    all_matches = conn.execute(
+        "SELECT match_id, date FROM matches "
+        "WHERE status IN ('complete', 'in_progress', 'abandoned') "
+        "ORDER BY date ASC, match_id ASC"
+    ).fetchall()
+    all_match_ids = [m["match_id"] for m in all_matches]
+    p1_match_ids = [m["match_id"] for m in all_matches if (m["date"] or "")[:10] < cutoff]
+    p2_match_ids = [m["match_id"] for m in all_matches if (m["date"] or "")[:10] >= cutoff]
+    cutoff_idx = len(p1_match_ids)  # first Phase 2 match's position in pts_history_full
+
+    for team_data in standings:
+        # Phase 1 contribution: frozen top-11 names from snapshot
+        snap_row = conn.execute(
+            "SELECT frozen_top11_json FROM team_phase_snapshot "
+            "WHERE team_id = ? AND phase = 1",
+            (team_data["team_id"],),
+        ).fetchone()
+        p1_top11_names = []
+        if snap_row and snap_row["frozen_top11_json"]:
+            try:
+                p1_top11_names = [
+                    p["player_name"]
+                    for p in json.loads(snap_row["frozen_top11_json"])[:11]
+                ]
+            except (json.JSONDecodeError, KeyError):
+                p1_top11_names = []
+        p2_top11_names = [p["player_name"] for p in team_data["top11"]]
+
+        # Build per-match totals for Phase 1 segment
+        p1_totals = {}
+        if p1_top11_names and p1_match_ids:
+            ph_n = ",".join("?" * len(p1_top11_names))
+            ph_m = ",".join("?" * len(p1_match_ids))
+            for r in conn.execute(
+                f"""SELECT match_id, SUM(total_pts) as t
+                    FROM player_match_points
+                    WHERE player_name IN ({ph_n}) AND match_id IN ({ph_m})
+                    GROUP BY match_id""",
+                p1_top11_names + p1_match_ids,
+            ).fetchall():
+                p1_totals[r["match_id"]] = r["t"]
+
+        # Build per-match totals for Phase 2 segment
+        p2_totals = {}
+        if p2_top11_names and p2_match_ids:
+            ph_n = ",".join("?" * len(p2_top11_names))
+            ph_m = ",".join("?" * len(p2_match_ids))
+            for r in conn.execute(
+                f"""SELECT match_id, SUM(total_pts) as t
+                    FROM player_match_points
+                    WHERE player_name IN ({ph_n}) AND match_id IN ({ph_m})
+                    GROUP BY match_id""",
+                p2_top11_names + p2_match_ids,
+            ).fetchall():
+                p2_totals[r["match_id"]] = r["t"]
+
+        history = []
+        for mid in all_match_ids:
+            if mid in p1_totals:
+                history.append(p1_totals[mid])
+            elif mid in p2_totals:
+                history.append(p2_totals[mid])
+            else:
+                history.append(0)
+        team_data["pts_history_full"] = history
+
+    # Cutoff metadata for the chart
+    if standings:
+        standings[0]  # noqa  (just to anchor the field placement)
+    for team_data in standings:
+        team_data["cutoff_match_idx"] = cutoff_idx
 
     conn.close()
     return standings
