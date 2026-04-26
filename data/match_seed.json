@@ -302,7 +302,7 @@
       "teams_json": "[\"Lucknow Super Giants\", \"Kolkata Knight Riders\"]",
       "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cd_v2"
     }
   ],
   "player_points": [
@@ -9360,11 +9360,11 @@
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
       "player_name": "Digvesh Rathi",
       "batting_pts": 0,
-      "bowling_pts": 12,
+      "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 16,
-      "total_pts": 16,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 0, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
@@ -9455,6 +9455,16 @@
       "raw_pts": 4,
       "total_pts": 4,
       "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 6, \"balls\": 11, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
+      "player_name": "Digvesh Singh Rathi",
+      "batting_pts": 0,
+      "bowling_pts": -4,
+      "fielding_pts": 0,
+      "raw_pts": 0,
+      "total_pts": 0,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
     }
   ],
   "phase_snapshots": [
