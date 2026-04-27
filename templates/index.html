@@ -393,6 +393,10 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
         }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         .live-dot {
             width: 8px;
@@ -1986,17 +1990,127 @@
                                         </div>
                                     </div>
 
-                                    <!-- Last updated -->
-                                    <div style="text-align: right;">
+                                    <!-- Last updated + Refresh -->
+                                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                        <button @click="refreshLiveNow()"
+                                                :disabled="liveRefreshing"
+                                                style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-secondary); font-size: 0.7rem; font-family: inherit; cursor: pointer; transition: all 0.15s;"
+                                                :style="liveRefreshing ? 'opacity: 0.5; cursor: not-allowed;' : ''"
+                                                @mouseover="if (!liveRefreshing) $event.target.style.borderColor = 'var(--border-accent)'"
+                                                @mouseout="$event.target.style.borderColor = 'var(--border-subtle)'">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                                 :style="liveRefreshing ? 'animation: spin 1s linear infinite;' : ''">
+                                                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                            </svg>
+                                            <span x-text="liveRefreshing ? 'Refreshing…' : 'Refresh'"></span>
+                                        </button>
                                         <div style="font-size: 0.65rem; color: var(--text-dimmed);">
                                             Last updated: <span x-text="liveLastUpdated || 'just now'"></span>
                                         </div>
                                         <template x-if="liveData.match.status === 'in_progress'">
-                                            <div style="font-size: 0.6rem; color: var(--text-dimmed); margin-top: 2px;">Auto-refreshes every 30s</div>
+                                            <div style="font-size: 0.6rem; color: var(--text-dimmed);">Auto-refreshes every 30s</div>
+                                        </template>
+                                        <template x-if="liveRefreshMessage">
+                                            <div style="font-size: 0.6rem; color: var(--accent-light);" x-text="liveRefreshMessage"></div>
                                         </template>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- ===== PER-TEAM FANTASY IMPACT (moved to top) ===== -->
+                            <template x-if="liveData.team_impacts && liveData.team_impacts.length > 0">
+                                <div style="margin-bottom: 16px;">
+                                    <h3 class="heading-md" style="margin: 0 0 12px; color: var(--text-secondary);">Fantasy Impact by Team</h3>
+                                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                                        <template x-for="(impact, impIdx) in liveData.team_impacts" :key="'top-' + impact.team_name">
+                                            <div class="card stagger-in" :style="'animation-delay: ' + (impIdx * 0.06) + 's;'">
+                                                <div @click="toggleLiveTeam(impact.team_name)"
+                                                     class="team-header-row"
+                                                     style="padding: 14px 18px; cursor: pointer; display: flex; align-items: center; gap: 12px; user-select: none; flex-wrap: nowrap;">
+                                                    <div class="rank-badge"
+                                                         :class="{
+                                                             'rank-1': impIdx === 0,
+                                                             'rank-2': impIdx === 1,
+                                                             'rank-3': impIdx === 2,
+                                                             'rank-default': impIdx > 2
+                                                         }">
+                                                        <span x-text="impIdx + 1"></span>
+                                                    </div>
+                                                    <div style="flex: 1; min-width: 0; overflow: hidden;">
+                                                        <div class="heading-md" x-text="impact.team_name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                                                        <template x-if="impact.narrative">
+                                                            <div style="font-size: 0.62rem; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                                                 x-text="impact.narrative"></div>
+                                                        </template>
+                                                        <div style="font-size: 0.55rem; color: var(--text-dimmed); margin-top: 1px;">
+                                                            <span x-text="impact.players.length"></span> players · top-11 contribution:
+                                                            <span :style="impact.top11_match_pts > 0 ? 'color: #4ade80; font-weight: 700;' : 'color: var(--text-dimmed);'"
+                                                                  x-text="(impact.top11_match_pts > 0 ? '+' : '') + (impact.top11_match_pts || 0)"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div style="text-align: right; flex-shrink: 0; min-width: 50px;">
+                                                        <div class="pts-highlight team-pts" style="font-size: 1.05rem;"
+                                                             :style="impIdx === 0 ? 'color: var(--gold);' : ''">
+                                                            <span x-text="impact.match_pts >= 0 ? '+' : ''"></span><span x-text="impact.match_pts"></span>
+                                                            <span style="font-size: 0.55rem; font-weight: 500; color: var(--text-muted); margin-left: 1px;">pts</span>
+                                                        </div>
+                                                    </div>
+                                                    <svg class="accordion-chevron" style="flex-shrink: 0;"
+                                                         :class="{ rotated: expandedLiveTeam === impact.team_name }"
+                                                         width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                         stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
+                                                        <polyline points="6 9 12 15 18 9"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="accordion-content"
+                                                     :class="{ open: expandedLiveTeam === impact.team_name }">
+                                                    <div style="padding: 0 20px 16px;">
+                                                        <template x-for="player in impact.players" :key="'top-pl-' + player.player_name">
+                                                            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.02);"
+                                                                 :class="{ 'on-fire': player.total_pts >= 50 }"
+                                                                 :style="player.total_pts >= 50 ? 'padding: 8px 10px; border-radius: 8px; margin: 2px -10px;' : ''">
+                                                                <span class="role-pill"
+                                                                      :class="getRolePillClass(player.player_name)"
+                                                                      x-text="getPlayerRole(player.player_name)"
+                                                                      x-show="getPlayerRole(player.player_name)"></span>
+                                                                <div style="flex: 1; min-width: 0;">
+                                                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                                                        <span style="font-weight: 600; font-size: 0.8rem;" x-text="player.display_name || player.player_name"></span>
+                                                                        <template x-if="player.designation === 'C'">
+                                                                            <span class="badge-c">C</span>
+                                                                        </template>
+                                                                        <template x-if="player.designation === 'VC'">
+                                                                            <span class="badge-vc">VC</span>
+                                                                        </template>
+                                                                        <template x-if="player.total_pts >= 50">
+                                                                            <span class="fire-badge">ON FIRE</span>
+                                                                        </template>
+                                                                    </div>
+                                                                </div>
+                                                                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.7rem; color: var(--text-muted);" class="hide-mobile">
+                                                                    <span x-show="player.batting_pts" style="color: #60a5fa;" x-text="'Bat ' + player.batting_pts"></span>
+                                                                    <span x-show="player.bowling_pts" style="color: #a78bfa;" x-text="'Bowl ' + player.bowling_pts"></span>
+                                                                    <span x-show="player.fielding_pts" style="color: #fbbf24;" x-text="'Field ' + player.fielding_pts"></span>
+                                                                </div>
+                                                                <div class="pts-highlight" style="font-size: 0.9rem; flex-shrink: 0; padding: 2px 6px; border-radius: 6px;"
+                                                                     :class="{
+                                                                         'score-excellent': player.total_pts >= 50,
+                                                                         'score-good': player.total_pts >= 20 && player.total_pts < 50,
+                                                                         'score-bad': player.total_pts < 0,
+                                                                         'pts-flash-up': prevLivePoints[player.player_name] !== undefined && player.total_pts > prevLivePoints[player.player_name],
+                                                                         'pts-flash-down': prevLivePoints[player.player_name] !== undefined && player.total_pts < prevLivePoints[player.player_name],
+                                                                     }"
+                                                                     x-text="player.total_pts + ' pts'">
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
 
                             <!-- ===== RANK MOVERS ===== -->
                             <template x-if="liveData.rank_movers && liveData.rank_movers.length > 0 && liveData.rank_movers.some(m => m.delta !== 0)">
@@ -2066,111 +2180,6 @@
                                 </div>
                             </template>
 
-                            <!-- Per-Team Fantasy Impact -->
-                            <template x-if="liveData.team_impacts && liveData.team_impacts.length > 0">
-                                <div>
-                                    <h3 class="heading-md" style="margin: 0 0 12px; color: var(--text-secondary);">Fantasy Impact by Team</h3>
-
-                                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                                        <template x-for="(impact, impIdx) in liveData.team_impacts" :key="impact.team_name">
-                                            <div class="card stagger-in" :style="'animation-delay: ' + (impIdx * 0.06) + 's;'">
-                                                <!-- Team Impact Header -->
-                                                <div @click="toggleLiveTeam(impact.team_name)"
-                                                     class="team-header-row"
-                                                     style="padding: 14px 18px; cursor: pointer; display: flex; align-items: center; gap: 12px; user-select: none; flex-wrap: nowrap;">
-
-                                                    <div class="rank-badge"
-                                                         :class="{
-                                                             'rank-1': impIdx === 0,
-                                                             'rank-2': impIdx === 1,
-                                                             'rank-3': impIdx === 2,
-                                                             'rank-default': impIdx > 2
-                                                         }">
-                                                        <span x-text="impIdx + 1"></span>
-                                                    </div>
-
-                                                    <div style="flex: 1; min-width: 0; overflow: hidden;">
-                                                        <div class="heading-md" x-text="impact.team_name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
-                                                        <template x-if="impact.narrative">
-                                                            <div style="font-size: 0.62rem; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                                                 x-text="impact.narrative"></div>
-                                                        </template>
-                                                        <div style="font-size: 0.55rem; color: var(--text-dimmed); margin-top: 1px;">
-                                                            <span x-text="impact.players.length"></span> players · top-11 contribution:
-                                                            <span :style="impact.top11_match_pts > 0 ? 'color: #4ade80; font-weight: 700;' : 'color: var(--text-dimmed);'"
-                                                                  x-text="(impact.top11_match_pts > 0 ? '+' : '') + (impact.top11_match_pts || 0)"></span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div style="text-align: right; flex-shrink: 0; min-width: 50px;">
-                                                        <div class="pts-highlight team-pts" style="font-size: 1.05rem;"
-                                                             :style="impIdx === 0 ? 'color: var(--gold);' : ''">
-                                                            <span x-text="impact.match_pts >= 0 ? '+' : ''"></span><span x-text="impact.match_pts"></span>
-                                                            <span style="font-size: 0.55rem; font-weight: 500; color: var(--text-muted); margin-left: 1px;">pts</span>
-                                                        </div>
-                                                    </div>
-
-                                                    <svg class="accordion-chevron" style="flex-shrink: 0;"
-                                                         :class="{ rotated: expandedLiveTeam === impact.team_name }"
-                                                         width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                         stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round">
-                                                        <polyline points="6 9 12 15 18 9"/>
-                                                    </svg>
-                                                </div>
-
-                                                <!-- Player Breakdown -->
-                                                <div class="accordion-content"
-                                                     :class="{ open: expandedLiveTeam === impact.team_name }">
-                                                    <div style="padding: 0 20px 16px;">
-                                                        <template x-for="player in impact.players" :key="player.player_name">
-                                                            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.02);"
-                                                                 :class="{ 'on-fire': player.total_pts >= 50 }"
-                                                                 :style="player.total_pts >= 50 ? 'padding: 8px 10px; border-radius: 8px; margin: 2px -10px;' : ''">
-
-                                                                <!-- Role pill -->
-                                                                <span class="role-pill"
-                                                                      :class="getRolePillClass(player.player_name)"
-                                                                      x-text="getPlayerRole(player.player_name)"
-                                                                      x-show="getPlayerRole(player.player_name)"></span>
-
-                                                                <div style="flex: 1; min-width: 0;">
-                                                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                                                        <span style="font-weight: 600; font-size: 0.8rem;" x-text="player.display_name || player.player_name"></span>
-                                                                        <template x-if="player.total_pts >= 50">
-                                                                            <span class="fire-badge">ON FIRE</span>
-                                                                        </template>
-                                                                    </div>
-                                                                </div>
-
-                                                                <!-- Breakdown -->
-                                                                <div style="display: flex; align-items: center; gap: 12px; font-size: 0.7rem; color: var(--text-muted);" class="hide-mobile">
-                                                                    <span x-show="player.batting_pts" style="color: #60a5fa;" x-text="'Bat ' + player.batting_pts"></span>
-                                                                    <span x-show="player.bowling_pts" style="color: #a78bfa;" x-text="'Bowl ' + player.bowling_pts"></span>
-                                                                    <span x-show="player.fielding_pts" style="color: #fbbf24;" x-text="'Field ' + player.fielding_pts"></span>
-                                                                </div>
-
-                                                                <!-- Total -->
-                                                                <div class="pts-highlight" style="font-size: 0.9rem; flex-shrink: 0; padding: 2px 6px; border-radius: 6px;"
-                                                                     :class="{
-                                                                         'score-excellent': player.total_pts >= 50,
-                                                                         'score-good': player.total_pts >= 20 && player.total_pts < 50,
-                                                                         'score-bad': player.total_pts < 0,
-                                                                         'pts-flash-up': prevLivePoints[player.player_name] !== undefined && player.total_pts > prevLivePoints[player.player_name],
-                                                                         'pts-flash-down': prevLivePoints[player.player_name] !== undefined && player.total_pts < prevLivePoints[player.player_name],
-                                                                     }"
-                                                                     x-text="player.total_pts + ' pts'">
-                                                                </div>
-                                                            </div>
-                                                        </template>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </div>
-
-                                </div>
-                            </template>
-
                             <!-- No impacts -->
                             <template x-if="!liveData.team_impacts || liveData.team_impacts.length === 0">
                                 <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
@@ -2226,6 +2235,8 @@
             expandedLiveTeam: null,
             apiUsage: null,
             prevLivePoints: {},
+            liveRefreshing: false,
+            liveRefreshMessage: null,
 
             // Chart state
             highlightedTeam: null,
@@ -2384,6 +2395,32 @@
                 } finally {
                     this.loadingLive = false;
                 }
+            },
+
+            async refreshLiveNow() {
+                if (this.liveRefreshing) return;
+                this.liveRefreshing = true;
+                this.liveRefreshMessage = null;
+                try {
+                    const res = await fetch('/api/refresh-live', { method: 'POST' });
+                    const body = await res.json().catch(() => ({}));
+                    if (body.status === 'cooldown') {
+                        this.liveRefreshMessage = `Cooldown — try in ${body.retry_in_sec}s`;
+                    } else if (body.status === 'refreshed') {
+                        this.liveRefreshMessage = 'Synced ✓';
+                    } else {
+                        this.liveRefreshMessage = 'Refresh failed';
+                    }
+                } catch (e) {
+                    this.liveRefreshMessage = 'Refresh failed';
+                    console.error('refresh-live error:', e);
+                } finally {
+                    this.liveRefreshing = false;
+                }
+                // Reload data regardless (cooldown still re-reads cached state)
+                await this.loadLive();
+                // Clear status message after 4s
+                setTimeout(() => { this.liveRefreshMessage = null; }, 4000);
             },
 
             startLivePolling() {

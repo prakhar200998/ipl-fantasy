@@ -1178,6 +1178,58 @@ async def force_refresh(request: Request):
     return {"status": "refreshed"}
 
 
+# Public, cooldown-rate-limited refresh used by the Live tab button.
+_last_public_refresh = {"at": 0.0}
+PUBLIC_REFRESH_COOLDOWN_SEC = 20
+
+
+@app.post("/api/refresh-live")
+async def refresh_live_public():
+    """Public on-demand refresh for the Live tab.
+
+    Triggers match discovery (catches today's match if cron hasn't run yet)
+    and forces an ESPN refresh of any in-progress match. Rate-limited per
+    process so users mashing the button don't hammer ESPN/CD.
+    """
+    import time as _time
+    now = _time.time()
+    elapsed = now - _last_public_refresh["at"]
+    if elapsed < PUBLIC_REFRESH_COOLDOWN_SEC:
+        return {
+            "status": "cooldown",
+            "retry_in_sec": int(PUBLIC_REFRESH_COOLDOWN_SEC - elapsed),
+        }
+    _last_public_refresh["at"] = now
+    try:
+        fetch_and_store_matches()
+        # ESPN refresh is internally time-gated; we bypass that here so the
+        # button works regardless of clock by calling get_espn_scorecard
+        # directly for any in_progress matches.
+        conn = db.get_db()
+        rows = conn.execute(
+            "SELECT match_id, date, teams_json FROM matches WHERE status = 'in_progress'"
+        ).fetchall()
+        conn.close()
+        for row in rows:
+            try:
+                teams = json.loads(row["teams_json"]) if row["teams_json"] else []
+                date = row["date"][:10] if row["date"] else ""
+                captain_vc = get_captain_vc(date)
+                scorecard = get_espn_scorecard(date, teams)
+                if not scorecard:
+                    continue
+                scorecard.match_id = row["match_id"]
+                _inject_enrichment(scorecard, _get_existing_enrichment(row["match_id"]))
+                points = calculate_fantasy_points(scorecard)
+                db.bulk_upsert_player_points(row["match_id"], points, captain_vc, force=True)
+            except Exception as e:
+                logger.error("Public refresh ESPN error for %s: %s", row["match_id"], e)
+        return {"status": "refreshed", "in_progress_count": len(rows)}
+    except Exception as e:
+        logger.error("Public refresh error: %s", e)
+        raise HTTPException(500, f"refresh failed: {e}")
+
+
 @app.post("/api/admin/reseed")
 async def reseed(request: Request):
     """Wipe all match data and re-fetch from CricketData.org.
