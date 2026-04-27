@@ -303,6 +303,14 @@
       "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
       "status": "complete",
       "enrichment_version": "cricsheet"
+    },
+    {
+      "match_id": "espn_1529282",
+      "date": "2026-04-27",
+      "teams_json": "[\"Delhi Capitals\", \"Royal Challengers Bengaluru\"]",
+      "venue": "",
+      "status": "complete",
+      "enrichment_version": null
     }
   ],
   "player_points": [
@@ -9465,6 +9473,246 @@
       "raw_pts": 0,
       "total_pts": 0,
       "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Rasikh Salam",
+      "batting_pts": 0,
+      "bowling_pts": 34,
+      "fielding_pts": 0,
+      "raw_pts": 38,
+      "total_pts": 38,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 21, \"wickets\": 1, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Tim David",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "T Natarajan",
+      "batting_pts": 0,
+      "bowling_pts": 2,
+      "fielding_pts": 8,
+      "raw_pts": 14,
+      "total_pts": 14,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 3, \"runs\": 12, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Romario Shepherd",
+      "batting_pts": 0,
+      "bowling_pts": 4,
+      "fielding_pts": 0,
+      "raw_pts": 8,
+      "total_pts": 8,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 21, \"wickets\": 0, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Devdutt Padikkal",
+      "batting_pts": 76,
+      "bowling_pts": 0,
+      "fielding_pts": 16,
+      "raw_pts": 96,
+      "total_pts": 144,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 34, \"balls\": 13, \"fours\": 3, \"sixes\": 3, \"dismissed\": false}, \"fielding\": {\"catches\": 2, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Virat Kohli",
+      "batting_pts": 43,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 47,
+      "total_pts": 70,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 23, \"balls\": 15, \"fours\": 1, \"sixes\": 2, \"dismissed\": false}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Sahil Parakh",
+      "batting_pts": -2,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 2,
+      "total_pts": 2,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Axar Patel",
+      "batting_pts": -2,
+      "bowling_pts": 2,
+      "fielding_pts": 0,
+      "raw_pts": 4,
+      "total_pts": 6,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 6, \"runs\": 5, \"wickets\": 0, \"dots\": 1, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Nitish Rana",
+      "batting_pts": 1,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 5,
+      "total_pts": 5,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 9, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Bhuvneshwar Kumar",
+      "batting_pts": 0,
+      "bowling_pts": 136,
+      "fielding_pts": 0,
+      "raw_pts": 140,
+      "total_pts": 140,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 5, \"wickets\": 3, \"dots\": 15, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Kyle Jamieson",
+      "batting_pts": 20,
+      "bowling_pts": 36,
+      "fielding_pts": 0,
+      "raw_pts": 60,
+      "total_pts": 60,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 12, \"balls\": 13, \"fours\": 1, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 42, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Kuldeep Yadav",
+      "batting_pts": 3,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 7,
+      "total_pts": 7,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 11, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "KL Rahul",
+      "batting_pts": 1,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 5,
+      "total_pts": 10,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Rajat Patidar",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 4,
+      "total_pts": 6,
+      "breakdown_json": "{\"playing_xi\": 4}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Josh Hazlewood",
+      "batting_pts": 0,
+      "bowling_pts": 170,
+      "fielding_pts": 0,
+      "raw_pts": 174,
+      "total_pts": 174,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 21, \"runs\": 12, \"wickets\": 4, \"dots\": 15, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Suyash Sharma",
+      "batting_pts": 0,
+      "bowling_pts": 90,
+      "fielding_pts": 0,
+      "raw_pts": 94,
+      "total_pts": 94,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 7, \"wickets\": 1, \"dots\": 20, \"maidens\": 1, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "David Miller",
+      "batting_pts": 31,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 35,
+      "total_pts": 35,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 19, \"balls\": 18, \"fours\": 3, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Krunal Pandya",
+      "batting_pts": 0,
+      "bowling_pts": 46,
+      "fielding_pts": 0,
+      "raw_pts": 50,
+      "total_pts": 50,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 12, \"runs\": 9, \"wickets\": 1, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Dushmantha Chameera",
+      "batting_pts": 0,
+      "bowling_pts": 10,
+      "fielding_pts": 0,
+      "raw_pts": 14,
+      "total_pts": 14,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 12, \"runs\": 18, \"wickets\": 0, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Tristan Stubbs",
+      "batting_pts": 9,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 13,
+      "total_pts": 13,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 3, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Sameer Rizvi",
+      "batting_pts": -2,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 2,
+      "total_pts": 2,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Jitesh Sharma",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 36,
+      "raw_pts": 40,
+      "total_pts": 40,
+      "breakdown_json": "{\"playing_xi\": 4, \"fielding\": {\"catches\": 4, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Abishek Porel",
+      "batting_pts": 44,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 48,
+      "total_pts": 48,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 30, \"balls\": 33, \"fours\": 3, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529282",
+      "player_name": "Jacob Bethell",
+      "batting_pts": 42,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 46,
+      "total_pts": 46,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 20, \"balls\": 11, \"fours\": 1, \"sixes\": 2, \"dismissed\": true}}"
     }
   ],
   "phase_snapshots": [
