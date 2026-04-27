@@ -1998,6 +1998,74 @@
                                 </div>
                             </div>
 
+                            <!-- ===== RANK MOVERS ===== -->
+                            <template x-if="liveData.rank_movers && liveData.rank_movers.length > 0 && liveData.rank_movers.some(m => m.delta !== 0)">
+                                <div class="card" style="padding: 14px 16px; margin-bottom: 12px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                                        <h3 class="heading-md" style="margin: 0; font-size: 0.85rem;">Rank Movers</h3>
+                                        <span style="font-size: 0.6rem; color: var(--text-dimmed);">vs. before this match</span>
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                        <template x-for="m in liveData.rank_movers" :key="'mv-' + m.team_name">
+                                            <div :style="{
+                                                    display: 'flex', alignItems: 'center', gap: '6px',
+                                                    padding: '6px 10px', borderRadius: '8px',
+                                                    fontSize: '0.7rem', whiteSpace: 'nowrap',
+                                                    background: m.delta > 0 ? 'rgba(34,197,94,0.10)' : (m.delta < 0 ? 'rgba(239,68,68,0.10)' : 'var(--bg-input)'),
+                                                    border: '1px solid ' + (m.delta > 0 ? 'rgba(34,197,94,0.25)' : (m.delta < 0 ? 'rgba(239,68,68,0.25)' : 'var(--border-subtle)')),
+                                                    color: m.delta > 0 ? '#4ade80' : (m.delta < 0 ? '#f87171' : 'var(--text-muted)')
+                                                 }">
+                                                <span style="font-weight: 700;" x-text="m.delta > 0 ? '↑' + m.delta : m.delta < 0 ? '↓' + Math.abs(m.delta) : '–'"></span>
+                                                <span style="color: var(--text-secondary); font-weight: 600;" x-text="m.team_name"></span>
+                                                <span style="color: var(--text-dimmed); font-size: 0.6rem;">
+                                                    #<span x-text="m.prev_rank"></span>→#<span x-text="m.current_rank"></span>
+                                                </span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- ===== CAPTAIN ROI ===== -->
+                            <template x-if="liveData.captain_roi && liveData.captain_roi.length > 0 && liveData.captain_roi.some(r => r.captain_played || r.vc_played)">
+                                <div class="card" style="padding: 14px 16px; margin-bottom: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                        <span style="font-size: 0.85rem;">©</span>
+                                        <h3 class="heading-md" style="margin: 0; font-size: 0.85rem;">Captain ROI</h3>
+                                        <span style="font-size: 0.6rem; color: var(--text-dimmed);">bonus pts delivered this match</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <template x-for="(r, ri) in liveData.captain_roi" :key="'roi-' + r.team_name">
+                                            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 6px; background: var(--bg-input); font-size: 0.72rem;">
+                                                <span style="color: var(--text-dimmed); min-width: 16px;" x-text="ri + 1"></span>
+                                                <span style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;" x-text="r.team_name"></span>
+                                                <template x-if="r.captain_played">
+                                                    <span style="font-size: 0.62rem; color: var(--text-muted); white-space: nowrap;">
+                                                        <span class="badge-c">C</span>
+                                                        <span x-text="r.captain_name"></span>
+                                                        <span style="color: var(--text-dimmed);" x-text="' (' + r.captain_raw + ')'"></span>
+                                                    </span>
+                                                </template>
+                                                <template x-if="!r.captain_played">
+                                                    <span style="font-size: 0.62rem; color: var(--text-dimmed); font-style: italic;">C didn't play</span>
+                                                </template>
+                                                <template x-if="r.vc_played">
+                                                    <span style="font-size: 0.62rem; color: var(--text-muted); white-space: nowrap;">
+                                                        <span class="badge-vc">VC</span>
+                                                        <span x-text="r.vc_name"></span>
+                                                        <span style="color: var(--text-dimmed);" x-text="' (' + r.vc_raw + ')'"></span>
+                                                    </span>
+                                                </template>
+                                                <span style="font-weight: 700; min-width: 50px; text-align: right; white-space: nowrap;"
+                                                      :style="r.total_bonus > 60 ? 'color: var(--gold);' : (r.total_bonus > 0 ? 'color: #4ade80;' : 'color: var(--text-dimmed);')"
+                                                      x-text="(r.total_bonus > 0 ? '+' : '') + r.total_bonus + ' bonus'"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
                             <!-- Per-Team Fantasy Impact -->
                             <template x-if="liveData.team_impacts && liveData.team_impacts.length > 0">
                                 <div>
@@ -2023,8 +2091,14 @@
 
                                                     <div style="flex: 1; min-width: 0; overflow: hidden;">
                                                         <div class="heading-md" x-text="impact.team_name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
-                                                        <div style="font-size: 0.6rem; color: var(--text-muted);">
-                                                            <span x-text="impact.players.length"></span> players contributed
+                                                        <template x-if="impact.narrative">
+                                                            <div style="font-size: 0.62rem; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                                                 x-text="impact.narrative"></div>
+                                                        </template>
+                                                        <div style="font-size: 0.55rem; color: var(--text-dimmed); margin-top: 1px;">
+                                                            <span x-text="impact.players.length"></span> players · top-11 contribution:
+                                                            <span :style="impact.top11_match_pts > 0 ? 'color: #4ade80; font-weight: 700;' : 'color: var(--text-dimmed);'"
+                                                                  x-text="(impact.top11_match_pts > 0 ? '+' : '') + (impact.top11_match_pts || 0)"></span>
                                                         </div>
                                                     </div>
 
@@ -2094,39 +2168,6 @@
                                         </template>
                                     </div>
 
-                                    <!-- Projected Standings -->
-                                    <template x-if="standings.length > 0 && liveData.match?.status === 'in_progress'">
-                                        <div style="margin-top: 24px;">
-                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                                                <h3 class="heading-md" style="margin: 0; color: var(--text-secondary);">Projected Standings</h3>
-                                                <span style="font-size: 0.6rem; padding: 2px 8px; border-radius: 6px; background: rgba(249,115,22,0.1); color: var(--accent); font-weight: 600; border: 1px solid rgba(249,115,22,0.2);">LIVE</span>
-                                            </div>
-
-                                            <div class="card-flat" style="overflow: hidden;">
-                                                <template x-for="(proj, projIdx) in projectedStandings" :key="proj.team_name">
-                                                    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);"
-                                                         :style="projIdx === projectedStandings.length - 1 ? 'border-bottom: none;' : ''">
-                                                        <div class="rank-badge" style="width: 28px; height: 28px; font-size: 0.7rem;"
-                                                             :class="{
-                                                                 'rank-1': projIdx === 0,
-                                                                 'rank-2': projIdx === 1,
-                                                                 'rank-3': projIdx === 2,
-                                                                 'rank-default': projIdx > 2
-                                                             }">
-                                                            <span x-text="projIdx + 1"></span>
-                                                        </div>
-                                                        <div style="flex: 1; font-weight: 600; font-size: 0.85rem;" x-text="proj.team_name"></div>
-                                                        <div style="text-align: right;">
-                                                            <span class="pts-highlight" style="font-size: 0.9rem;" x-text="proj.projected_pts"></span>
-                                                            <span style="font-size: 0.6rem; color: var(--text-muted); margin-left: 4px;"
-                                                                  :style="proj.live_delta > 0 ? 'color: #4ade80;' : proj.live_delta < 0 ? 'color: #f87171;' : ''"
-                                                                  x-text="proj.live_delta > 0 ? '+' + proj.live_delta : proj.live_delta < 0 ? proj.live_delta : ''"></span>
-                                                        </div>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </template>
                                 </div>
                             </template>
 
@@ -2730,27 +2771,6 @@
                 return 'score-terrible';
             },
 
-            // ===================================================================
-            // PROJECTED STANDINGS (computed from current standings + live impact)
-            // ===================================================================
-            get projectedStandings() {
-                if (!this.standings.length || !this.liveData?.team_impacts?.length) return [];
-
-                const impactMap = {};
-                for (const impact of this.liveData.team_impacts) {
-                    impactMap[impact.team_name] = impact.match_pts || 0;
-                }
-
-                const projected = this.standings.map(team => ({
-                    team_name: team.team_name,
-                    current_pts: team.total_pts,
-                    live_delta: impactMap[team.team_name] || 0,
-                    projected_pts: team.total_pts + (impactMap[team.team_name] || 0),
-                }));
-
-                projected.sort((a, b) => b.projected_pts - a.projected_pts);
-                return projected;
-            },
 
             // ===================================================================
             // SPARKLINE HELPER

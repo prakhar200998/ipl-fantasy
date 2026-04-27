@@ -918,29 +918,57 @@ async def team_detail(team_name: str):
 
 @app.get("/api/live")
 async def live():
-    """Get latest match data with per-team fantasy impact."""
+    """Latest match: per-team impact, rank movers, captain ROI, narratives."""
     latest = db.get_latest_match()
     if not latest:
-        return {"match": None, "team_impacts": []}
+        return {"match": None, "team_impacts": [], "rank_movers": [], "captain_roi": []}
 
     match_points = db.get_live_match_points(latest["match_id"])
     standings_data = db.get_standings()
+    from teams import get_player_meta
+    player_meta = get_player_meta()  # {player_name: {designation, fantasy_team, ipl_team, role}}
 
+    # Build player → team_name (Phase 2 active rosters)
     player_to_team = {}
     for team in standings_data:
         for p in team["players"]:
             player_to_team[p["player_name"]] = team["team_name"]
 
+    # Per-team impact aggregation (all this match's contributing players)
     team_impacts: dict = {}
     for pp in match_points:
         team_name = player_to_team.get(pp["player_name"])
         if not team_name:
             continue
         if team_name not in team_impacts:
-            team_impacts[team_name] = {"team_name": team_name, "match_pts": 0, "players": []}
+            team_impacts[team_name] = {
+                "team_name": team_name,
+                "match_pts": 0,
+                "players": [],
+            }
         pp["display_name"] = get_display_name(pp["player_name"])
+        # Tag designation so the UI can flag C/VC inline
+        pp["designation"] = player_meta.get(pp["player_name"], {}).get("designation", "")
         team_impacts[team_name]["players"].append(pp)
         team_impacts[team_name]["match_pts"] += pp["total_pts"]
+
+    # Per-team top-11 contribution from THIS match (the part that actually
+    # affects standings). pts_history_full[-1] = latest match's contribution.
+    top11_match_pts = {}
+    for team in standings_data:
+        hist = team.get("pts_history_full") or []
+        top11_match_pts[team["team_name"]] = hist[-1] if hist else 0
+
+    # Rank movers: rank now vs rank without this match's top-11 contribution
+    rank_movers = _compute_rank_movers(standings_data, top11_match_pts)
+
+    # Captain ROI: C and VC raw + bonus delivered per team (this match)
+    captain_roi = _compute_captain_roi(team_impacts, player_meta)
+
+    # Narrative one-liner per team
+    for impact in team_impacts.values():
+        impact["narrative"] = _build_team_narrative(impact)
+        impact["top11_match_pts"] = top11_match_pts.get(impact["team_name"], 0)
 
     impacts = sorted(team_impacts.values(), key=lambda x: x["match_pts"], reverse=True)
     for t in impacts:
@@ -955,7 +983,119 @@ async def live():
             "status": latest["status"],
         },
         "team_impacts": impacts,
+        "rank_movers": rank_movers,
+        "captain_roi": captain_roi,
     }
+
+
+def _compute_rank_movers(standings_data: list[dict],
+                          top11_match_pts: dict[str, int]) -> list[dict]:
+    """Rank delta vs. before this match (using top-11 contribution).
+
+    Returns sorted by absolute movement (biggest swings first).
+    """
+    # Current rank
+    current_rank = {t["team_name"]: i + 1 for i, t in enumerate(standings_data)}
+
+    # Rank if we strip this match's top-11 contribution
+    snapshot = [
+        {
+            "team_name": t["team_name"],
+            "before_pts": (t["total_pts"] or 0) - top11_match_pts.get(t["team_name"], 0),
+        }
+        for t in standings_data
+    ]
+    snapshot.sort(key=lambda x: x["before_pts"], reverse=True)
+    prev_rank = {t["team_name"]: i + 1 for i, t in enumerate(snapshot)}
+
+    movers = []
+    for tname, cur in current_rank.items():
+        prev = prev_rank.get(tname, cur)
+        delta = prev - cur  # positive = moved up
+        movers.append({
+            "team_name": tname,
+            "current_rank": cur,
+            "prev_rank": prev,
+            "delta": delta,
+            "match_pts": top11_match_pts.get(tname, 0),
+        })
+    # Sort: biggest movers first (positive deltas at top), then by match_pts
+    movers.sort(key=lambda x: (-abs(x["delta"]), -x["match_pts"]))
+    return movers
+
+
+def _compute_captain_roi(team_impacts: dict, player_meta: dict) -> list[dict]:
+    """Per-team C+VC raw / bonus delivered for this match. Sorted by bonus."""
+    rows = []
+    for team_name, impact in team_impacts.items():
+        c_player = vc_player = None
+        for p in impact["players"]:
+            d = p.get("designation")
+            if d == "C":
+                c_player = p
+            elif d == "VC":
+                vc_player = p
+        c_raw = c_player["raw_pts"] if c_player else 0
+        vc_raw = vc_player["raw_pts"] if vc_player else 0
+        # Bonus = total - raw (the multiplier-driven extra)
+        c_bonus = (c_player["total_pts"] - c_raw) if c_player else 0
+        vc_bonus = (vc_player["total_pts"] - vc_raw) if vc_player else 0
+        rows.append({
+            "team_name": team_name,
+            "captain_name": c_player["display_name"] if c_player else None,
+            "captain_played": c_player is not None,
+            "captain_raw": c_raw,
+            "captain_bonus": c_bonus,
+            "vc_name": vc_player["display_name"] if vc_player else None,
+            "vc_played": vc_player is not None,
+            "vc_raw": vc_raw,
+            "vc_bonus": vc_bonus,
+            "total_bonus": c_bonus + vc_bonus,
+        })
+    rows.sort(key=lambda x: x["total_bonus"], reverse=True)
+    return rows
+
+
+def _build_team_narrative(impact: dict) -> str:
+    """One snappy line summarising this team's performance this match.
+
+    Picks ONE angle (most interesting) and renders it.
+    """
+    players = impact["players"]
+    if not players:
+        return "No fantasy players in this match."
+
+    total = impact["match_pts"]
+    captain = next((p for p in players if p.get("designation") == "C"), None)
+    vc = next((p for p in players if p.get("designation") == "VC"), None)
+    sorted_pts = sorted(players, key=lambda p: p["total_pts"], reverse=True)
+    top = sorted_pts[0]
+    ducks = sum(1 for p in players if p["raw_pts"] <= 0)
+    twentys = sum(1 for p in players if p["total_pts"] >= 20)
+
+    # Priority 1: Captain went off (≥50 raw)
+    if captain and captain["raw_pts"] >= 50:
+        return f"🔥 {captain['display_name']} (C) destroyed — {captain['raw_pts']} raw, +{captain['total_pts'] - captain['raw_pts']} bonus"
+
+    # Priority 2: Captain duck/flop (raw ≤ 5, but did play)
+    if captain and captain["raw_pts"] <= 5:
+        return f"💀 {captain['display_name']} (C) flopped — only {captain['raw_pts']} raw, captain bonus wasted"
+
+    # Priority 3: One player carried (≥35% of team total, with total ≥ 50)
+    if total >= 50 and (top["total_pts"] / total) >= 0.35:
+        pct = round((top["total_pts"] / total) * 100)
+        return f"🎒 {top['display_name']} carried — {top['total_pts']}/{total} ({pct}%)"
+
+    # Priority 4: Lots of ducks
+    if ducks >= 4:
+        return f"🪦 Brutal — {ducks} ducks, top scorer only {top['total_pts']}"
+
+    # Priority 5: Balanced spread
+    if twentys >= 4:
+        return f"🤝 Balanced — {twentys} players in 20+"
+
+    # Default: quiet match
+    return f"Quiet match — top scorer {top['display_name']} with {top['total_pts']}"
 
 
 @app.get("/api/awards")
