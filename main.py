@@ -94,37 +94,80 @@ def _get_stored_match_map() -> dict[tuple[str, tuple], str]:
 def fetch_and_store_matches():
     """Discover IPL 2026 matches and score NEW ones via ESPN.
 
-    Discovery: CricketData series_info (1 credit) → fallback to ESPN (free, scans dates).
-    Scoring: ESPN (free, correct economy/dots). Zero match_scorecard calls.
-    Already-stored matches are skipped — no re-fetching on redeploy.
+    Discovery: CricketData series_info (1 credit) PLUS an ESPN scan for
+    today's date (free, 1 HTTP call). The ESPN scan always runs as a
+    safety net so today's match is picked up even when CD has stale data
+    or has hit its daily credit ceiling.
+    Scoring: ESPN (free, correct economy/dots).
+    Already-stored matches are skipped on subsequent runs.
     """
     actionable = []
+    seen_keys: set[tuple[str, tuple]] = set()
+
+    def _add_match(m: dict):
+        key = (m["date"][:10], tuple(sorted(m["teams"])))
+        if key in seen_keys:
+            return
+        seen_keys.add(key)
+        actionable.append(m)
 
     # Try CricketData first (1 credit, returns ALL matches at once)
     if CRICKETDATA_API_KEY:
-        cd = CricketDataAdapter()
-        all_matches = cd.get_match_list(SEASON)
-        actionable = [m for m in all_matches if m["status"] in ("complete", "abandoned", "in_progress")]
-        if actionable:
-            logger.info("CricketData: found %d actionable matches", len(actionable))
+        try:
+            cd = CricketDataAdapter()
+            all_matches = cd.get_match_list(SEASON)
+            cd_actionable = [m for m in all_matches if m["status"] in ("complete", "abandoned", "in_progress")]
+            for m in cd_actionable:
+                _add_match(m)
+            if cd_actionable:
+                logger.info("CricketData: found %d actionable matches", len(cd_actionable))
+        except Exception as e:
+            logger.error("CricketData discovery error: %s", e)
 
-    # Fallback: ESPN discovery (free, scans date range)
-    if not actionable:
-        logger.info("CricketData unavailable — falling back to ESPN discovery")
+    # ESPN scan for today (always runs — picks up live matches CD missed).
+    # Free, single HTTP call. If CD already had today's match it dedupes.
+    try:
         today = datetime.now(IST).strftime("%Y-%m-%d")
-        espn_matches = discover_espn_matches("2026-03-28", today)
+        espn_matches = discover_espn_matches(today, today)
+        added = 0
         for em in espn_matches:
-            if em["status"] in ("complete", "abandoned", "in_progress"):
-                actionable.append({
-                    "match_id": f"espn_{em['espn_id']}",
-                    "date": em["date"],
-                    "teams": em["teams"],
-                    "venue": "",
-                    "status": em["status"],
-                    "name": em["name"],
-                })
-        if actionable:
-            logger.info("ESPN discovery: found %d actionable matches", len(actionable))
+            if em["status"] not in ("complete", "abandoned", "in_progress"):
+                continue
+            before = len(seen_keys)
+            _add_match({
+                "match_id": f"espn_{em['espn_id']}",
+                "date": em["date"],
+                "teams": em["teams"],
+                "venue": "",
+                "status": em["status"],
+                "name": em["name"],
+            })
+            if len(seen_keys) > before:
+                added += 1
+        if added:
+            logger.info("ESPN today-scan: added %d match(es) CD missed", added)
+    except Exception as e:
+        logger.error("ESPN today-scan error: %s", e)
+
+    # Hard fallback: full-range ESPN scan only when neither source produced anything
+    if not actionable:
+        logger.info("Both CD and ESPN today-scan empty — full ESPN range scan")
+        try:
+            today = datetime.now(IST).strftime("%Y-%m-%d")
+            for em in discover_espn_matches("2026-03-28", today):
+                if em["status"] in ("complete", "abandoned", "in_progress"):
+                    _add_match({
+                        "match_id": f"espn_{em['espn_id']}",
+                        "date": em["date"],
+                        "teams": em["teams"],
+                        "venue": "",
+                        "status": em["status"],
+                        "name": em["name"],
+                    })
+            if actionable:
+                logger.info("ESPN full-range fallback: found %d actionable matches", len(actionable))
+        except Exception as e:
+            logger.error("ESPN full-range fallback error: %s", e)
 
     if not actionable:
         return
