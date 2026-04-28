@@ -133,7 +133,11 @@ TEAMS_PHASE2 = {
             {"name": "Harsh Dubey", "role": "all-rounder", "ipl_team": "Sunrisers Hyderabad"},
             {"name": "Xavier Bartlett", "role": "bowler", "ipl_team": "Punjab Kings"},
             {"name": "Matheesha Pathirana", "role": "bowler", "ipl_team": "Kolkata Knight Riders"},
-            {"name": "Mitchell Santner", "role": "all-rounder", "ipl_team": "Mumbai Indians"},
+            # Santner traded out 2026-04-28 (kept in roster so his pre-trade P2 points still count)
+            {"name": "Mitchell Santner", "role": "all-rounder", "ipl_team": "Mumbai Indians",
+             "removed_date": "2026-04-28"},
+            {"name": "Lockie Ferguson", "role": "bowler", "ipl_team": "Punjab Kings",
+             "added_date": "2026-04-28"},
             {"name": "Yash Raj Punja", "role": "bowler", "ipl_team": "Rajasthan Royals"},
             {"name": "Jaydev Unadkat", "role": "bowler", "ipl_team": "Sunrisers Hyderabad"},
             {"name": "Sakib Hussain", "role": "bowler", "ipl_team": "Sunrisers Hyderabad"},

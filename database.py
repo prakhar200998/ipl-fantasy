@@ -482,12 +482,16 @@ def restore_from_remote() -> bool:
 def reseed_rosters(teams_dict: dict, phase: int = 2):
     """Re-seed Phase N roster from teams_dict. Preserves all match data.
 
-    For phase=2: marks any existing phase=2 rows as obsolete (deletes), then
-    inserts fresh rows. Phase=1 rows are left untouched (frozen archive).
+    For phase=2: wipes phase=2 rows, then re-inserts. Phase=1 rows untouched.
+    Per-player optional fields:
+      - added_date  → row's added_date (defaults to PHASE2_CUTOFF_DATE for p2)
+      - removed_date → row's removed_date (NULL by default)
+    These let us model mid-season swaps: keep both rows so historical points
+    stay attributed correctly, and queries respect the date window.
     """
     conn = get_db()
-    # Wipe only the requested phase — keep historical rosters intact.
     conn.execute("DELETE FROM roster WHERE phase = ?", (phase,))
+    default_added = PHASE2_CUTOFF_DATE if phase == 2 else "2026-01-01"
     for team_name, team_data in teams_dict.items():
         team_id = conn.execute(
             "SELECT team_id FROM teams WHERE team_name = ?", (team_name,)
@@ -496,14 +500,15 @@ def reseed_rosters(teams_dict: dict, phase: int = 2):
             logger.warning("reseed_rosters: team '%s' not found", team_name)
             continue
         tid = team_id["team_id"]
-        added = PHASE2_CUTOFF_DATE if phase == 2 else "2026-01-01"
         for p in team_data["players"]:
             designation = "C" if p.get("captain") else "VC" if p.get("vice_captain") else ""
+            added = p.get("added_date") or default_added
+            removed = p.get("removed_date")  # may be None
             conn.execute(
                 "INSERT INTO roster (team_id, player_name, role, ipl_team, designation, "
-                "added_date, removed_date, phase) VALUES (?, ?, ?, ?, ?, ?, NULL, ?)",
+                "added_date, removed_date, phase) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (tid, p["name"], p.get("role", ""), p.get("ipl_team", ""), designation,
-                 added, phase),
+                 added, removed, phase),
             )
     conn.commit()
     conn.close()
@@ -659,15 +664,24 @@ def get_standings() -> list[dict]:
     standings = []
 
     for team in teams:
-        # Phase 2 squad with live points (matches >= cutoff only)
+        # Phase 2 squad with live points (matches >= cutoff AND inside roster window)
+        # Roster window: m.date in [r.added_date, r.removed_date)
         players = conn.execute("""
             SELECT r.player_name,
                    r.role,
                    r.ipl_team,
                    r.designation,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN p.total_pts ELSE 0 END), 0) as total_pts,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN p.raw_pts   ELSE 0 END), 0) as raw_pts,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN 1 ELSE 0 END), 0) as matches_played
+                   r.added_date,
+                   r.removed_date,
+                   COALESCE(SUM(CASE WHEN m.date >= ? AND m.date >= r.added_date
+                                          AND (r.removed_date IS NULL OR m.date < r.removed_date)
+                                     THEN p.total_pts ELSE 0 END), 0) as total_pts,
+                   COALESCE(SUM(CASE WHEN m.date >= ? AND m.date >= r.added_date
+                                          AND (r.removed_date IS NULL OR m.date < r.removed_date)
+                                     THEN p.raw_pts ELSE 0 END), 0) as raw_pts,
+                   COALESCE(SUM(CASE WHEN m.date >= ? AND m.date >= r.added_date
+                                          AND (r.removed_date IS NULL OR m.date < r.removed_date)
+                                     THEN 1 ELSE 0 END), 0) as matches_played
             FROM roster r
             LEFT JOIN player_match_points p ON r.player_name = p.player_name
             LEFT JOIN matches m ON p.match_id = m.match_id
@@ -710,7 +724,9 @@ def get_standings() -> list[dict]:
         for team in teams:
             prev_players = conn.execute("""
                 SELECT r.player_name,
-                       COALESCE(SUM(CASE WHEN m.date >= ? THEN p.total_pts ELSE 0 END), 0) as total_pts
+                       COALESCE(SUM(CASE WHEN m.date >= ? AND m.date >= r.added_date
+                                              AND (r.removed_date IS NULL OR m.date < r.removed_date)
+                                         THEN p.total_pts ELSE 0 END), 0) as total_pts
                 FROM roster r
                 LEFT JOIN player_match_points p
                     ON r.player_name = p.player_name AND p.match_id != ?
@@ -737,7 +753,8 @@ def get_standings() -> list[dict]:
         for team_data in standings:
             team_data["rank_change"] = None
 
-    # pts_history: per-match scores for Phase 2 matches only (small sparkline)
+    # pts_history: per-match scores for Phase 2 matches only (small sparkline).
+    # Honors roster window so swapped players only count in their active days.
     match_ids = [m["match_id"] for m in matches]
     for team_data in standings:
         top11_names = [p["player_name"] for p in team_data["top11"]]
@@ -745,12 +762,17 @@ def get_standings() -> list[dict]:
             placeholders_names = ",".join("?" * len(top11_names))
             placeholders_matches = ",".join("?" * len(match_ids))
             rows = conn.execute(f"""
-                SELECT match_id, SUM(total_pts) as match_total
-                FROM player_match_points
-                WHERE player_name IN ({placeholders_names})
-                  AND match_id IN ({placeholders_matches})
-                GROUP BY match_id
-            """, top11_names + match_ids).fetchall()
+                SELECT p.match_id, SUM(p.total_pts) as match_total
+                FROM player_match_points p
+                JOIN matches m ON p.match_id = m.match_id
+                JOIN roster r ON r.player_name = p.player_name
+                             AND r.team_id = ? AND r.phase = 2
+                WHERE p.player_name IN ({placeholders_names})
+                  AND p.match_id IN ({placeholders_matches})
+                  AND m.date >= r.added_date
+                  AND (r.removed_date IS NULL OR m.date < r.removed_date)
+                GROUP BY p.match_id
+            """, [team_data["team_id"]] + top11_names + match_ids).fetchall()
             match_totals = {r["match_id"]: r["match_total"] for r in rows}
             team_data["pts_history"] = [match_totals.get(mid, 0) for mid in match_ids]
         else:
@@ -801,17 +823,24 @@ def get_standings() -> list[dict]:
             ).fetchall():
                 p1_totals[r["match_id"]] = r["t"]
 
-        # Build per-match totals for Phase 2 segment
+        # Build per-match totals for Phase 2 segment, honoring each player's
+        # roster window so a swapped-in/out player only contributes during
+        # their active days on the team.
         p2_totals = {}
         if p2_top11_names and p2_match_ids:
             ph_n = ",".join("?" * len(p2_top11_names))
             ph_m = ",".join("?" * len(p2_match_ids))
             for r in conn.execute(
-                f"""SELECT match_id, SUM(total_pts) as t
-                    FROM player_match_points
-                    WHERE player_name IN ({ph_n}) AND match_id IN ({ph_m})
-                    GROUP BY match_id""",
-                p2_top11_names + p2_match_ids,
+                f"""SELECT p.match_id, SUM(p.total_pts) as t
+                    FROM player_match_points p
+                    JOIN matches m ON p.match_id = m.match_id
+                    JOIN roster r ON r.player_name = p.player_name
+                                 AND r.team_id = ? AND r.phase = 2
+                    WHERE p.player_name IN ({ph_n}) AND p.match_id IN ({ph_m})
+                      AND m.date >= r.added_date
+                      AND (r.removed_date IS NULL OR m.date < r.removed_date)
+                    GROUP BY p.match_id""",
+                [team_data["team_id"]] + p2_top11_names + p2_match_ids,
             ).fetchall():
                 p2_totals[r["match_id"]] = r["t"]
 
@@ -845,18 +874,24 @@ def get_team_detail(team_name: str) -> dict | None:
         conn.close()
         return None
 
-    # Phase 2 active squad with stats from Phase 2 matches only
-    players = conn.execute("""
+    # Phase 2 active squad with stats from Phase 2 matches inside roster window
+    win_filter = (
+        "m.date >= ? AND m.date >= r.added_date "
+        "AND (r.removed_date IS NULL OR m.date < r.removed_date)"
+    )
+    players = conn.execute(f"""
         SELECT r.player_name,
                r.role,
                r.ipl_team,
                r.designation,
-               COALESCE(SUM(CASE WHEN m.date >= ? THEN p.total_pts    ELSE 0 END), 0) as total_pts,
-               COALESCE(SUM(CASE WHEN m.date >= ? THEN p.raw_pts      ELSE 0 END), 0) as raw_pts,
-               COALESCE(SUM(CASE WHEN m.date >= ? THEN p.batting_pts  ELSE 0 END), 0) as batting_pts,
-               COALESCE(SUM(CASE WHEN m.date >= ? THEN p.bowling_pts  ELSE 0 END), 0) as bowling_pts,
-               COALESCE(SUM(CASE WHEN m.date >= ? THEN p.fielding_pts ELSE 0 END), 0) as fielding_pts,
-               COALESCE(SUM(CASE WHEN m.date >= ? THEN 1 ELSE 0 END), 0) as matches_played
+               r.added_date,
+               r.removed_date,
+               COALESCE(SUM(CASE WHEN {win_filter} THEN p.total_pts    ELSE 0 END), 0) as total_pts,
+               COALESCE(SUM(CASE WHEN {win_filter} THEN p.raw_pts      ELSE 0 END), 0) as raw_pts,
+               COALESCE(SUM(CASE WHEN {win_filter} THEN p.batting_pts  ELSE 0 END), 0) as batting_pts,
+               COALESCE(SUM(CASE WHEN {win_filter} THEN p.bowling_pts  ELSE 0 END), 0) as bowling_pts,
+               COALESCE(SUM(CASE WHEN {win_filter} THEN p.fielding_pts ELSE 0 END), 0) as fielding_pts,
+               COALESCE(SUM(CASE WHEN {win_filter} THEN 1 ELSE 0 END), 0) as matches_played
         FROM roster r
         LEFT JOIN player_match_points p ON r.player_name = p.player_name
         LEFT JOIN matches m ON p.match_id = m.match_id
@@ -1198,7 +1233,9 @@ def _compute_carry_award(conn, cutoff: str) -> dict | None:
     for team in teams:
         players = conn.execute("""
             SELECT r.player_name,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN p.raw_pts ELSE 0 END), 0) as raw_pts
+                   COALESCE(SUM(CASE WHEN m.date >= ? AND m.date >= r.added_date
+                                          AND (r.removed_date IS NULL OR m.date < r.removed_date)
+                                     THEN p.raw_pts ELSE 0 END), 0) as raw_pts
             FROM roster r
             LEFT JOIN player_match_points p ON r.player_name = p.player_name
             LEFT JOIN matches m ON p.match_id = m.match_id
@@ -1237,7 +1274,9 @@ def _compute_bench_burden(conn, cutoff: str) -> dict | None:
     for team in teams:
         players = conn.execute("""
             SELECT r.player_name,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN p.raw_pts ELSE 0 END), 0) as raw_pts
+                   COALESCE(SUM(CASE WHEN m.date >= ? AND m.date >= r.added_date
+                                          AND (r.removed_date IS NULL OR m.date < r.removed_date)
+                                     THEN p.raw_pts ELSE 0 END), 0) as raw_pts
             FROM roster r
             LEFT JOIN player_match_points p ON r.player_name = p.player_name
             LEFT JOIN matches m ON p.match_id = m.match_id
@@ -1299,13 +1338,15 @@ def get_head_to_head(team1_name: str, team2_name: str) -> dict | None:
         return None
 
     def _get_team_players(team_id):
-        return [dict(r) for r in conn.execute("""
+        win = ("m.date >= ? AND m.date >= r.added_date "
+               "AND (r.removed_date IS NULL OR m.date < r.removed_date)")
+        return [dict(r) for r in conn.execute(f"""
             SELECT r.player_name,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN p.total_pts    ELSE 0 END), 0) as total_pts,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN p.batting_pts  ELSE 0 END), 0) as batting_pts,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN p.bowling_pts  ELSE 0 END), 0) as bowling_pts,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN p.fielding_pts ELSE 0 END), 0) as fielding_pts,
-                   COALESCE(SUM(CASE WHEN m.date >= ? THEN 1 ELSE 0 END), 0) as matches_played
+                   COALESCE(SUM(CASE WHEN {win} THEN p.total_pts    ELSE 0 END), 0) as total_pts,
+                   COALESCE(SUM(CASE WHEN {win} THEN p.batting_pts  ELSE 0 END), 0) as batting_pts,
+                   COALESCE(SUM(CASE WHEN {win} THEN p.bowling_pts  ELSE 0 END), 0) as bowling_pts,
+                   COALESCE(SUM(CASE WHEN {win} THEN p.fielding_pts ELSE 0 END), 0) as fielding_pts,
+                   COALESCE(SUM(CASE WHEN {win} THEN 1 ELSE 0 END), 0) as matches_played
             FROM roster r
             LEFT JOIN player_match_points p ON r.player_name = p.player_name
             LEFT JOIN matches m ON p.match_id = m.match_id

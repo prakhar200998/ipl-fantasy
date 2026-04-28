@@ -928,11 +928,21 @@ async def live():
     from teams import get_player_meta
     player_meta = get_player_meta()  # {player_name: {designation, fantasy_team, ipl_team, role}}
 
-    # Build player → team_name (Phase 2 active rosters)
-    player_to_team = {}
-    for team in standings_data:
-        for p in team["players"]:
-            player_to_team[p["player_name"]] = team["team_name"]
+    # Build player → team_name honoring roster windows for THIS match's date.
+    # This prevents a swapped-out player's points from leaking into their
+    # former team after their removed_date.
+    match_date = (latest.get("date") or "")[:10]
+    conn = db.get_db()
+    rows = conn.execute(
+        """SELECT r.player_name, t.team_name
+           FROM roster r JOIN teams t ON r.team_id = t.team_id
+           WHERE r.phase = 2
+             AND r.added_date <= ?
+             AND (r.removed_date IS NULL OR r.removed_date > ?)""",
+        (match_date, match_date),
+    ).fetchall()
+    conn.close()
+    player_to_team = {row["player_name"]: row["team_name"] for row in rows}
 
     # Per-team impact aggregation (all this match's contributing players)
     team_impacts: dict = {}
