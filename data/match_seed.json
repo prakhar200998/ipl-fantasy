@@ -359,6 +359,14 @@
       "venue": "",
       "status": "complete",
       "enrichment_version": null
+    },
+    {
+      "match_id": "espn_1529289",
+      "date": "2026-05-03",
+      "teams_json": "[\"Gujarat Titans\", \"Punjab Kings\"]",
+      "venue": "",
+      "status": "complete",
+      "enrichment_version": null
     }
   ],
   "player_points": [
@@ -11191,6 +11199,246 @@
       "raw_pts": 54,
       "total_pts": 54,
       "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 18, \"runs\": 17, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Manav Suthar",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 8,
+      "raw_pts": 12,
+      "total_pts": 12,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 6, \"runs\": 27, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Jason Holder",
+      "batting_pts": 5,
+      "bowling_pts": 156,
+      "fielding_pts": 0,
+      "raw_pts": 165,
+      "total_pts": 165,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 7, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 24, \"wickets\": 4, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Marcus Stoinis",
+      "batting_pts": 70,
+      "bowling_pts": 38,
+      "fielding_pts": 0,
+      "raw_pts": 112,
+      "total_pts": 112,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 40, \"balls\": 31, \"fours\": 5, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 17, \"runs\": 26, \"wickets\": 1, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Priyansh Arya",
+      "batting_pts": 2,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 6,
+      "total_pts": 12,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 2, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Shubman Gill",
+      "batting_pts": 9,
+      "bowling_pts": 0,
+      "fielding_pts": 8,
+      "raw_pts": 21,
+      "total_pts": 31,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 5, \"balls\": 4, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Suryansh Shedge",
+      "batting_pts": 115,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 119,
+      "total_pts": 119,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 57, \"balls\": 29, \"fours\": 3, \"sixes\": 5, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Arshdeep Singh",
+      "batting_pts": 1,
+      "bowling_pts": 84,
+      "fielding_pts": 0,
+      "raw_pts": 89,
+      "total_pts": 89,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 24, \"wickets\": 2, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Sai Sudharsan",
+      "batting_pts": 93,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 97,
+      "total_pts": 145,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 57, \"balls\": 41, \"fours\": 5, \"sixes\": 1, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Marco Jansen",
+      "batting_pts": 36,
+      "bowling_pts": 50,
+      "fielding_pts": 0,
+      "raw_pts": 90,
+      "total_pts": 90,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 20, \"balls\": 11, \"fours\": 1, \"sixes\": 1, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 33, \"wickets\": 1, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Rashid Khan",
+      "batting_pts": 0,
+      "bowling_pts": 46,
+      "fielding_pts": 0,
+      "raw_pts": 50,
+      "total_pts": 50,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 32, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Jos Buttler",
+      "batting_pts": 46,
+      "bowling_pts": 0,
+      "fielding_pts": 28,
+      "raw_pts": 78,
+      "total_pts": 117,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 26, \"balls\": 22, \"fours\": 1, \"sixes\": 2, \"dismissed\": true}, \"fielding\": {\"catches\": 3, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Prabhsimran Singh",
+      "batting_pts": 23,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 27,
+      "total_pts": 27,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 15, \"balls\": 14, \"fours\": 2, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Xavier Bartlett",
+      "batting_pts": -2,
+      "bowling_pts": 18,
+      "fielding_pts": 16,
+      "raw_pts": 36,
+      "total_pts": 36,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 38, \"wickets\": 0, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Nishant Sindhu",
+      "batting_pts": 23,
+      "bowling_pts": 0,
+      "fielding_pts": 8,
+      "raw_pts": 35,
+      "total_pts": 35,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 15, \"balls\": 11, \"fours\": 0, \"sixes\": 1, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Arshad Khan",
+      "batting_pts": 12,
+      "bowling_pts": 10,
+      "fielding_pts": 0,
+      "raw_pts": 26,
+      "total_pts": 26,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 8, \"balls\": 5, \"fours\": 1, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 29, \"wickets\": 0, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Mohammed Siraj",
+      "batting_pts": 0,
+      "bowling_pts": 86,
+      "fielding_pts": 0,
+      "raw_pts": 90,
+      "total_pts": 90,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 28, \"wickets\": 2, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Washington Sundar",
+      "batting_pts": 76,
+      "bowling_pts": 0,
+      "fielding_pts": 8,
+      "raw_pts": 88,
+      "total_pts": 88,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 40, \"balls\": 23, \"fours\": 5, \"sixes\": 1, \"dismissed\": false}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Kagiso Rabada",
+      "batting_pts": 0,
+      "bowling_pts": 110,
+      "fielding_pts": 0,
+      "raw_pts": 114,
+      "total_pts": 114,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 22, \"wickets\": 2, \"dots\": 16, \"maidens\": 1, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Cooper Connolly",
+      "batting_pts": -2,
+      "bowling_pts": 0,
+      "fielding_pts": 16,
+      "raw_pts": 18,
+      "total_pts": 36,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 1, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 2, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Nehal Wadhera",
+      "batting_pts": -2,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 2,
+      "total_pts": 2,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 6, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Yuzvendra Chahal",
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 6, \"runs\": 13, \"wickets\": 0, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Shreyas Iyer",
+      "batting_pts": 29,
+      "bowling_pts": 0,
+      "fielding_pts": 8,
+      "raw_pts": 41,
+      "total_pts": 82,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 19, \"balls\": 21, \"fours\": 3, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Vijaykumar Vyshak",
+      "batting_pts": 1,
+      "bowling_pts": 74,
+      "fielding_pts": 8,
+      "raw_pts": 87,
+      "total_pts": 87,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 31, \"wickets\": 2, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+    },
+    {
+      "match_id": "espn_1529289",
+      "player_name": "Rahul Tewatia",
+      "batting_pts": 2,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 6,
+      "total_pts": 6,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 2, \"balls\": 6, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}}"
     }
   ],
   "phase_snapshots": [
