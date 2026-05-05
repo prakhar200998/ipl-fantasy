@@ -294,7 +294,7 @@
       "teams_json": "[\"Chennai Super Kings\", \"Gujarat Titans\"]",
       "venue": "MA Chidambaram Stadium, Chennai",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
@@ -302,7 +302,7 @@
       "teams_json": "[\"Lucknow Super Giants\", \"Kolkata Knight Riders\"]",
       "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "espn_1529282",
@@ -326,7 +326,7 @@
       "teams_json": "[\"Mumbai Indians\", \"Sunrisers Hyderabad\"]",
       "venue": "Wankhede Stadium, Mumbai",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "espn_1529285",
@@ -9340,11 +9340,11 @@
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
       "player_name": "Sunil Narine",
       "batting_pts": 4,
-      "bowling_pts": 58,
+      "bowling_pts": 50,
       "fielding_pts": 8,
-      "raw_pts": 74,
-      "total_pts": 74,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 6, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 23, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 66,
+      "total_pts": 66,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 6, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 23, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
@@ -9440,11 +9440,11 @@
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
       "player_name": "Digvesh Rathi",
       "batting_pts": 0,
-      "bowling_pts": 12,
+      "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 16,
-      "total_pts": 16,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 0, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
