@@ -398,7 +398,7 @@
       "teams_json": "[\"Lucknow Super Giants\", \"Royal Challengers Bengaluru\"]",
       "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cricsheet"
     }
   ],
   "player_points": [
@@ -12256,11 +12256,11 @@
       "match_id": "8b326da3-8ff6-4e64-abe4-cb430d7a6c53",
       "player_name": "Prince Yadav",
       "batting_pts": 0,
-      "bowling_pts": 114,
+      "bowling_pts": 122,
       "fielding_pts": 16,
-      "raw_pts": 134,
-      "total_pts": 134,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 33, \"wickets\": 3, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 2, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 142,
+      "total_pts": 142,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 33, \"wickets\": 3, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 2, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "8b326da3-8ff6-4e64-abe4-cb430d7a6c53",
