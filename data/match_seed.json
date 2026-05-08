@@ -294,7 +294,7 @@
       "teams_json": "[\"Chennai Super Kings\", \"Gujarat Titans\"]",
       "venue": "MA Chidambaram Stadium, Chennai",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
