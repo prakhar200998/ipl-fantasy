@@ -406,7 +406,7 @@
       "teams_json": "[\"Delhi Capitals\", \"Kolkata Knight Riders\"]",
       "venue": "",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cricsheet"
     },
     {
       "match_id": "espn_1529295",
@@ -414,7 +414,7 @@
       "teams_json": "[\"Rajasthan Royals\", \"Gujarat Titans\"]",
       "venue": "",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cricsheet"
     },
     {
       "match_id": "espn_1529296",
@@ -422,7 +422,7 @@
       "teams_json": "[\"Chennai Super Kings\", \"Lucknow Super Giants\"]",
       "venue": "",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cricsheet"
     },
     {
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
@@ -430,7 +430,7 @@
       "teams_json": "[\"Royal Challengers Bengaluru\", \"Mumbai Indians\"]",
       "venue": "Shaheed Veer Narayan Singh International Stadium, Raipur",
       "status": "complete",
-      "enrichment_version": "cd_v2"
+      "enrichment_version": "cricsheet"
     },
     {
       "match_id": "espn_1529298",
@@ -438,7 +438,7 @@
       "teams_json": "[\"Punjab Kings\", \"Delhi Capitals\"]",
       "venue": "",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cricsheet"
     },
     {
       "match_id": "espn_1529299",
@@ -12494,11 +12494,11 @@
       "match_id": "espn_1529294",
       "player_name": "Axar Patel",
       "batting_pts": 5,
-      "bowling_pts": 52,
+      "bowling_pts": 60,
       "fielding_pts": 0,
-      "raw_pts": 61,
-      "total_pts": 91,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 22, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 27, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 69,
+      "total_pts": 103,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 11, \"balls\": 22, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 24, \"runs\": 27, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "espn_1529294",
@@ -12525,30 +12525,30 @@
       "player_name": "Kartik Tyagi",
       "batting_pts": 0,
       "bowling_pts": 84,
-      "fielding_pts": 0,
-      "raw_pts": 88,
-      "total_pts": 88,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 25, \"wickets\": 2, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "fielding_pts": 5,
+      "raw_pts": 93,
+      "total_pts": 93,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 25, \"wickets\": 2, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 0, \"direct_runouts\": 0, \"assisted_runouts\": 1, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1529294",
       "player_name": "Angkrish Raghuvanshi",
       "batting_pts": 1,
       "bowling_pts": 0,
-      "fielding_pts": 12,
-      "raw_pts": 17,
-      "total_pts": 17,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 0, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 1}}"
+      "fielding_pts": 17,
+      "raw_pts": 22,
+      "total_pts": 22,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 1, \"balls\": 3, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 0, \"direct_runouts\": 0, \"assisted_runouts\": 1, \"stumpings\": 1}}"
     },
     {
       "match_id": "espn_1529294",
       "player_name": "Mitchell Starc",
       "batting_pts": -2,
       "bowling_pts": 8,
-      "fielding_pts": 0,
-      "raw_pts": 10,
-      "total_pts": 10,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 31, \"wickets\": 0, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "fielding_pts": 10,
+      "raw_pts": 20,
+      "total_pts": 20,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 0, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 31, \"wickets\": 0, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 0, \"direct_runouts\": 1, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1529294",
@@ -12694,11 +12694,11 @@
       "match_id": "espn_1529294",
       "player_name": "Anukul Roy",
       "batting_pts": 0,
-      "bowling_pts": 82,
+      "bowling_pts": 90,
       "fielding_pts": 8,
-      "raw_pts": 94,
-      "total_pts": 94,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 31, \"wickets\": 2, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 102,
+      "total_pts": 102,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 31, \"wickets\": 2, \"dots\": 10, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1529294",
@@ -12904,11 +12904,11 @@
       "match_id": "espn_1529295",
       "player_name": "Rashid Khan",
       "batting_pts": 0,
-      "bowling_pts": 156,
+      "bowling_pts": 188,
       "fielding_pts": 0,
-      "raw_pts": 160,
-      "total_pts": 160,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 33, \"wickets\": 4, \"dots\": 12, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 192,
+      "total_pts": 192,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 33, \"wickets\": 4, \"dots\": 12, \"maidens\": 0, \"lbw_bowled\": 4}}"
     },
     {
       "match_id": "espn_1529295",
@@ -13005,10 +13005,10 @@
       "player_name": "Dewald Brevis",
       "batting_pts": 12,
       "bowling_pts": 0,
-      "fielding_pts": 8,
-      "raw_pts": 24,
-      "total_pts": 24,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 10, \"balls\": 12, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "fielding_pts": 18,
+      "raw_pts": 34,
+      "total_pts": 34,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 10, \"balls\": 12, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 1, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1529296",
@@ -13044,11 +13044,11 @@
       "match_id": "espn_1529296",
       "player_name": "Anshul Kamboj",
       "batting_pts": 0,
-      "bowling_pts": 72,
-      "fielding_pts": 0,
-      "raw_pts": 76,
-      "total_pts": 76,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 47, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "bowling_pts": 80,
+      "fielding_pts": 5,
+      "raw_pts": 89,
+      "total_pts": 89,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 47, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 0, \"direct_runouts\": 0, \"assisted_runouts\": 1, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1529296",
@@ -13064,21 +13064,21 @@
       "match_id": "espn_1529296",
       "player_name": "Digvesh Rathi",
       "batting_pts": 0,
-      "bowling_pts": 70,
+      "bowling_pts": 86,
       "fielding_pts": 0,
-      "raw_pts": 74,
-      "total_pts": 74,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 45, \"wickets\": 2, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 90,
+      "total_pts": 90,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 45, \"wickets\": 2, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 2}}"
     },
     {
       "match_id": "espn_1529296",
       "player_name": "Jamie Overton",
       "batting_pts": 0,
-      "bowling_pts": 120,
+      "bowling_pts": 128,
       "fielding_pts": 0,
-      "raw_pts": 124,
-      "total_pts": 248,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 36, \"wickets\": 3, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 132,
+      "total_pts": 264,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 36, \"wickets\": 3, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "espn_1529296",
@@ -13114,11 +13114,11 @@
       "match_id": "espn_1529296",
       "player_name": "Shahbaz Ahmed",
       "batting_pts": 83,
-      "bowling_pts": 64,
+      "bowling_pts": 72,
       "fielding_pts": 0,
-      "raw_pts": 151,
-      "total_pts": 151,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 43, \"balls\": 25, \"fours\": 3, \"sixes\": 3, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 30, \"wickets\": 2, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 159,
+      "total_pts": 159,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 43, \"balls\": 25, \"fours\": 3, \"sixes\": 3, \"dismissed\": false}, \"bowling\": {\"balls\": 18, \"runs\": 30, \"wickets\": 2, \"dots\": 3, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "espn_1529296",
@@ -13155,10 +13155,10 @@
       "player_name": "Sanju Samson",
       "batting_pts": 64,
       "bowling_pts": 0,
-      "fielding_pts": 8,
-      "raw_pts": 76,
-      "total_pts": 152,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 28, \"balls\": 14, \"fours\": 3, \"sixes\": 2, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "fielding_pts": 13,
+      "raw_pts": 81,
+      "total_pts": 162,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 28, \"balls\": 14, \"fours\": 3, \"sixes\": 2, \"dismissed\": true}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 1, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1529296",
@@ -13314,11 +13314,11 @@
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
       "player_name": "Rasikh Salam",
       "batting_pts": 3,
-      "bowling_pts": 40,
+      "bowling_pts": 48,
       "fielding_pts": 0,
-      "raw_pts": 47,
-      "total_pts": 47,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 55,
+      "total_pts": 55,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
@@ -13464,11 +13464,11 @@
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
       "player_name": "Rasikh Salam Dar",
       "batting_pts": 3,
-      "bowling_pts": 36,
+      "bowling_pts": 28,
       "fielding_pts": 0,
-      "raw_pts": 43,
-      "total_pts": 43,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 1, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 1}}"
+      "raw_pts": 35,
+      "total_pts": 35,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 1, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
     },
     {
       "match_id": "espn_1529298",
@@ -13585,10 +13585,10 @@
       "player_name": "Cooper Connolly",
       "batting_pts": 68,
       "bowling_pts": 0,
-      "fielding_pts": 0,
-      "raw_pts": 72,
-      "total_pts": 144,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 38, \"balls\": 27, \"fours\": 3, \"sixes\": 2, \"dismissed\": true}}"
+      "fielding_pts": 10,
+      "raw_pts": 82,
+      "total_pts": 164,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 38, \"balls\": 27, \"fours\": 3, \"sixes\": 2, \"dismissed\": true}, \"fielding\": {\"catches\": 0, \"direct_runouts\": 1, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "espn_1529298",
@@ -13704,11 +13704,11 @@
       "match_id": "espn_1529298",
       "player_name": "Yash Thakur",
       "batting_pts": 0,
-      "bowling_pts": 70,
+      "bowling_pts": 78,
       "fielding_pts": 0,
-      "raw_pts": 74,
-      "total_pts": 74,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 55, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 82,
+      "total_pts": 82,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 55, \"wickets\": 2, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "espn_1529299",
@@ -13982,7 +13982,7 @@
       "phase": 1,
       "frozen_pts": 5316,
       "frozen_top11_json": "[{\"player_name\": \"Abhishek Sharma\", \"role\": \"all-rounder\", \"ipl_team\": \"Sunrisers Hyderabad\", \"designation\": \"C\", \"total_pts\": 1410, \"raw_pts\": 705, \"matches_played\": 7}, {\"player_name\": \"Shubman Gill\", \"role\": \"batsman\", \"ipl_team\": \"Gujarat Titans\", \"designation\": \"VC\", \"total_pts\": 892, \"raw_pts\": 595, \"matches_played\": 6}, {\"player_name\": \"Jofra Archer\", \"role\": \"bowler\", \"ipl_team\": \"Rajasthan Royals\", \"designation\": \"\", \"total_pts\": 613, \"raw_pts\": 613, \"matches_played\": 7}, {\"player_name\": \"Ravindra Jadeja\", \"role\": \"all-rounder\", \"ipl_team\": \"Rajasthan Royals\", \"designation\": \"\", \"total_pts\": 499, \"raw_pts\": 499, \"matches_played\": 7}, {\"player_name\": \"Kartik Tyagi\", \"role\": \"bowler\", \"ipl_team\": \"Kolkata Knight Riders\", \"designation\": \"\", \"total_pts\": 423, \"raw_pts\": 423, \"matches_played\": 7}, {\"player_name\": \"Cameron Green\", \"role\": \"all-rounder\", \"ipl_team\": \"Kolkata Knight Riders\", \"designation\": \"\", \"total_pts\": 388, \"raw_pts\": 388, \"matches_played\": 7}, {\"player_name\": \"Quinton de Kock\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Mumbai Indians\", \"designation\": \"\", \"total_pts\": 282, \"raw_pts\": 282, \"matches_played\": 3}, {\"player_name\": \"Sandeep Sharma\", \"role\": \"bowler\", \"ipl_team\": \"Rajasthan Royals\", \"designation\": \"\", \"total_pts\": 246, \"raw_pts\": 246, \"matches_played\": 5}, {\"player_name\": \"Nitish Rana\", \"role\": \"batsman\", \"ipl_team\": \"Delhi Capitals\", \"designation\": \"\", \"total_pts\": 209, \"raw_pts\": 209, \"matches_played\": 4}, {\"player_name\": \"Jitesh Sharma\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Royal Challengers Bengaluru\", \"designation\": \"\", \"total_pts\": 184, \"raw_pts\": 184, \"matches_played\": 7}, {\"player_name\": \"Khaleel Ahmed\", \"role\": \"bowler\", \"ipl_team\": \"Chennai Super Kings\", \"designation\": \"\", \"total_pts\": 170, \"raw_pts\": 170, \"matches_played\": 5}]",
-      "snapshot_date": "2026-05-12 08:44:07"
+      "snapshot_date": "2026-05-12 19:02:01"
     },
     {
       "team_id": 2,
@@ -13990,7 +13990,7 @@
       "phase": 1,
       "frozen_pts": 3811,
       "frozen_top11_json": "[{\"player_name\": \"Jos Buttler\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Gujarat Titans\", \"designation\": \"VC\", \"total_pts\": 851, \"raw_pts\": 568, \"matches_played\": 7}, {\"player_name\": \"Mitchell Marsh\", \"role\": \"all-rounder\", \"ipl_team\": \"Lucknow Super Giants\", \"designation\": \"C\", \"total_pts\": 836, \"raw_pts\": 418, \"matches_played\": 7}, {\"player_name\": \"Krunal Pandya\", \"role\": \"all-rounder\", \"ipl_team\": \"Royal Challengers Bengaluru\", \"designation\": \"\", \"total_pts\": 428, \"raw_pts\": 428, \"matches_played\": 7}, {\"player_name\": \"Tristan Stubbs\", \"role\": \"batsman\", \"ipl_team\": \"Delhi Capitals\", \"designation\": \"\", \"total_pts\": 376, \"raw_pts\": 376, \"matches_played\": 6}, {\"player_name\": \"Rinku Singh\", \"role\": \"batsman\", \"ipl_team\": \"Kolkata Knight Riders\", \"designation\": \"\", \"total_pts\": 286, \"raw_pts\": 286, \"matches_played\": 7}, {\"player_name\": \"Jasprit Bumrah\", \"role\": \"bowler\", \"ipl_team\": \"Mumbai Indians\", \"designation\": \"\", \"total_pts\": 245, \"raw_pts\": 245, \"matches_played\": 7}, {\"player_name\": \"Shashank Singh\", \"role\": \"all-rounder\", \"ipl_team\": \"Punjab Kings\", \"designation\": \"\", \"total_pts\": 227, \"raw_pts\": 227, \"matches_played\": 6}, {\"player_name\": \"T Natarajan\", \"role\": \"bowler\", \"ipl_team\": \"Delhi Capitals\", \"designation\": \"\", \"total_pts\": 213, \"raw_pts\": 213, \"matches_played\": 6}, {\"player_name\": \"Glenn Phillips\", \"role\": \"all-rounder\", \"ipl_team\": \"Gujarat Titans\", \"designation\": \"\", \"total_pts\": 189, \"raw_pts\": 189, \"matches_played\": 6}, {\"player_name\": \"Salil Arora\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Sunrisers Hyderabad\", \"designation\": \"\", \"total_pts\": 147, \"raw_pts\": 147, \"matches_played\": 6}, {\"player_name\": \"Karun Nair\", \"role\": \"batsman\", \"ipl_team\": \"Delhi Capitals\", \"designation\": \"\", \"total_pts\": 13, \"raw_pts\": 13, \"matches_played\": 1}]",
-      "snapshot_date": "2026-05-12 08:44:07"
+      "snapshot_date": "2026-05-12 19:02:01"
     },
     {
       "team_id": 4,
@@ -13998,7 +13998,7 @@
       "phase": 1,
       "frozen_pts": 4192,
       "frozen_top11_json": "[{\"player_name\": \"Sanju Samson\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Chennai Super Kings\", \"designation\": \"C\", \"total_pts\": 1222, \"raw_pts\": 611, \"matches_played\": 7}, {\"player_name\": \"Shreyas Iyer\", \"role\": \"batsman\", \"ipl_team\": \"Punjab Kings\", \"designation\": \"VC\", \"total_pts\": 647, \"raw_pts\": 432, \"matches_played\": 6}, {\"player_name\": \"Bhuvneshwar Kumar\", \"role\": \"bowler\", \"ipl_team\": \"Royal Challengers Bengaluru\", \"designation\": \"\", \"total_pts\": 546, \"raw_pts\": 546, \"matches_played\": 7}, {\"player_name\": \"Sunil Narine\", \"role\": \"all-rounder\", \"ipl_team\": \"Kolkata Knight Riders\", \"designation\": \"\", \"total_pts\": 430, \"raw_pts\": 430, \"matches_played\": 7}, {\"player_name\": \"Travis Head\", \"role\": \"batsman\", \"ipl_team\": \"Sunrisers Hyderabad\", \"designation\": \"\", \"total_pts\": 362, \"raw_pts\": 362, \"matches_played\": 7}, {\"player_name\": \"Josh Hazlewood\", \"role\": \"bowler\", \"ipl_team\": \"Royal Challengers Bengaluru\", \"designation\": \"\", \"total_pts\": 250, \"raw_pts\": 250, \"matches_played\": 4}, {\"player_name\": \"Suyash Sharma\", \"role\": \"bowler\", \"ipl_team\": \"Royal Challengers Bengaluru\", \"designation\": \"\", \"total_pts\": 246, \"raw_pts\": 246, \"matches_played\": 6}, {\"player_name\": \"Dewald Brevis\", \"role\": \"batsman\", \"ipl_team\": \"Chennai Super Kings\", \"designation\": \"\", \"total_pts\": 194, \"raw_pts\": 194, \"matches_played\": 4}, {\"player_name\": \"M Shahrukh Khan\", \"role\": \"batsman\", \"ipl_team\": \"Gujarat Titans\", \"designation\": \"\", \"total_pts\": 101, \"raw_pts\": 101, \"matches_played\": 7}, {\"player_name\": \"Prashant Veer\", \"role\": \"all-rounder\", \"ipl_team\": \"Chennai Super Kings\", \"designation\": \"\", \"total_pts\": 97, \"raw_pts\": 97, \"matches_played\": 2}, {\"player_name\": \"Jason Holder\", \"role\": \"all-rounder\", \"ipl_team\": \"Gujarat Titans\", \"designation\": \"\", \"total_pts\": 97, \"raw_pts\": 97, \"matches_played\": 1}]",
-      "snapshot_date": "2026-05-12 08:44:07"
+      "snapshot_date": "2026-05-12 19:02:01"
     },
     {
       "team_id": 5,
@@ -14006,7 +14006,7 @@
       "phase": 1,
       "frozen_pts": 4716,
       "frozen_top11_json": "[{\"player_name\": \"Aiden Markram\", \"role\": \"batsman\", \"ipl_team\": \"Lucknow Super Giants\", \"designation\": \"C\", \"total_pts\": 756, \"raw_pts\": 378, \"matches_played\": 7}, {\"player_name\": \"Sai Sudharsan\", \"role\": \"batsman\", \"ipl_team\": \"Gujarat Titans\", \"designation\": \"VC\", \"total_pts\": 714, \"raw_pts\": 477, \"matches_played\": 7}, {\"player_name\": \"Heinrich Klaasen\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Sunrisers Hyderabad\", \"designation\": \"\", \"total_pts\": 618, \"raw_pts\": 618, \"matches_played\": 7}, {\"player_name\": \"Rashid Khan\", \"role\": \"all-rounder\", \"ipl_team\": \"Gujarat Titans\", \"designation\": \"\", \"total_pts\": 452, \"raw_pts\": 452, \"matches_played\": 7}, {\"player_name\": \"Phil Salt\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Royal Challengers Bengaluru\", \"designation\": \"\", \"total_pts\": 446, \"raw_pts\": 446, \"matches_played\": 6}, {\"player_name\": \"Nandre Burger\", \"role\": \"bowler\", \"ipl_team\": \"Rajasthan Royals\", \"designation\": \"\", \"total_pts\": 413, \"raw_pts\": 413, \"matches_played\": 7}, {\"player_name\": \"Mitchell Santner\", \"role\": \"all-rounder\", \"ipl_team\": \"Mumbai Indians\", \"designation\": \"\", \"total_pts\": 298, \"raw_pts\": 298, \"matches_played\": 4}, {\"player_name\": \"Akeal Hosein\", \"role\": \"bowler\", \"ipl_team\": \"Chennai Super Kings\", \"designation\": \"\", \"total_pts\": 276, \"raw_pts\": 276, \"matches_played\": 3}, {\"player_name\": \"Avesh Khan\", \"role\": \"bowler\", \"ipl_team\": \"Lucknow Super Giants\", \"designation\": \"\", \"total_pts\": 268, \"raw_pts\": 268, \"matches_played\": 5}, {\"player_name\": \"Rovman Powell\", \"role\": \"batsman\", \"ipl_team\": \"Kolkata Knight Riders\", \"designation\": \"\", \"total_pts\": 250, \"raw_pts\": 250, \"matches_played\": 5}, {\"player_name\": \"Donovan Ferreira\", \"role\": \"all-rounder\", \"ipl_team\": \"Rajasthan Royals\", \"designation\": \"\", \"total_pts\": 225, \"raw_pts\": 225, \"matches_played\": 6}]",
-      "snapshot_date": "2026-05-12 08:44:07"
+      "snapshot_date": "2026-05-12 19:02:01"
     },
     {
       "team_id": 6,
@@ -14014,7 +14014,7 @@
       "phase": 1,
       "frozen_pts": 3369,
       "frozen_top11_json": "[{\"player_name\": \"Vaibhav Sooryavanshi\", \"role\": \"batsman\", \"ipl_team\": \"Rajasthan Royals\", \"designation\": \"VC\", \"total_pts\": 851, \"raw_pts\": 568, \"matches_played\": 7}, {\"player_name\": \"Hardik Pandya\", \"role\": \"all-rounder\", \"ipl_team\": \"Mumbai Indians\", \"designation\": \"C\", \"total_pts\": 682, \"raw_pts\": 341, \"matches_played\": 6}, {\"player_name\": \"Nitish Kumar Reddy\", \"role\": \"all-rounder\", \"ipl_team\": \"Sunrisers Hyderabad\", \"designation\": \"\", \"total_pts\": 510, \"raw_pts\": 510, \"matches_played\": 7}, {\"player_name\": \"Arshdeep Singh\", \"role\": \"bowler\", \"ipl_team\": \"Punjab Kings\", \"designation\": \"\", \"total_pts\": 332, \"raw_pts\": 332, \"matches_played\": 6}, {\"player_name\": \"Ryan Rickelton\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Mumbai Indians\", \"designation\": \"\", \"total_pts\": 297, \"raw_pts\": 297, \"matches_played\": 5}, {\"player_name\": \"Rohit Sharma\", \"role\": \"batsman\", \"ipl_team\": \"Mumbai Indians\", \"designation\": \"\", \"total_pts\": 281, \"raw_pts\": 281, \"matches_played\": 4}, {\"player_name\": \"Tushar Deshpande\", \"role\": \"bowler\", \"ipl_team\": \"Rajasthan Royals\", \"designation\": \"\", \"total_pts\": 194, \"raw_pts\": 194, \"matches_played\": 3}, {\"player_name\": \"Marcus Stoinis\", \"role\": \"all-rounder\", \"ipl_team\": \"Punjab Kings\", \"designation\": \"\", \"total_pts\": 127, \"raw_pts\": 127, \"matches_played\": 6}, {\"player_name\": \"Ashutosh Sharma\", \"role\": \"all-rounder\", \"ipl_team\": \"Delhi Capitals\", \"designation\": \"\", \"total_pts\": 73, \"raw_pts\": 73, \"matches_played\": 2}, {\"player_name\": \"Mayank Markande\", \"role\": \"bowler\", \"ipl_team\": \"Mumbai Indians\", \"designation\": \"\", \"total_pts\": 22, \"raw_pts\": 22, \"matches_played\": 3}, {\"player_name\": \"Shivam Mavi\", \"role\": \"all-rounder\", \"ipl_team\": \"Sunrisers Hyderabad\", \"designation\": \"\", \"total_pts\": 0, \"raw_pts\": 0, \"matches_played\": 0}]",
-      "snapshot_date": "2026-05-12 08:44:07"
+      "snapshot_date": "2026-05-12 19:02:01"
     },
     {
       "team_id": 8,
@@ -14022,7 +14022,7 @@
       "phase": 1,
       "frozen_pts": 5074,
       "frozen_top11_json": "[{\"player_name\": \"Virat Kohli\", \"role\": \"batsman\", \"ipl_team\": \"Royal Challengers Bengaluru\", \"designation\": \"C\", \"total_pts\": 1348, \"raw_pts\": 674, \"matches_played\": 7}, {\"player_name\": \"Rajat Patidar\", \"role\": \"batsman\", \"ipl_team\": \"Royal Challengers Bengaluru\", \"designation\": \"VC\", \"total_pts\": 820, \"raw_pts\": 548, \"matches_played\": 7}, {\"player_name\": \"Mohammed Shami\", \"role\": \"bowler\", \"ipl_team\": \"Lucknow Super Giants\", \"designation\": \"\", \"total_pts\": 460, \"raw_pts\": 460, \"matches_played\": 7}, {\"player_name\": \"KL Rahul\", \"role\": \"wicket-keeper\", \"ipl_team\": \"Delhi Capitals\", \"designation\": \"\", \"total_pts\": 432, \"raw_pts\": 432, \"matches_played\": 6}, {\"player_name\": \"Angkrish Raghuvanshi\", \"role\": \"batsman\", \"ipl_team\": \"Kolkata Knight Riders\", \"designation\": \"\", \"total_pts\": 401, \"raw_pts\": 401, \"matches_played\": 7}, {\"player_name\": \"Lungi Ngidi\", \"role\": \"bowler\", \"ipl_team\": \"Delhi Capitals\", \"designation\": \"\", \"total_pts\": 360, \"raw_pts\": 360, \"matches_played\": 6}, {\"player_name\": \"Noor Ahmad\", \"role\": \"bowler\", \"ipl_team\": \"Chennai Super Kings\", \"designation\": \"\", \"total_pts\": 358, \"raw_pts\": 358, \"matches_played\": 7}, {\"player_name\": \"Mukesh Kumar\", \"role\": \"bowler\", \"ipl_team\": \"Delhi Capitals\", \"designation\": \"\", \"total_pts\": 306, \"raw_pts\": 306, \"matches_played\": 6}, {\"player_name\": \"Sherfane Rutherford\", \"role\": \"batsman\", \"ipl_team\": \"Mumbai Indians\", \"designation\": \"\", \"total_pts\": 247, \"raw_pts\": 247, \"matches_played\": 7}, {\"player_name\": \"Digvesh Rathi\", \"role\": \"bowler\", \"ipl_team\": \"Lucknow Super Giants\", \"designation\": \"\", \"total_pts\": 194, \"raw_pts\": 194, \"matches_played\": 5}, {\"player_name\": \"Mukesh Choudhary\", \"role\": \"bowler\", \"ipl_team\": \"Chennai Super Kings\", \"designation\": \"\", \"total_pts\": 148, \"raw_pts\": 148, \"matches_played\": 2}]",
-      "snapshot_date": "2026-05-12 08:44:07"
+      "snapshot_date": "2026-05-12 19:02:01"
     }
   ]
 }
