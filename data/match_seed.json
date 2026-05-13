@@ -294,7 +294,7 @@
       "teams_json": "[\"Chennai Super Kings\", \"Gujarat Titans\"]",
       "venue": "MA Chidambaram Stadium, Chennai",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
@@ -302,7 +302,7 @@
       "teams_json": "[\"Lucknow Super Giants\", \"Kolkata Knight Riders\"]",
       "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "espn_1529282",
@@ -326,7 +326,7 @@
       "teams_json": "[\"Mumbai Indians\", \"Sunrisers Hyderabad\"]",
       "venue": "Wankhede Stadium, Mumbai",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "espn_1529285",
@@ -398,7 +398,7 @@
       "teams_json": "[\"Lucknow Super Giants\", \"Royal Challengers Bengaluru\"]",
       "venue": "Bharat Ratna Shri Atal Bihari Vajpayee Ekana Cricket Stadium, Lucknow",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "espn_1529294",
@@ -430,7 +430,7 @@
       "teams_json": "[\"Royal Challengers Bengaluru\", \"Mumbai Indians\"]",
       "venue": "Shaheed Veer Narayan Singh International Stadium, Raipur",
       "status": "complete",
-      "enrichment_version": "cricsheet"
+      "enrichment_version": "cd_v2"
     },
     {
       "match_id": "espn_1529298",
@@ -454,7 +454,7 @@
       "teams_json": "[\"Royal Challengers Bengaluru\", \"Kolkata Knight Riders\"]",
       "venue": "Shaheed Veer Narayan Singh International Stadium, Raipur",
       "status": "complete",
-      "enrichment_version": null
+      "enrichment_version": "cd_v2"
     }
   ],
   "player_points": [
@@ -9412,11 +9412,11 @@
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
       "player_name": "Sunil Narine",
       "batting_pts": 4,
-      "bowling_pts": 58,
+      "bowling_pts": 50,
       "fielding_pts": 8,
-      "raw_pts": 74,
-      "total_pts": 74,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 6, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 23, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 66,
+      "total_pts": 66,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 4, \"balls\": 6, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 23, \"wickets\": 1, \"dots\": 7, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
@@ -9512,11 +9512,11 @@
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
       "player_name": "Digvesh Rathi",
       "batting_pts": 0,
-      "bowling_pts": 12,
+      "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 16,
-      "total_pts": 16,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 46, \"wickets\": 0, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "fbd861ca-4efb-4d1d-b46c-ba3bc334bce4",
@@ -12312,21 +12312,21 @@
       "match_id": "8b326da3-8ff6-4e64-abe4-cb430d7a6c53",
       "player_name": "Prince Yadav",
       "batting_pts": 0,
-      "bowling_pts": 122,
+      "bowling_pts": 130,
       "fielding_pts": 16,
-      "raw_pts": 142,
-      "total_pts": 142,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 33, \"wickets\": 3, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 2, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 150,
+      "total_pts": 150,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 33, \"wickets\": 3, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 2}, \"fielding\": {\"catches\": 2, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "8b326da3-8ff6-4e64-abe4-cb430d7a6c53",
       "player_name": "Rasikh Salam",
       "batting_pts": 0,
-      "bowling_pts": 34,
+      "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 38,
-      "total_pts": 38,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 53, \"wickets\": 1, \"dots\": 5, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "8b326da3-8ff6-4e64-abe4-cb430d7a6c53",
@@ -12392,11 +12392,11 @@
       "match_id": "8b326da3-8ff6-4e64-abe4-cb430d7a6c53",
       "player_name": "Digvesh Rathi",
       "batting_pts": 0,
-      "bowling_pts": 2,
-      "fielding_pts": 8,
-      "raw_pts": 14,
-      "total_pts": 14,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 50, \"wickets\": 0, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "8b326da3-8ff6-4e64-abe4-cb430d7a6c53",
@@ -13321,12 +13321,12 @@
     {
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
       "player_name": "Rasikh Salam",
-      "batting_pts": 3,
-      "bowling_pts": 48,
+      "batting_pts": 0,
+      "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 55,
-      "total_pts": 55,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 1}}"
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
@@ -13401,12 +13401,12 @@
     {
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
       "player_name": "Raj\u00a0Bawa",
-      "batting_pts": 20,
-      "bowling_pts": 32,
-      "fielding_pts": 8,
-      "raw_pts": 64,
-      "total_pts": 64,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 16, \"balls\": 14, \"fours\": 1, \"sixes\": 0, \"dismissed\": true}, \"bowling\": {\"balls\": 18, \"runs\": 39, \"wickets\": 1, \"dots\": 4, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "batting_pts": 0,
+      "bowling_pts": 0,
+      "fielding_pts": 0,
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
@@ -13472,11 +13472,11 @@
       "match_id": "02d3614d-9727-43c5-a80c-0bf46c7499c6",
       "player_name": "Rasikh Salam Dar",
       "batting_pts": 3,
-      "bowling_pts": 28,
+      "bowling_pts": 36,
       "fielding_pts": 0,
-      "raw_pts": 35,
-      "total_pts": 35,
-      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 1, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 43,
+      "total_pts": 43,
+      "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 3, \"balls\": 2, \"fours\": 0, \"sixes\": 0, \"dismissed\": false}, \"bowling\": {\"balls\": 24, \"runs\": 42, \"wickets\": 1, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 1}}"
     },
     {
       "match_id": "espn_1529298",
@@ -14012,21 +14012,21 @@
       "match_id": "0b3bab15-12b2-4a16-9f41-1096e40ff202",
       "player_name": "Josh Hazlewood",
       "batting_pts": 0,
-      "bowling_pts": 46,
+      "bowling_pts": 54,
       "fielding_pts": 8,
-      "raw_pts": 58,
-      "total_pts": 58,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 35, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 66,
+      "total_pts": 66,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 35, \"wickets\": 1, \"dots\": 8, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "0b3bab15-12b2-4a16-9f41-1096e40ff202",
       "player_name": "Rasikh Salam",
       "batting_pts": 0,
-      "bowling_pts": 42,
+      "bowling_pts": 0,
       "fielding_pts": 0,
-      "raw_pts": 46,
-      "total_pts": 46,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 35, \"wickets\": 1, \"dots\": 6, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "raw_pts": 4,
+      "total_pts": 4,
+      "breakdown_json": "{\"playing_xi\": 4}"
     },
     {
       "match_id": "0b3bab15-12b2-4a16-9f41-1096e40ff202",
@@ -14042,11 +14042,11 @@
       "match_id": "0b3bab15-12b2-4a16-9f41-1096e40ff202",
       "player_name": "Kartik Tyagi",
       "batting_pts": 0,
-      "bowling_pts": 122,
+      "bowling_pts": 130,
       "fielding_pts": 8,
-      "raw_pts": 134,
-      "total_pts": 134,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 32, \"wickets\": 3, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
+      "raw_pts": 142,
+      "total_pts": 142,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 32, \"wickets\": 3, \"dots\": 11, \"maidens\": 0, \"lbw_bowled\": 1}, \"fielding\": {\"catches\": 1, \"direct_runouts\": 0, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "0b3bab15-12b2-4a16-9f41-1096e40ff202",
@@ -14113,10 +14113,10 @@
       "player_name": "Bhuvneshwar Kumar",
       "batting_pts": 0,
       "bowling_pts": 48,
-      "fielding_pts": 0,
-      "raw_pts": 52,
-      "total_pts": 52,
-      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}}"
+      "fielding_pts": 10,
+      "raw_pts": 62,
+      "total_pts": 62,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 34, \"wickets\": 1, \"dots\": 9, \"maidens\": 0, \"lbw_bowled\": 0}, \"fielding\": {\"catches\": 0, \"direct_runouts\": 1, \"assisted_runouts\": 0, \"stumpings\": 0}}"
     },
     {
       "match_id": "0b3bab15-12b2-4a16-9f41-1096e40ff202",
@@ -14197,6 +14197,16 @@
       "raw_pts": 40,
       "total_pts": 40,
       "breakdown_json": "{\"playing_xi\": 4, \"batting\": {\"runs\": 18, \"balls\": 8, \"fours\": 3, \"sixes\": 1, \"dismissed\": true}}"
+    },
+    {
+      "match_id": "0b3bab15-12b2-4a16-9f41-1096e40ff202",
+      "player_name": "Rasikh Salam Dar",
+      "batting_pts": 0,
+      "bowling_pts": 38,
+      "fielding_pts": 0,
+      "raw_pts": 42,
+      "total_pts": 42,
+      "breakdown_json": "{\"playing_xi\": 4, \"bowling\": {\"balls\": 24, \"runs\": 35, \"wickets\": 1, \"dots\": 0, \"maidens\": 0, \"lbw_bowled\": 1}}"
     }
   ],
   "phase_snapshots": [
