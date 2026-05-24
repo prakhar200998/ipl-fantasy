@@ -843,6 +843,9 @@ async def lifespan(app: FastAPI):
     db.rename_teams(TEAM_RENAME_MAP)
     from teams import TEAMS
     db.reseed_rosters(TEAMS, phase=2)
+    # Recompute total_pts from raw_pts using current C/VC map — picks up the
+    # Rihen captain swap (Overton → Bhuvneshwar Kumar) for matches ≥ 2026-05-15.
+    db.reapply_captain_multipliers()
 
     # Start background scheduler
     from apscheduler.triggers.cron import CronTrigger

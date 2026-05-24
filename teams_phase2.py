@@ -100,11 +100,14 @@ TEAMS_PHASE2 = {
             {"name": "Sunil Narine", "role": "all-rounder", "ipl_team": "Kolkata Knight Riders"},
             {"name": "Mitchell Marsh", "role": "all-rounder", "ipl_team": "Lucknow Super Giants"},
             {"name": "Jitesh Sharma", "role": "wicket-keeper", "ipl_team": "Royal Challengers Bengaluru"},
-            {"name": "Jamie Overton", "role": "all-rounder", "ipl_team": "Chennai Super Kings", "captain": True},
+            {"name": "Jamie Overton", "role": "all-rounder", "ipl_team": "Chennai Super Kings"},
             {"name": "Rishabh Pant", "role": "wicket-keeper", "ipl_team": "Lucknow Super Giants"},
             {"name": "Krunal Pandya", "role": "all-rounder", "ipl_team": "Royal Challengers Bengaluru"},
-            {"name": "Bhuvneshwar Kumar", "role": "bowler", "ipl_team": "Royal Challengers Bengaluru"},
+            {"name": "Bhuvneshwar Kumar", "role": "bowler", "ipl_team": "Royal Challengers Bengaluru", "captain": True},
             {"name": "Jos Buttler", "role": "wicket-keeper", "ipl_team": "Gujarat Titans", "vice_captain": True},
+            # Pickup effective match 59 (2026-05-15) — points before this date stay with original owner
+            {"name": "Urvil Patel", "role": "wicket-keeper", "ipl_team": "Chennai Super Kings",
+             "added_date": "2026-05-15"},
         ]
     },
     "Shvetank's 11": {
@@ -125,6 +128,12 @@ TEAMS_PHASE2 = {
             {"name": "Shubman Gill", "role": "batsman", "ipl_team": "Gujarat Titans", "vice_captain": True},
             {"name": "Corbin Bosch", "role": "all-rounder", "ipl_team": "Mumbai Indians"},
             {"name": "Aiden Markram", "role": "batsman", "ipl_team": "Lucknow Super Giants"},
+            # Pickup effective match 61 (2026-05-17) — points before this date stay with original owner
+            {"name": "Nishant Sindhu", "role": "all-rounder", "ipl_team": "Gujarat Titans",
+             "added_date": "2026-05-17"},
+            # Pickup effective match 64 (2026-05-19) — points before this date stay with original owner
+            {"name": "Dasun Shanaka", "role": "all-rounder", "ipl_team": "Rajasthan Royals",
+             "added_date": "2026-05-19"},
         ]
     },
     "Prakhar's Team": {

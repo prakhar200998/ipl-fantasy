@@ -27,6 +27,11 @@ def _captain_vc_for(teams_dict: dict) -> dict:
 _PHASE1_CVC = get_captain_vc_phase1()
 _PHASE2_CVC = _captain_vc_for(TEAMS_PHASE2)
 
+# Rihen swapped captain from Jamie Overton → Bhuvneshwar Kumar effective IPL
+# match 59 (2026-05-15). teams_phase2.py reflects the post-swap state (Bhuvi=C),
+# so for any Phase 2 match before this date we re-derive the pre-swap mapping.
+RIHEN_CAPTAIN_SWAP_DATE = "2026-05-15"
+
 
 def get_captain_vc(match_date: str | None = None) -> dict:
     """Return C/VC map for the relevant phase.
@@ -37,6 +42,11 @@ def get_captain_vc(match_date: str | None = None) -> dict:
     """
     if match_date and match_date[:10] < PHASE2_CUTOFF_DATE:
         return _PHASE1_CVC
+    if match_date and match_date[:10] < RIHEN_CAPTAIN_SWAP_DATE:
+        cvc = dict(_PHASE2_CVC)
+        cvc.pop("Bhuvneshwar Kumar", None)
+        cvc["Jamie Overton"] = "C"
+        return cvc
     return _PHASE2_CVC
 
 

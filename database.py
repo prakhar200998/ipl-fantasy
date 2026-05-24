@@ -536,6 +536,49 @@ def close_phase1_rosters():
         logger.info("Closed %d Phase 1 roster rows at %s", closed, PHASE2_CUTOFF_DATE)
 
 
+def reapply_captain_multipliers():
+    """Recompute Phase 2 total_pts from raw_pts using current get_captain_vc(date).
+
+    Idempotent: total_pts is fully derived from raw_pts × current C/VC mapping,
+    so re-running yields the same result. Needed when the captain assignment
+    changes mid-season (the stored total_pts is otherwise frozen with whatever
+    designation was active at ingest time).
+
+    Only touches rows where the new total differs from the stored one.
+    """
+    from teams import get_captain_vc
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT p.match_id, p.player_name, p.raw_pts, p.total_pts, m.date "
+        "FROM player_match_points p JOIN matches m ON p.match_id = m.match_id "
+        "WHERE m.date >= ?",
+        (PHASE2_CUTOFF_DATE,),
+    ).fetchall()
+
+    updated = 0
+    for r in rows:
+        date = r["date"][:10] if r["date"] else ""
+        designation = get_captain_vc(date).get(r["player_name"], "")
+        raw = r["raw_pts"]
+        if designation == "C":
+            new_total = raw * 2
+        elif designation == "VC":
+            new_total = int(raw * 1.5)
+        else:
+            new_total = raw
+        if new_total != r["total_pts"]:
+            conn.execute(
+                "UPDATE player_match_points SET total_pts = ? "
+                "WHERE match_id = ? AND player_name = ?",
+                (new_total, r["match_id"], r["player_name"]),
+            )
+            updated += 1
+    conn.commit()
+    conn.close()
+    if updated:
+        logger.info("Reapplied captain multipliers: %d rows updated", updated)
+
+
 def rename_teams(rename_map: dict[str, str]):
     """Rename teams in-place. team_id is preserved → all FK refs (roster,
     snapshot) stay attached. Idempotent."""
